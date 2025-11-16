@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyFiberPhotometry"
+version = "0.1.0"
+description = "Python package for processing TDT fiber photometry data"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+authors = [
+  { name = "Griffin Golde", email = "ggolde@ufl.edu" }
+]
+
+dependencies = [
+  "numpy",
+  "pandas",
+  "matplotlib",
+  "anndata>=0.10",
+  "scipy",
+  "statsmodels",
+  "scikit-learn",
+  "tdt",
+]
+
+[project.urls]
+Homepage = "https://github.com/ggolde/pyFiberPhotometry"
+Source = "https://github.com/ggolde/pyFiberPhotometry"
+Issues = "https://github.com/ggolde/pyFiberPhotometry/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*", "docs*"]
