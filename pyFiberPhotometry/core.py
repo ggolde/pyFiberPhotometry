@@ -766,13 +766,13 @@ class PhotometryExperiment:
         if isinstance(center_on, str):
             center_on = [center_on]
 
-        centers = events[align_on]
+        centers = events[align_on].copy()
         overlap = np.full_like(centers, True, dtype=bool)
         for label in center_on:
             arr = events[label]
-            is_na = np.isnan(arr)
-            centers[~is_na] = arr[~is_na]
-            overlap &= ~is_na
+            event_not_nan = ~np.isnan(arr)
+            centers[event_not_nan] = arr[event_not_nan]
+            overlap &= event_not_nan
         if overlap.any():
             raise ValueError(f'Center_on events over lap in trials {np.where(overlap)}')
         return centers

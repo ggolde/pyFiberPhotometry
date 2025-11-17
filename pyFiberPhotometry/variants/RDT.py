@@ -58,9 +58,9 @@ class RDT_PhotometryData(PhotometryData):
         for (b_lo, b_hi), b_num, b_lab, (f_lo, f_hi) in zip(
             block_slices, range(1, n_blocks + 1), block_labels, free_trial_slices
         ):
-            obs["block_num"].iloc[b_lo:b_hi] = b_num
-            obs.iloc[b_lo:b_hi].loc[:, "block"] = b_lab
-            obs.iloc[f_lo:f_hi].loc[:, "forced"] = False
+            obs.loc[obs.index[b_lo:b_hi], 'block_num'] = b_num
+            obs.loc[obs.index[b_lo:b_hi], 'block'] = b_lab
+            obs.loc[obs.index[f_lo:f_hi], 'forced'] = False
 
         self.adata.obs = obs
 
