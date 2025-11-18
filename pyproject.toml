@@ -19,6 +19,7 @@ dependencies = [
   "pandas",
   "matplotlib",
   "anndata>=0.10",
+  "dask",
   "scipy",
   "statsmodels",
   "scikit-learn",

@@ -1,19 +1,22 @@
 from __future__ import annotations
-from typing import Dict, Sequence, Tuple, Union, Literal, Any
+from typing import Dict, Sequence, Tuple, Union, Literal, Any, List
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import anndata as ad
 import re
 import os
 import logging
 
 from ..core import PhotometryData, PhotometryExperiment
 from ..utils import *
+from ..io import *
 
 ArrayLike = Union[np.ndarray, Sequence[float]]
 
 class RDT_PhotometryData(PhotometryData):
+    adata: ad.AnnData
     """
     RDT-specific implementation of PhotometryData with block/trial labels and QC.
     """
@@ -51,14 +54,14 @@ class RDT_PhotometryData(PhotometryData):
         block_slices = [(block_ends[i], block_ends[i + 1]) for i in range(len(block_ends) - 1)]
         
         obs = self.adata.obs
-        obs["block"] = None
-        obs["block_num"] = None
+        obs["block"] = pd.Series(index=obs.index, dtype="object")
+        obs["block_num"] = pd.Series(index=obs.index, dtype="int64")
         obs["forced"] = True
 
         for (b_lo, b_hi), b_num, b_lab, (f_lo, f_hi) in zip(
             block_slices, range(1, n_blocks + 1), block_labels, free_trial_slices
         ):
-            obs.loc[obs.index[b_lo:b_hi], 'block_num'] = b_num
+            obs.loc[obs.index[b_lo:b_hi], 'block_num'] = int(b_num)
             obs.loc[obs.index[b_lo:b_hi], 'block'] = b_lab
             obs.loc[obs.index[f_lo:f_hi], 'forced'] = False
 
@@ -66,14 +69,14 @@ class RDT_PhotometryData(PhotometryData):
 
     def label_trials(self) -> None:
         """
-        Label trials as Sml, Pun, or UnPun based on event timestamps.
+        Label trials as Sml, Pun, or UnPun based on event timestamps. Conflicting or missing timestamps result in NaN.
         Args:
             None
         Returns:
             None
         """        
         obs = self.adata.obs
-        obs["trial_label"] = None
+        obs["trial_label"] = pd.Series(index=obs.index, dtype="object")
 
         is_sml = obs.get("Sml", pd.Series(index=obs.index)).notna()
         is_lrg = obs.get("Lrg", pd.Series(index=obs.index)).notna()
@@ -82,9 +85,9 @@ class RDT_PhotometryData(PhotometryData):
         obs.loc[is_sml, "trial_label"] = "Sml"
         obs.loc[is_lrg & is_zap, "trial_label"] = "Pun"
         obs.loc[is_lrg & ~is_zap, "trial_label"] = "UnPun"
-        obs.loc[is_lrg & is_sml, "trial_label"] = None
+        obs.loc[is_lrg & is_sml, "trial_label"] = pd.NA
         # ensure all Sml trials have no Zap timestamp
-        obs.loc[is_sml & is_zap, "Zap"] = None
+        obs.loc[is_sml & is_zap, "Zap"] = pd.NA
 
     # --- quality control ---
     def quality_control(self, abs_zscore_threshold: float = 0.1, drop: bool = False) -> None:
@@ -98,6 +101,7 @@ class RDT_PhotometryData(PhotometryData):
         """        
         qc = {}
         self.poorSignalFlag = (np.mean(np.abs(self.X)) < abs_zscore_threshold)
+        self.adata.obs['poorSignalFlag'] = self.poorSignalFlag
 
         qc['before'] = self.trial_type_summary()
         qc['report'] = qc['before']
@@ -144,7 +148,7 @@ class RDT_PhotometryData(PhotometryData):
         }
         return summary
 
-    def info(self, info_on: list[str] = ['rat', 'trial_label', 'block', 'current', 'experiment', 'free']) -> None:
+    def info(self, info_on: list[str] = ['rat', 'trial_label', 'block', 'current', 'forced']) -> None:
         """
         Build a simple string summary of key obs columns.
         Args:
@@ -154,7 +158,7 @@ class RDT_PhotometryData(PhotometryData):
         """        
         info_str = "\n"
         for col in info_on:
-            info_str += f'\t{col}: {self.get_text_value_counts(col) if col in self.df else "NA"}, {self.df[col].unique().size if col in self.df else "NA"} unique\n'
+            info_str += f'\t{col}: {self.get_text_value_counts(col) if col in self.obs else "NA"}, {self.obs[col].unique().size if col in self.obs else "NA"} unique\n'
         return info_str
 
 class RDT_PhotometryExperiment(PhotometryExperiment):
@@ -186,9 +190,15 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
 
         self.parse_notes_file(self.notes_filename)
         self.metadata["Data Folder"] = self.data_folder
-        self.id = f"{self.metadata.get('Rat', 'UnknownRat')}_{self.metadata.get('Current', 'UnknownCurrent')}uA_{self.metadata.get('Stripped_date', 'UnknownDate')}"
+        self.id = (
+            f"{self.metadata.get('rat', 'UnknownRat')}_"
+            f"{self.metadata.get('current', 'UnknownCurrent')}uA_"
+            f"Box{self.box}_"
+            f"{self.metadata.get('stripped_date', 'UnknownDate')}"
+        )
+        f"{self.metadata.get('rat', 'UnknownRat')}_{self.metadata.get('current', 'UnknownCurrent')}uA_{self.metadata.get('stripped_date', 'UnknownDate')}"
                 
-    # pipeline API
+    # --- pipeline API ---
     def run_pipeline(
         self,
         logger: logging.Logger | None = None,
@@ -211,7 +221,6 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         qc_drop: bool = False,
         abs_zscore_threshold: float = 0.1,
         to_trim: list[str] = ['Lrg', 'Sml'],
-        save_as: str = None, 
     ) -> None:
         """
         Run full RDT pipeline: extract, preprocess, window trials, label, QC, and optionally save.
@@ -234,7 +243,6 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             qc_drop (bool): If True, drop QC-failed trials.
             abs_zscore_threshold (float): Threshold on mean |z| for poor signal flag.
             to_trim (list[str]): Obs columns to drop from final dataset.
-            save_as (str | None): Directory to save output to; if None, do not save.
         Returns:
             None
         """
@@ -253,7 +261,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         # step 2: preprocess signal with lowpass filter and dF/F strategy
         log.info(f"Preprocessing signal...")
         self.preprocess_signal(cutoff_frequency=cutoff_frequency, order=order, method=preprocess_method)
-        log.info(f"Done. Fitted isosbestic R2 = {self.metadata['Isosbestic_fit']['r2_val']:.4f}")
+        log.info(f"Done. Fitted isosbestic R2 = {self.metadata['isosbestic_fit']['r2_val']:.4f}")
 
         # step 3: extract per-trial data
         log.info(f"Extracting per-trial data...")
@@ -266,7 +274,6 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             normalization=normalization,
             time_error_threshold=time_error_threshold
         )
-        self.trials: "RDT_PhotometryData"
         log.info(f"Done. Extracted {self.trials.n_trials} trials of {self.trials.n_times} size each.")
 
         # step 4: annotate and clean per-trial data
@@ -287,12 +294,6 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         if self.trials.poorSignalFlag:
             log.warning(f"Warning: Poor signal quality detected in {self.id} (mean z-score {np.mean(np.abs(self.trials.X))} < threshold {abs_zscore_threshold}).")
 
-        if save_as is not None:
-            log.info(f"Saving to {save_as} as {self.id}...")
-            basepath = os.path.join(save_as, self.id)
-            self.trials.write(basepath=basepath)
-            write_dict_to_txt(self.trials.qc, basepath + '.qc')
-
         log.info(f"Pipeline complete.")
 
     # --- trial windowing ---
@@ -305,7 +306,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         event_tolerences: Dict[str, Tuple[float, float]] = {'Lrg' : (5, 18), 'Sml' : (5, 18), 'Zap': (4.5, 18.5)},
         normalization: Literal['zscore', 'zero'] = 'zscore',
         time_error_threshold: float = 0.01,
-    ) -> None:
+    ) -> Tuple["RDT_PhotometryData", "RDT_PhotometryData"]:
         """
         Extract trial and baseline windows for RDT and return PhotometryData objects.
         Args:
@@ -415,20 +416,135 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         
         self.metadata = meta
     
-    def sanity_check(self, basepath=None):
-        """
-        Plot raw signal and isosbestic traces for a quick visual sanity check.
-        Args:
-            basepath (str | None): If provided, save the plot to basepath + '.png'.
-        Returns:
-            matplotlib.figure.Figure: Figure containing the sanity check plot.
-        """        
-        title = self.metadata['experiment'] + '_' + self.metadata['rat'] + '_' + self.metadata['box']
-        fig = plt.figure(figsize=(10,8))
-        plt.plot(self.time, self.raw_signal, c='tab:blue', label='signal')
-        plt.plot(self.time, self.raw_isosbestic, c='black', alpha=0.8, label='isobestic')
-        plt.title(title)
-        plt.legend()
-        if basepath is not None:
-            plt.savefig(basepath + '.png')
-        return fig
+def RDT_process_whole_directory(
+    data_dir: str,
+    output_dir: str,
+    log_file: str | None = None,
+    fit_photobleaching: bool = True,
+    save_baselines: bool = True,
+    save_dashboards: bool = False,
+
+    trial_data_file: str = 'trials.h5ad',
+    baseline_data_file: str = 'baselines.h5ad',
+    photobleach_curve_file: str = 'fit_photobleaching_curve.csv',
+    dashboard_folder: str = 'dashboard_plots',
+
+    boxes: List[str] = ['A', 'B'],
+    event_labels: list[str] = ('Lrg', 'Sml', 'Hsl', 'Zap'),
+    signal_label: str = '_465',
+    isosbestic_label: str = '_405',
+    notes_filename: str = 'Notes.txt',
+
+    pipeline_kwargs: Dict[str, Any] = {},
+    photobleaching_fit_kwargs: Dict[str, Any] = {}
+    ) -> "RDT_PhotometryData":
+    """
+    Runs full RDT pipeline on all folders in a directory and combines the results.
+    Args:
+        data_dir (str): Directory containing the TDT data folders.
+        output_dir (str): Directory to save processed data in.
+        log_file (str) : Path to log file.
+        fit_photobleaching (bool) : Whether to fit a photobleaching curve to raw signal.
+        save_baselines (bool) : Whether to save trial-wise baseline data.
+        save_dashboards (bool) : Whether to save graphical dashboard for each experiment.
+
+        trial_data_file (str) : Name for trial data output file.
+        baseline_data_file (str) : Name for baseline data output file.
+        photobleach_curve_file (str) : Name for photobleach curve data output file.
+        dashboard_folder (str) : Name for folder that dashboards will be saved to in ``output_dir``.
+
+        boxes (str): TDT box identifiers to extract data from.
+        event_labels (list[str]): Event labels to extract for RDT.
+        signal_label (str): Base label for the signal stream.
+        isosbestic_label (str): Base label for the isosbestic stream.
+        notes_filename (str): File name of the notes file in the data folder.
+
+        pipeline_kwargs (dict[str, Any]): Arguments to be passed to ``run_pipeline()``, see function for more details.
+        photobleaching_fit_kwargs (dict[str, Any]): Arguments to be passed to ``fit_photobleaching_curve()``, see function for more details.
+    Returns:
+        RDT_PhotometryData object containing all trials extracted
+    """
+    # set up logger
+    log = logging.getLogger(__name__)
+    if log_file is not None:
+        logging.basicConfig(filename=log_file, filemode='w', level=logging.INFO)
+
+    log.info("Starting data ripping process...")
+
+    # create list of tdt data folders, ignore non-directories
+    tdt_folders_list = [os.path.join(data_dir, foldername) for foldername in os.listdir(data_dir)]
+    tdt_folders_list = [folderpath for folderpath in tdt_folders_list if not os.path.isfile(folderpath)]
+
+    # concat savefiles
+    trial_data_path = os.path.join(output_dir, trial_data_file)
+    baseline_data_path = os.path.join(output_dir, baseline_data_file)
+    photobleach_curve_path = os.path.join(output_dir, photobleach_curve_file)
+    dashboard_folder_abs = os.path.join(output_dir, dashboard_folder)
+
+    # delete previous files (only if they are not folders)
+    for path in [trial_data_path, baseline_data_path, photobleach_curve_path]:
+        if os.path.isfile(path) and os.path.exists(path): os.remove(path)
+
+    # create dashboard folder if needed
+    if save_dashboards and (not os.path.exists(dashboard_folder_abs)):
+        os.mkdir(dashboard_folder_abs)
+    
+    # init tracking metrics
+    n_experiments = int(len(boxes)*len(tdt_folders_list))
+    n_poorSignal = 0
+    n_errors = 0
+    i = 1    
+
+    # loop through every TDT folder add box
+    for tdt_folder in tdt_folders_list:
+        for box in boxes:
+            log.info(f"Processing {tdt_folder}, box {box} ({i} / {n_experiments})...")
+            i += 1
+            try: 
+                exp = RDT_PhotometryExperiment(
+                    tdt_folder, 
+                    box=box,
+                    event_labels=event_labels,
+                    signal_label=signal_label,
+                    isosbestic_label=isosbestic_label,
+                    notes_filename=notes_filename
+                    )
+                exp.run_pipeline(
+                    logger=log,
+                    **pipeline_kwargs
+                    )
+
+                if exp.trials.poorSignalFlag:
+                    n_poorSignal += 1
+                    
+                log.info(f"Saving trial data...")
+                exp.trials.append_on_disk_h5ad(path=str(trial_data_path))
+
+                if save_baselines:
+                    log.info(f"Saving baseline data...")
+                    exp.baselines.append_on_disk_h5ad(path=str(baseline_data_path))
+
+                if fit_photobleaching:
+                    log.info(f"Fitting & saving photobleaching curve...")
+                    photobleach_fit, _ = exp.fit_photobleaching_curve(return_curve=False, **photobleaching_fit_kwargs)
+                    append_to_csv(str(photobleach_curve_path), photobleach_fit)
+                
+                if save_dashboards:
+                    log.info(f"Plotting and saving dashboard...")
+                    save_path = os.path.join(dashboard_folder_abs, getattr(exp, 'id', 'Unnamed') + '.svg')
+                    exp.dashboard(save=save_path)
+
+                log.info(f"Experiment info for {exp.id}")
+                log.info(exp.trials.info())
+                
+                del exp
+
+            except Exception as e:
+                n_errors += 1
+                log.error(f"Error processing {tdt_folder}, box {box}: {e}\n")
+                continue
+
+    trial_data = RDT_PhotometryData.read_h5ad(trial_data_path)
+    trial_data.adata.obs.reset_index(drop=True, inplace=True)
+    trial_data.write_h5ad(trial_data_path)
+    return trial_data

@@ -2,7 +2,11 @@
 
 **Python package for processing TDT fiber photometry data**
 
-`pyFiberPhotometry` provides a framework for loading, preprocessing, annotating, and analyzing behavior-coupled fiber photometry datasets collected using Tucker-Davis Technologies (TDT) acquisition systems. Mainly for use internally at the Bizon-Setlow lab.
+`pyFiberPhotometry` provides a framework for loading, preprocessing, annotating, and analyzing behavior-coupled fiber photometry datasets collected using Tucker-Davis Technologies (TDT) acquisition systems.
+ Built around two core classes that are subclassed for specific pipeline implementations.
+ PhotometryData holds trial-wise data in an AnnData format.
+ PhotometryExperiment extracts and processes signals and event timestamps from TDT folders, yeilding PhotometryData.
+ Used internally in the **[Bizon-Setlow lab](https://burke.neuroscience.ufl.edu/profile/bizon-jennifer/)** lab at the University of Florida.
 
 ---
 
@@ -33,7 +37,7 @@ exp.run_pipeline(
     preprocess_method="dF/F",
 )
 
-trials = exp.trials     # trial-aligned signals
+trials = exp.trials
 baselines = exp.baselines
 ```
 

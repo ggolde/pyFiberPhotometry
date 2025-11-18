@@ -13,8 +13,10 @@ import numpy as np
 import pandas as pd
 import tdt
 import os
+import h5py
 
 from .utils import *
+from .io import *
 
 class PhotometryData:
     """
@@ -23,14 +25,15 @@ class PhotometryData:
     adata: ad.AnnData
 
     # --- constructors ---
-    def __init__(self, adata) -> "PhotometryData":
+    def __init__(self, adata):
         """
         Initialize a PhotometryData wrapper from an AnnData object.
         Args:
             adata (anndata.AnnData): AnnData object containing time-series data.
         Returns:
-            PhotometryData
+            None
         """
+        assert isinstance(adata, ad.AnnData)
         self.adata = adata
     
     @classmethod
@@ -66,7 +69,7 @@ class PhotometryData:
     
     # --- I/O ---
     @classmethod
-    def read(cls, path: str) -> "PhotometryData":
+    def read_h5ad(cls, path: str) -> "PhotometryData":
         """
         Read a PhotometryData object from an .h5ad file.
         Args:
@@ -75,8 +78,18 @@ class PhotometryData:
             PhotometryData: Loaded PhotometryData instance.
         """        
         return cls(ad.read_h5ad(path))
+    @classmethod
+    def read_zarr(cls, path: str) -> "PhotometryData":
+        """
+        Read a PhotometryData object from zarr storage.
+        Args:
+            path (str): Path to the zarr storage.
+        Returns:
+            PhotometryData: Loaded PhotometryData instance.
+        """      
+        return cls(ad.read_zarr(path))
     
-    def write(self, path: str) -> None:
+    def write_h5ad(self, path: str) -> None:
         """
         Write the underlying AnnData to an .h5ad file.
         Args:
@@ -85,28 +98,53 @@ class PhotometryData:
             None
         """        
         self.adata.write_h5ad(path)
-
-    def append_to_file(self, path: str) -> None:
+    def write_zarr(self, path: str) -> None:
         """
-        Append this object's data to an existing .h5ad file on disk.
+        Write the underlying AnnData to zarr storage.
+        Args:
+            path (str): Path to the output zarr storage.
+        Returns:
+            None
+        """     
+        self.adata.write_zarr(path)
+
+    def append_on_disk_h5ad(self, path: str) -> None:
+        """
+        Append this object's data to an existing .h5ad file on disk or create it if it does not exist.
         Args:
             path (str): Path to the target .h5ad file.
         Returns:
             None
         """        
         if not os.path.exists(path):
-            self.write(path)
-        else:
-            tmp_path = path + '.tmp'
-            self.write(tmp_path)
+            self.write_h5ad(path)
+            return
+        
+        # create tmp files and rename 
+        base, ext = os.path.splitext(path)
+        tmp_path_new = base + '_new_tmp' + ext
+        self.write_h5ad(tmp_path_new)
+
+        tmp_path_old = base + '_base_tmp' + ext
+        os.rename(path, tmp_path_old)
+
+        try:
             concat_on_disk(
-                in_files=[path, tmp_path],
+                in_files=[tmp_path_old, tmp_path_new],
                 out_file=path,
+                axis='obs',
                 join='inner',
                 merge='same',
                 uns_merge='same',
             )
-            os.remove(tmp_path)
+        except Exception as e:
+            os.rename(tmp_path_old, path)
+            os.remove(tmp_path_new)
+            raise Exception(f'In core.PhotometryData.append_on_disk_h5ad() concat_on_disk: {e}')
+        
+        os.remove(tmp_path_new)
+        os.remove(tmp_path_old)
+        return
 
     # --- convenience views ---
     @property
@@ -159,25 +197,32 @@ class PhotometryData:
         return obs_agg, X_agg
 
     # --- operations ---
-    def combine_obj(self, to_append: "PhotometryData" | List["PhotometryData"]) -> PhotometryData:
+    def combine_obj(self, to_append: "PhotometryData" | List["PhotometryData"], inplace: bool = False) -> None | PhotometryData:
         """
         Concatenate the rows of object with one or more PhotometryData objects.
         Args:
             to_append (PhotometryData | list[PhotometryData]): Object(s) to append.
+            inplace (bool) : Whether to modify the original object or return new merged one.
         Returns:
-            PhotometryData.
+            Combined PhotometryData or None depending on ``inplace``.
         """        
         if not isinstance(to_append, list):
             to_append = [to_append]
-        adatas = [self.adata] + [obj.adata for obj in to_append]
+        adatas = [getattr(self, 'adata')] + [getattr(obj, 'adata') for obj in to_append]
         merged_adata = ad.concat(
             adatas=adatas,
             axis='obs',
             join='inner',
             merge='same',
-            uns_merge='same'
+            uns_merge='same',
+            index_unique=''
         )
-        return PhotometryData(merged_adata)
+        merged_adata.obs.reset_index(drop=True, inplace=True)
+        if inplace:
+            self.adata = merged_adata
+            return
+        else:
+            return PhotometryData(merged_adata)
 
     def collapse(
             self,
@@ -346,7 +391,7 @@ class PhotometryData:
         Returns:
             None
         """        
-        self.adata.obs.drop(to_drop, errors='ignore')
+        self.adata.obs = self.adata.obs.drop(to_drop, errors='ignore')
 
     def get_text_value_counts(self, col: str) -> str:
         """
@@ -357,7 +402,7 @@ class PhotometryData:
             str: Comma-separated summary of value counts.
         """
         vc = self.adata.obs[col].value_counts(dropna=False)
-        return ", ".join(f"{k}:{v}" for k, v in vc.items())
+        return ", ".join(f"{k}: {v}" for k, v in vc.items())
 
 class PhotometryExperiment:
     """
@@ -382,7 +427,7 @@ class PhotometryExperiment:
             isosbestic_label (str): Base label for the isosbestic channel.
             notes_filename (str): Name of the notes file associated with this session.
         Returns:
-            PhotometryExperiment
+            None
         """        
         self.data_folder = data_folder
         self.notes_filename = notes_filename
@@ -400,16 +445,15 @@ class PhotometryExperiment:
         self.trial_data = None
                 
     # --- pipeline API ---
-    def run_pipeline(self):
+    def run_pipeline(self) -> None:
         """
-        Run the full processing pipeline (to be implemented in child classes).
+        Run the full processing pipeline for 1 experiment (to be implemented in child classes).
         Args:
             None
         Returns:
             None
         """
         return
-
 
     # --- data extraction ---
     def extract_data(self, downsample: int = 10) -> None:
@@ -474,7 +518,8 @@ class PhotometryExperiment:
         filt_iso = filt_iso[:min_len]
 
         fitted_iso, r2_val, coeff = self.fit_isosbestic_to_signal_IRLS(filt_sig, filt_iso)
-        self.metadata['Isosbestic_fit'] = {'r2_val' : r2_val,
+        self.metadata['signal_processing_method'] = method 
+        self.metadata['isosbestic_fit'] = {'r2_val' : r2_val,
                                            'coeffs' : coeff}
         self.fitted_isosbestic = fitted_iso
 
@@ -533,7 +578,14 @@ class PhotometryExperiment:
         r2_val = r2_score(signal, fitted_isosbestic)
         return fitted_isosbestic, r2_val, res.params
     
-    def fit_photobleaching_curve(self, skip = 200, n_boost = 500000, boost_factor = 2, return_curve = False) -> Tuple[pd.DataFrame, np.ndarray]:
+    def fit_photobleaching_curve(
+            self, 
+            downsample_factor: int = 100, 
+            skip: int = 200, 
+            n_boost: int = 500000, 
+            boost_factor: int = 2, 
+            return_curve: bool = False
+            ) -> Tuple[pd.DataFrame, np.ndarray]:
         """
         Fit a negative bi-exponential to model photobleaching in the raw signal.
         Args:
@@ -544,8 +596,8 @@ class PhotometryExperiment:
         Returns:
             tuple[pd.DataFrame, np.ndarray]: DataFrame of parameters and metrics, and fitted curve or None.
         """
-        x = self.time[skip:]
-        y = self.raw_signal[skip:]
+        x = downsample_1d(self.time[skip:], factor=downsample_factor)
+        y = downsample_1d(self.raw_signal[skip:], factor=downsample_factor)
 
         # Initial guess and bounds for the parameters
         initial_guess = [y.max()-y[-1], 0.001, y.max()-y[-1], 0.001, y[-1]]
@@ -572,6 +624,7 @@ class PhotometryExperiment:
                'a1': params[0], 'b1': params[1], 'a2': params[2], 'b2': params[3], 'c': params[4],
                'r2_val': r2_val, 'mse_val': mse_val}
         
+        self.fitted_params = params
         fitted_curve = fitted_curve.astype(np.float32, copy=False) if return_curve else None
 
         return pd.DataFrame([row]), fitted_curve
@@ -644,9 +697,9 @@ class PhotometryExperiment:
         # apply trial-wise normalization method
         match normalization:
             case 'zscore':
-                trial_signals = self.zscore_signal(trial_signals_raw, baseline_signals)
+                trial_signals = zscore_signal(trial_signals_raw, baseline_signals)
             case 'zero':
-                trial_signals = self.center_signal(trial_signals_raw, baseline_signals)
+                trial_signals = center_signal(trial_signals_raw, baseline_signals)
             case _:
                 raise ValueError(f'Invalid normalization method ({normalization})')
         
@@ -777,30 +830,57 @@ class PhotometryExperiment:
             raise ValueError(f'Center_on events over lap in trials {np.where(overlap)}')
         return centers
 
-    @staticmethod
-    def zscore_signal(signal: np.ndarray, baseline: np.ndarray) -> np.ndarray:
+    # --- graphing ---
+    def dashboard(self, save: str | None = None) -> None:
         """
-        Compute trial-wise z-scored signal using baseline mean and std.
+        Quickly plot the raw, fitted, and processed signal, isosbestic, and fitted photobleaching curve (if avaliable).
         Args:
-            signal (np.ndarray): Trial signal windows of shape (n_trials, n_time).
-            baseline (np.ndarray): Baseline windows of shape (n_trials, n_time).
+            save (str, None): Path to save figure, if None figure does not save.
         Returns:
-            np.ndarray: Z-scored signal windows.
+            None.
         """
-        base_mean = baseline.mean(axis=1, keepdims=True)
-        base_std = baseline.std(axis=1, ddof=0, keepdims=True)
-        base_std = np.where(base_std == 0.0, np.finfo(baseline.dtype).eps, base_std)
-        return (signal - base_mean) / base_std
-    
-    @staticmethod
-    def center_signal(signal: np.ndarray, baseline: np.ndarray) -> np.ndarray:
-        """
-        Center trial-wise signal by subtracting the baseline mean.
-        Args:
-            signal (np.ndarray): Trial signal windows of shape (n_trials, n_time).
-            baseline (np.ndarray): Baseline windows of shape (n_trials, n_time).
-        Returns:
-            np.ndarray: Mean-centered signal windows.
-        """
-        base_mean = baseline.mean(axis=1, keepdims=True)
-        return (signal - base_mean)
+        fig, (ax1, ax2) = plt.subplots(
+            ncols=1, nrows=2, 
+            sharex=True, figsize=(6, 6), dpi=140,
+            gridspec_kw={'height_ratios': [3, 1]})
+        fig.tight_layout()
+
+        downsample_factor = 20
+        x = downsample_1d(self.time, downsample_factor)
+        raw_sig = downsample_1d(self.raw_signal, downsample_factor)
+        raw_iso = downsample_1d(self.raw_isosbestic, downsample_factor)
+        fit_iso = downsample_1d(self.fitted_isosbestic, downsample_factor)
+        fit_params = getattr(self, 'fitted_params', None)
+        final_sig = downsample_1d(self.signal, downsample_factor)
+        
+        # raw and fitted signals
+        ax1: plt.Axes
+        ax1.plot(x, raw_sig, label='Raw Signal', c='#1f77b4')
+        ax1.plot(x, raw_iso, label='Raw Iso.', c="#4B4B4B", alpha=0.9)
+        ax1.plot(x, fit_iso, label='Fitted Iso.', c='#ff7f0e', alpha=0.9)
+        if fit_params is not None:
+            ax1.plot(x, neg_bi_exponential_5(x, *fit_params), label='Fitted Curve', c="#920000")
+        ax1.legend()
+
+        # processed signal
+        ax2: plt.Axes
+        y_pad_factor = 2.5
+        middle_third = np.array_split(final_sig, 3)[1]
+        y_high = np.max(middle_third)
+        y_low = np.min(middle_third)
+        print(y_high)
+        ax2.plot(x, final_sig, label='Processed Signal', c='#1f77b4')
+        ax2.set_ylim(bottom=y_low*y_pad_factor, top=y_high*y_pad_factor)
+        ax2.legend()
+
+        # annotate
+        ax1.set_title(
+        f"Dashboard for {getattr(self, 'id', 'Unnamed')}\n"
+        f"Origin: {self.data_folder.split('/')[-1]}"
+        )
+        ax1.set_ylabel('Signal amplitude (a.u.)')
+        ax2.set_ylabel(f"{self.metadata.get('signal_processing_method', 'NOT FOUND')}")
+        ax2.set_xlabel('Time (s)')
+
+        if save is not None:
+            plt.savefig(save, bbox_inches='tight')

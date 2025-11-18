@@ -15,63 +15,32 @@ def reconstruct_time_points(bounds: tuple, freq: float) -> np.ndarray:
     tp = np.arange(tlow, thigh, step=(1/freq))[:target_len]
     return tp
 
-def write_dict_to_txt(d: dict, filename: str, indent: int = 0) -> None:
+def downsample_ndarray(arr: np.ndarray, factor: int, axis: int = 1) -> np.ndarray:
     """
-    Write a nested dictionary to a human-readable, indented text file.
+    Downsample higher-dimensional array by mean pooling.
     Args:
-        d (dict): Dictionary to serialize. Nested dictionaries are supported.
-        filename (str): Path to the output text file.
-        indent (int, optional): Initial indentation level (in tabs).
+        arr (np.ndarray): Input array to downsample.
+        factor (int): Integer downsampling factor.
+        axis (int, optional): Axis along which to downsample. Defaults to 1.
     Returns:
-        None
+        np.ndarray: Downsampled array.
     """
-    def _write_dict(fd, obj, lvl):
-        for k, v in obj.items():
-            if isinstance(v, dict):
-                fd.write("\t" * lvl + f"{k}:\n")
-                _write_dict(fd, v, lvl + 1)
-            else:
-                fd.write("\t" * lvl + f"{k}: {v}\n")
-    os.makedirs(os.path.dirname(filename) or ".", exist_ok=True)
-    with open(filename, "w") as f:
-        _write_dict(f, d, indent)
-
-def read_txt_to_dict(filename: str) -> dict:
-    """
-    Read a nested dictionary from a text file created by ``write_dict_to_txt``.
-    Args:
-        filename (str): Path to the input text file.
-    Returns:
-        dict: Nested dictionary reconstructed from the file contents
-    """
-    with open(filename, "r") as f:
-        lines = f.readlines()
-
-    def parse(lines, start=0, level=0):
-        out = {}
-        i = start
-        while i < len(lines):
-            raw = lines[i]
-            curr = len(raw) - len(raw.lstrip("\t"))
-            if curr < level:
-                break
-            s = raw.strip()
-            i += 1
-            if not s:
-                continue
-            if s.endswith(":"):  # nested block
-                key = s[:-1]
-                sub, nxt = parse(lines, i, level + 1)
-                out[key] = sub
-                i = nxt
-            else:
-                if ":" in s:
-                    k, v = s.split(":", 1)
-                    out[k.strip()] = v.strip()
-        return out, i
-
-    d, _ = parse(lines, 0, 0)
-    return d
+    if factor in (None, 1):
+        return arr
+    arr = np.asarray(arr)
+    L = arr.shape[axis]
+    trim = L % factor
+    if trim:
+        slicer = [slice(None)] * arr.ndim
+        slicer[axis] = slice(0, L - trim)
+        arr = arr[tuple(slicer)]
+        L = arr.shape[axis]
+    # reshape to (..., new_len, factor, ...) and average over the factor axis
+    new_shape = list(arr.shape)
+    new_shape[axis] = L // factor
+    new_shape.insert(axis + 1, factor)
+    arr = arr.reshape(new_shape).mean(axis=axis + 1)
+    return arr
 
 def downsample_1d(arr, factor):
     """
@@ -130,29 +99,28 @@ def sem(arr, axis=0):
     std = np.std(arr, axis=axis)
     return std / np.sqrt(n)
 
-def downsample_ndarray(arr: np.ndarray, factor: int, axis: int = 1) -> np.ndarray:
+def zscore_signal(signal: np.ndarray, baseline: np.ndarray) -> np.ndarray:
     """
-    Downsample higher-dimensional array by mean pooling.
+    Compute trial-wise z-scored signal using baseline mean and std.
     Args:
-        arr (np.ndarray): Input array to downsample.
-        factor (int): Integer downsampling factor.
-        axis (int, optional): Axis along which to downsample. Defaults to 1.
+        signal (np.ndarray): Trial signal windows of shape (n_trials, n_time).
+        baseline (np.ndarray): Baseline windows of shape (n_trials, n_time).
     Returns:
-        np.ndarray: Downsampled array.
+        np.ndarray: Z-scored signal windows.
     """
-    if factor in (None, 1):
-        return arr
-    arr = np.asarray(arr)
-    L = arr.shape[axis]
-    trim = L % factor
-    if trim:
-        slicer = [slice(None)] * arr.ndim
-        slicer[axis] = slice(0, L - trim)
-        arr = arr[tuple(slicer)]
-        L = arr.shape[axis]
-    # reshape to (..., new_len, factor, ...) and average over the factor axis
-    new_shape = list(arr.shape)
-    new_shape[axis] = L // factor
-    new_shape.insert(axis + 1, factor)
-    arr = arr.reshape(new_shape).mean(axis=axis + 1)
-    return arr
+    base_mean = baseline.mean(axis=1, keepdims=True)
+    base_std = baseline.std(axis=1, ddof=0, keepdims=True)
+    base_std = np.where(base_std == 0.0, np.finfo(baseline.dtype).eps, base_std)
+    return (signal - base_mean) / base_std
+
+def center_signal(signal: np.ndarray, baseline: np.ndarray) -> np.ndarray:
+    """
+    Center trial-wise signal by subtracting the baseline mean.
+    Args:
+        signal (np.ndarray): Trial signal windows of shape (n_trials, n_time).
+        baseline (np.ndarray): Baseline windows of shape (n_trials, n_time).
+    Returns:
+        np.ndarray: Mean-centered signal windows.
+    """
+    base_mean = baseline.mean(axis=1, keepdims=True)
+    return (signal - base_mean)
