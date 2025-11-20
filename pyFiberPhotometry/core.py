@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import tdt
 import os
-import h5py
 
 from .utils import *
 from .io import *
@@ -181,7 +180,7 @@ class PhotometryData:
         X = np.asarray(self.adata.X)
         obs = self.adata.obs
 
-        groups = obs.groupby(group_on, sort=False).indices
+        groups = obs.groupby(group_on, sort=False, observed=False).indices
         n_groups = len(groups)
         new_cols = group_on + data_cols if count_col is None else group_on + [count_col] + data_cols
         
@@ -325,22 +324,36 @@ class PhotometryData:
         if label_with is not None: plt.legend()
         if title is not None: ax.set_title(title)
 
-    def plot_groups(self, group_on: List[str], axes: List[Axes] | None = None, label_with: List[str] | None = None, err_layer: str | None = None, **kwargs):
+    def plot_groups(
+            self, 
+            group_on: List[str], 
+            label_with: List[str] | None = None, 
+            err_layer: str | None = None, 
+            save_dir: str | None = None,
+            save_ext: str = '.png',
+            save_dpi: int = 140, 
+            **kwargs):
         """
         Plot trials grouped by observation columns.
         Args:
             group_on (list[str]): Obs columns used to define groups.
-            axes (list[matplotlib.axes.Axes] | None): Optional axes for each group.
             label_with (list[str] | None): Obs columns used to build legend labels.
             err_layer (str | None): Optional layer name providing per-timepoint error.
+            save_dir (str | None): Optional output directory to save figures to.
+            save_ext (str): What format to save images in.
+            save_dpi (int): What dpi to save images at.
             **kwargs: Additional keyword arguments passed to plot_set.
         Returns:
             None
         """        
         groups = self.adata.obs.groupby(group_on).indices
         for gkey, idxs in groups.items():
-            title = ', '.join([str(g) for g in gkey])
+            title = ', '.join([f'{name}: {val}' for name, val in zip(group_on, gkey)])
             self.plot_set(subset=idxs, label_with=label_with, title=title, err_layer=err_layer, **kwargs)
+            if save_dir is not None:
+                file_name = '_'.join([f'{name}-{val}' for name, val in zip(group_on, gkey)]) + save_ext
+                plt.savefig(os.path.join(save_dir, file_name), dpi=save_dpi)
+            plt.show()
 
     # --- convienience ---
     def filter_rows(self, mask: np.ndarray[bool], inplace: bool = False) -> None | "PhotometryData":

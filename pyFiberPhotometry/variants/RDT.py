@@ -551,6 +551,7 @@ def RDT_process_whole_directory(
     log.info(f'Reseting index of trial data...')
     trial_data = RDT_PhotometryData.read_h5ad(trial_data_path)
     trial_data.adata.obs.reset_index(drop=True, inplace=True)
+    trial_data.adata.obs.index = trial_data.adata.obs.index.astype(str)
     trial_data.write_h5ad(trial_data_path)
     log.info(f'All done!')
     return trial_data
