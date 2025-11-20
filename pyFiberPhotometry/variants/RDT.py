@@ -34,7 +34,7 @@ class RDT_PhotometryData(PhotometryData):
     def label_blocks(
         self,
         n_blocks: int = 3,
-        free_trial_slices: Sequence[Sequence[int]] = ((9, 28), (37, 56), (65, 84)),
+        free_trial_slices: Sequence[Sequence[int]] = ((9, 29), (37, 57), (65, 85)),
         block_labels: Sequence[str] = ("0%", "25%", "75%"),
     ) -> None:
         """
@@ -216,7 +216,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         time_error_threshold: float = 0.01,
 
         n_blocks: int = 3,
-        free_trial_slices: list[list[int]] = ((9, 28), (37, 56), (65, 84)),
+        free_trial_slices: list[list[int]] = ((9, 29), (37, 57), (65, 85)),
         block_labels: list[str] = ("0%", "25%", "75%"),
         qc_drop: bool = False,
         to_trim: list[str] = ['Lrg', 'Sml'],
