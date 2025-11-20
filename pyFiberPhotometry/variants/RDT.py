@@ -543,8 +543,14 @@ def RDT_process_whole_directory(
                 n_errors += 1
                 log.error(f"Error processing {tdt_folder}, box {box}: {e}\n")
                 continue
+    
+    log.info(f'Data processing complete with {n_errors} errors '
+             f'and {n_poorSignal} poor signals out of '
+             f'{n_experiments} experiments')
 
+    log.info(f'Reseting index of trial data...')
     trial_data = RDT_PhotometryData.read_h5ad(trial_data_path)
     trial_data.adata.obs.reset_index(drop=True, inplace=True)
     trial_data.write_h5ad(trial_data_path)
+    log.info(f'All done!')
     return trial_data
