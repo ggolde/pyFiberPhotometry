@@ -85,8 +85,9 @@ class RDT_PhotometryData(PhotometryData):
         obs.loc[is_sml, "trial_label"] = "Sml"
         obs.loc[is_lrg & is_zap, "trial_label"] = "Pun"
         obs.loc[is_lrg & ~is_zap, "trial_label"] = "UnPun"
+        
+        # ensure all Sml and Lrg do not overlap and Sml trials have no Zap timestamp
         obs.loc[is_lrg & is_sml, "trial_label"] = pd.NA
-        # ensure all Sml trials have no Zap timestamp
         obs.loc[is_sml & is_zap, "Zap"] = pd.NA
 
     # --- quality control ---
@@ -213,6 +214,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         baseline_bounds: Tuple[float, float] = (-5, -1),
         event_tolerences: Dict[str, Tuple[float, float]] = {'Lrg' : (5, 18), 'Sml' : (5, 18), 'Zap': (4.5, 18.5)},
         normalization: Literal['zscore', 'zero'] = 'zscore',
+        check_overlap: bool = False,
         time_error_threshold: float = 0.01,
 
         n_blocks: int = 3,
@@ -236,6 +238,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             baseline_bounds (tuple[float, float]): Baseline window bounds relative to center.
             event_tolerences (dict[str, tuple[float, float]]): Time tolerances for event annotation.
             normalization (Literal['zscore', 'zero']): Trial normalization method.
+            check_overlap (bool): Whether to throw an error multiple ``center_on`` events are found in the same trial.
             time_error_threshold (float): Threshold on timing error for sanity check.
             n_blocks (int): Number of RDT blocks.
             free_trial_slices (list[list[int]]): Free trial index ranges per block.
@@ -272,7 +275,8 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             baseline_bounds=baseline_bounds,
             event_tolerences=event_tolerences,
             normalization=normalization,
-            time_error_threshold=time_error_threshold
+            time_error_threshold=time_error_threshold,
+            check_overlap=check_overlap,
         )
         log.info(f"Done. Extracted {self.trials.n_trials} trials of {self.trials.n_times} size each.")
 
@@ -305,6 +309,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         baseline_bounds: Tuple[float, float] = (-5, -1),
         event_tolerences: Dict[str, Tuple[float, float]] = {'Lrg' : (5, 18), 'Sml' : (5, 18), 'Zap': (4.5, 18.5)},
         normalization: Literal['zscore', 'zero'] = 'zscore',
+        check_overlap: bool = False,
         time_error_threshold: float = 0.01,
     ) -> Tuple["RDT_PhotometryData", "RDT_PhotometryData"]:
         """
@@ -316,6 +321,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             baseline_bounds (tuple[float, float]): Baseline window bounds relative to center.
             event_tolerences (dict[str, tuple[float, float]]): Time tolerances for event annotation.
             normalization (Literal['zscore', 'zero']): Trial normalization method.
+            check_overlap (bool): Whether to throw an error multiple ``center_on`` events are found in the same trial.
             time_error_threshold (float): Threshold on timing error for sanity check.
         Returns:
             tuple[RDT_PhotometryData, RDT_PhotometryData]: Trials and baselines as RDT_PhotometryData objects.
@@ -331,7 +337,8 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             baseline_bounds=baseline_bounds,
             event_tolerences=event_tolerences,
             normalization=normalization,
-            time_error_threshold=time_error_threshold
+            check_overlap=check_overlap,
+            time_error_threshold=time_error_threshold,
         )
 
         n_trials = len(self.events[align_to])
@@ -413,6 +420,8 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
                     if m:
                         meta["rat"] = m.group(1).replace(' ', '')
                         meta["current"] = int(m.group(2))
+                    else:
+                        raise Warning('Rat and current information not found in notes file.')
         
         self.metadata = meta
     
@@ -541,7 +550,7 @@ def RDT_process_whole_directory(
 
             except Exception as e:
                 n_errors += 1
-                log.error(f"Error processing {tdt_folder}, box {box}: {e}\n")
+                log.error(f"Error processing {tdt_folder}, box {box}: \n\t {e}\n")
                 continue
     
     log.info(f'Data processing complete with {n_errors} errors '

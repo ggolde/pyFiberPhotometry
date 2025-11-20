@@ -193,6 +193,9 @@ class PhotometryData:
             obs_agg.loc[i, data_cols] = method(obs.iloc[idxs][data_cols], axis=0)
             if count_col is not None: obs_agg.loc[i, count_col] = len(idxs)
 
+        # clean dtypes
+        obs_agg = obs_agg.infer_objects()
+
         return obs_agg, X_agg
 
     # --- operations ---
@@ -651,7 +654,8 @@ class PhotometryExperiment:
         baseline_bounds: list[float, float],
         event_tolerences: Dict[str, Tuple[float, float]],
         normalization: Literal['zscore', 'zero'] = 'zscore',
-        time_error_threshold: float = 0.01
+        check_overlap: bool = True,
+        time_error_threshold: float = 0.01,
     ) -> None:
         """
         Build trial-wise windows, normalize, and store trial data.
@@ -662,6 +666,7 @@ class PhotometryExperiment:
             baseline_bounds (list[float, float]): Baseline window bounds relative to center.
             event_tolerences (dict[str, tuple[float, float]]): Time tolerances for event annotation.
             normalization (Literal['zscore', 'zero']): Normalization method for trial signals.
+            check_overlap (bool): Whether to throw an error multiple ``center_on`` events are found in the same trial.
             time_error_threshold (float): Maximum allowed mean timing error.
         Returns:
             None
@@ -688,7 +693,8 @@ class PhotometryExperiment:
         window_centers = self.find_window_centers(
             center_on=center_on, 
             align_on=align_to, 
-            events=events_selected
+            events=events_selected,
+            check_overlap=check_overlap,
             )
         
         # construct trial and baseline windows
@@ -817,13 +823,14 @@ class PhotometryExperiment:
         events_centered = {k : v - centers for k, v in events.items()}
         return signal_windows, time_windows, events_centered
 
-    def find_window_centers(self, center_on: str | List[str], align_on: str, events: Dict[str, np.ndarray]) -> np.ndarray:
+    def find_window_centers(self, center_on: str | List[str], align_on: str, events: Dict[str, np.ndarray], check_overlap: bool = True) -> np.ndarray:
         """
         Determine window centers based on center_on events or fallback to align_on.
         Args:
             center_on (str | list[str]): Event labels used as preferred centers.
             align_on (str): Fallback event label used when center_on is missing.
             events (dict[str, np.ndarray]): Mapping from labels to event times per trial.
+            check_overlap (bool): Whether to throw an error multiple ``center_on`` events are found in the same trial.
         Returns:
             np.ndarray: Center times per trial.
         """        
@@ -839,8 +846,11 @@ class PhotometryExperiment:
             event_not_nan = ~np.isnan(arr)
             centers[event_not_nan] = arr[event_not_nan]
             overlap &= event_not_nan
-        if overlap.any():
-            raise ValueError(f'Center_on events over lap in trials {np.where(overlap)}')
+        if check_overlap and overlap.any():
+            at_idxs = np.where(overlap)
+            culprits = {k : events[k][at_idxs] for k in center_on}
+            culprits_in_og_events = {k : self.events[k][np.searchsorted(self.events[k], culprits[k])] for k in center_on}
+            raise ValueError(f'Center_on events over lap in trials {np.where(overlap)}, with culprits: {culprits_in_og_events}')
         return centers
 
     # --- graphing ---
