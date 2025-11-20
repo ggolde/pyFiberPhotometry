@@ -91,18 +91,15 @@ class RDT_PhotometryData(PhotometryData):
         obs.loc[is_sml & is_zap, "Zap"] = pd.NA
 
     # --- quality control ---
-    def quality_control(self, abs_zscore_threshold: float = 0.1, drop: bool = False) -> None:
+    def quality_control(self, drop: bool = False) -> None:
         """
         Run simple QC checks on trials and optionally drop bad trials.
         Args:
-            abs_zscore_threshold (float): Threshold on mean |z| for poor signal flag.
             drop (bool): If True, drop trials that fail QC.
         Returns:
             None
         """        
         qc = {}
-        self.poorSignalFlag = (np.mean(np.abs(self.X)) < abs_zscore_threshold)
-        self.adata.obs['poorSignalFlag'] = self.poorSignalFlag
 
         qc['before'] = self.trial_type_summary()
         qc['report'] = qc['before']
@@ -215,13 +212,13 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         event_tolerences: Dict[str, Tuple[float, float]] = {'Lrg' : (5, 18), 'Sml' : (5, 18), 'Zap': (4.5, 18.5)},
         normalization: Literal['zscore', 'zero'] = 'zscore',
         check_overlap: bool = False,
+        poor_signal_threshold: float = 0.075,
         time_error_threshold: float = 0.01,
 
         n_blocks: int = 3,
         free_trial_slices: list[list[int]] = ((9, 28), (37, 56), (65, 84)),
         block_labels: list[str] = ("0%", "25%", "75%"),
         qc_drop: bool = False,
-        abs_zscore_threshold: float = 0.1,
         to_trim: list[str] = ['Lrg', 'Sml'],
     ) -> None:
         """
@@ -239,12 +236,12 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             event_tolerences (dict[str, tuple[float, float]]): Time tolerances for event annotation.
             normalization (Literal['zscore', 'zero']): Trial normalization method.
             check_overlap (bool): Whether to throw an error multiple ``center_on`` events are found in the same trial.
+            poor_signal_threshold (float): Threshold for poor signal checking.
             time_error_threshold (float): Threshold on timing error for sanity check.
             n_blocks (int): Number of RDT blocks.
             free_trial_slices (list[list[int]]): Free trial index ranges per block.
             block_labels (list[str]): Labels for each block.
             qc_drop (bool): If True, drop QC-failed trials.
-            abs_zscore_threshold (float): Threshold on mean |z| for poor signal flag.
             to_trim (list[str]): Obs columns to drop from final dataset.
         Returns:
             None
@@ -276,6 +273,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             event_tolerences=event_tolerences,
             normalization=normalization,
             time_error_threshold=time_error_threshold,
+            poor_signal_threshold=poor_signal_threshold,
             check_overlap=check_overlap,
         )
         log.info(f"Done. Extracted {self.trials.n_trials} trials of {self.trials.n_times} size each.")
@@ -286,17 +284,15 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         self.trials.label_blocks(
             n_blocks=n_blocks, free_trial_slices=free_trial_slices, block_labels=block_labels
         )
-        self.trials.quality_control(
-            drop=qc_drop, abs_zscore_threshold=abs_zscore_threshold
-        )
+        self.trials.quality_control(drop=qc_drop)
 
         # step 5: pass down important metadata
         self.trials.add_obs_columns(self.metadata, keys=['rat', 'box', 'current', 'date'])
         self.trials.drop_obs_columns(to_drop=to_trim)
         log.info(f"Done. {self.trials.n_trials} trials remain.")
 
-        if self.trials.poorSignalFlag:
-            log.warning(f"Warning: Poor signal quality detected in {self.id} (mean z-score {np.mean(np.abs(self.trials.X))} < threshold {abs_zscore_threshold}).")
+        if self.poorSignalFlag:
+            log.warning(f"Warning: Poor signal quality detected in {self.id}.")
 
         log.info(f"Pipeline complete.")
 
@@ -310,6 +306,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         event_tolerences: Dict[str, Tuple[float, float]] = {'Lrg' : (5, 18), 'Sml' : (5, 18), 'Zap': (4.5, 18.5)},
         normalization: Literal['zscore', 'zero'] = 'zscore',
         check_overlap: bool = False,
+        poor_signal_threshold: float = 0.075,
         time_error_threshold: float = 0.01,
     ) -> Tuple["RDT_PhotometryData", "RDT_PhotometryData"]:
         """
@@ -322,6 +319,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             event_tolerences (dict[str, tuple[float, float]]): Time tolerances for event annotation.
             normalization (Literal['zscore', 'zero']): Trial normalization method.
             check_overlap (bool): Whether to throw an error multiple ``center_on`` events are found in the same trial.
+            poor_signal_threshold (float): Threshold for poor signal checking.
             time_error_threshold (float): Threshold on timing error for sanity check.
         Returns:
             tuple[RDT_PhotometryData, RDT_PhotometryData]: Trials and baselines as RDT_PhotometryData objects.
@@ -341,11 +339,17 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             time_error_threshold=time_error_threshold,
         )
 
+        self.poorSignalFlag = self.median_centered_abs_max_check(
+            self.raw_trial_signal, 
+            threshold=poor_signal_threshold
+        )
+
         n_trials = len(self.events[align_to])
         trial_num = np.arange(n_trials) + 1
 
         trial_obs = pd.DataFrame(self.trial_events)
         trial_obs['trial_num'] = trial_num
+        trial_obs['poorSignalFlag'] = self.poorSignalFlag
         baseline_obs = pd.DataFrame(self.baseline_events)
         baseline_obs['trial_num'] = trial_num
 
@@ -523,7 +527,7 @@ def RDT_process_whole_directory(
                     **pipeline_kwargs
                     )
 
-                if exp.trials.poorSignalFlag:
+                if exp.poorSignalFlag:
                     n_poorSignal += 1
                     
                 log.info(f"Saving trial data...")

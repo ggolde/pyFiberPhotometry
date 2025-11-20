@@ -351,6 +351,7 @@ class PhotometryData:
         """        
         groups = self.adata.obs.groupby(group_on).indices
         for gkey, idxs in groups.items():
+            if not isinstance(gkey, tuple): gkey=[gkey]
             title = ', '.join([f'{name}: {val}' for name, val in zip(group_on, gkey)])
             self.plot_set(subset=idxs, label_with=label_with, title=title, err_layer=err_layer, **kwargs)
             if save_dir is not None:
@@ -653,26 +654,26 @@ class PhotometryExperiment:
         trial_bounds: list[float, float],
         baseline_bounds: list[float, float],
         event_tolerences: Dict[str, Tuple[float, float]],
-        normalization: Literal['zscore', 'zero'] = 'zscore',
+        normalization: Literal['zscore', 'zero', 'none'] = 'zscore',
         check_overlap: bool = True,
         time_error_threshold: float = 0.01,
     ) -> None:
         """
         Build trial-wise windows, normalize, and store trial data.
         Args:
-            align_to (str): Event label used to align trial centers.
-            center_on (list[str]): Event labels used to refine the window centers.
-            trial_bounds (list[float, float]): Trial window bounds relative to center.
-            baseline_bounds (list[float, float]): Baseline window bounds relative to center.
-            event_tolerences (dict[str, tuple[float, float]]): Time tolerances for event annotation.
-            normalization (Literal['zscore', 'zero']): Normalization method for trial signals.
+            align_to (str): Event label used to align and identify trial, should be one per trial.
+            center_on (list[str]): Event labels to center trial windows on.
+            trial_bounds (list[float, float]): Trial window bounds relative to ``center_on`` events.
+            baseline_bounds (list[float, float]): Baseline window bounds relative to ``align_to`` event.
+            event_tolerences (dict[str, tuple[float, float]]): Time tolerances for event annotation, relative to ``align_to``.
+            normalization (Literal['zscore', 'zero']): Normalization method for trial signals based on baselines.
             check_overlap (bool): Whether to throw an error multiple ``center_on`` events are found in the same trial.
             time_error_threshold (float): Maximum allowed mean timing error.
         Returns:
             None
         """        
         # build trials around align_to event
-        align_events = self.events[align_to]
+        align_events = self.events[align_to].copy()
 
         # validate inputs
         if align_to not in self.events: raise KeyError(f"align_to '{align_to}' not found in events: {list(self.events)}")
@@ -690,35 +691,38 @@ class PhotometryExperiment:
             )
         
         # find window centers using the selected events
-        window_centers = self.find_window_centers(
+        trial_window_centers = self.find_window_centers(
             center_on=center_on, 
             align_on=align_to, 
             events=events_selected,
             check_overlap=check_overlap,
             )
+        baseline_window_centers = align_events
         
         # construct trial and baseline windows
-        trial_signals_raw, trial_times, trial_events = self.create_windows(
+        raw_trial_signals, trial_times, trial_events = self.create_windows(
             signal=self.signal,
             time=self.time,
             events=events_selected,
-            centers=window_centers,
+            centers=trial_window_centers,
             bounds=trial_bounds
         )
         baseline_signals, baseline_times, baseline_events = self.create_windows(
             signal=self.signal,
             time=self.time,
             events=events_selected,
-            centers=window_centers,
+            centers=baseline_window_centers,
             bounds=baseline_bounds
         )
 
         # apply trial-wise normalization method
         match normalization:
             case 'zscore':
-                trial_signals = zscore_signal(trial_signals_raw, baseline_signals)
+                trial_signals = zscore_signal(raw_trial_signals, baseline_signals)
             case 'zero':
-                trial_signals = center_signal(trial_signals_raw, baseline_signals)
+                trial_signals = center_signal(raw_trial_signals, baseline_signals)
+            case 'none':
+                trial_signals = raw_trial_signals
             case _:
                 raise ValueError(f'Invalid normalization method ({normalization})')
         
@@ -730,6 +734,7 @@ class PhotometryExperiment:
         self.trial_signals = trial_signals
         self.trial_time_points = trial_time_points
         self.trial_events = trial_events
+        self.raw_trial_signal = raw_trial_signals
 
         self.baseline_signals = baseline_signals
         self.baseline_time_points = baseline_time_points
@@ -852,6 +857,13 @@ class PhotometryExperiment:
             culprits_in_og_events = {k : self.events[k][np.searchsorted(self.events[k], culprits[k])] for k in center_on}
             raise ValueError(f'Center_on events over lap in trials {np.where(overlap)}, with culprits: {culprits_in_og_events}')
         return centers
+    
+    # --- poor signal checks ---
+    def median_centered_abs_max_check(self, trial_signal: np.ndarray, threshold: float = 0.075):
+        median_centered = trial_signal - np.median(trial_signal, axis=1, keepdims=True)
+        abs_max = np.abs(median_centered).max(axis=1)
+        is_poor_signal = np.mean(abs_max) < threshold
+        return is_poor_signal
 
     # --- graphing ---
     def dashboard(self, save: str | None = None) -> None:
