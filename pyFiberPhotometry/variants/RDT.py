@@ -123,7 +123,7 @@ class RDT_PhotometryData(PhotometryData):
             mask |= forced_trials
 
         if drop:
-            self.filter_rows(self, mask, inplace=drop)
+            self.filter_rows(mask, inplace=drop)
             qc['after'] = self.trial_type_summary()
             qc['report'] = qc['after']
 
