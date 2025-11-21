@@ -99,35 +99,26 @@ class RDT_PhotometryData(PhotometryData):
         Returns:
             None
         """        
-        qc = {}
+        self.qc = {}
 
-        qc['before'] = self.trial_type_summary()
-        qc['report'] = qc['before']
+        self.qc['before'] = self.info()
 
-        mask = np.full(self.n_trials, True, dtype=bool)
+        good_trials = np.full(self.n_trials, True, dtype=bool)
         if 'Hsl' in self.obs:
-            missing_Hsl = self.obs['Hsl'].isna()
-            qc['missing_Hsl'] = int(missing_Hsl.sum())
-            mask |= missing_Hsl
+            good_trials &= ~self.obs['Hsl'].isna()
         
         if ('Lrg' in self.obs) and ('Sml' in self.obs):
-            missing_Lrg = self.obs['Lrg'].isna()
-            missing_Sml = self.obs['Sml'].isna()
-            missing_lever = missing_Lrg & missing_Sml
-            qc['missing_lever'] = int(missing_lever.sum())
-            mask |= missing_lever
+            xor_lever = np.logical_xor(self.obs['Lrg'].isna().to_numpy(), self.obs['Sml'].isna().to_numpy())
+            good_trials &= xor_lever
         
         if 'forced' in self.obs:
-            forced_trials = self.obs['forced']
-            qc['forced_trials'] = int(forced_trials.sum())
-            mask |= forced_trials
+            good_trials &= ~self.obs['forced']
 
-        if drop:
-            self.filter_rows(mask, inplace=drop)
-            qc['after'] = self.trial_type_summary()
-            qc['report'] = qc['after']
+        if 'poorSignalFlag' in self.obs:
+            good_trials &= ~(self.obs['poorSignalFlag'])
 
-        self.qc = qc
+        self.filter_rows(good_trials, inplace=drop)
+        self.qc['after'] = self.info()
 
     # --- convienice ---
     def trial_type_summary(self) -> Dict[str, Any]:
@@ -146,7 +137,7 @@ class RDT_PhotometryData(PhotometryData):
         }
         return summary
 
-    def info(self, info_on: list[str] = ['rat', 'trial_label', 'block', 'current', 'forced']) -> None:
+    def info(self, info_on: list[str] = ['rat', 'trial_label', 'block', 'current', 'forced', 'poorSignalFlag']) -> None:
         """
         Build a simple string summary of key obs columns.
         Args:
@@ -156,7 +147,8 @@ class RDT_PhotometryData(PhotometryData):
         """        
         info_str = "\n"
         for col in info_on:
-            info_str += f'\t{col}: {self.get_text_value_counts(col) if col in self.obs else "NA"}, {self.obs[col].unique().size if col in self.obs else "NA"} unique\n'
+            if col in self.obs:
+                info_str += f'\t{col} - {self.get_text_value_counts(col)}; {self.obs[col].unique().size} unique\n'
         return info_str
 
 class RDT_PhotometryExperiment(PhotometryExperiment):
