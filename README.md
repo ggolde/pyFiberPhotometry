@@ -6,7 +6,7 @@
  Built around two core classes that are subclassed for specific pipeline implementations.
  PhotometryData holds trial-wise data in an AnnData format.
  PhotometryExperiment extracts and processes signals and event timestamps from TDT folders, yeilding PhotometryData.
- Used internally in the **[Bizon-Setlow lab](https://neuroscience.ufl.edu/profile/bizon-jennifer/)** lab at the University of Florida.
+ Used internally in the **[Bizon-Setlow lab](https://neuroscience.ufl.edu/profile/bizon-jennifer/)** at the University of Florida.
 
 ---
 
@@ -58,4 +58,4 @@ MIT License.
 ## **Author**
 
 **Griffin Golde**: University of Florida,
-Contact: **[ggolde@ufl.edu](mailto:ggolde@ufl.edu)**
+contact: **[ggolde@ufl.edu](mailto:ggolde@ufl.edu)**
