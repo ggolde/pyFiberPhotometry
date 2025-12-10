@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import anndata as ad
+import json
 import re
 import os
 import logging
@@ -85,6 +86,7 @@ class RDT_PhotometryData(PhotometryData):
         obs.loc[is_sml, "trial_label"] = "Sml"
         obs.loc[is_lrg & is_zap, "trial_label"] = "Pun"
         obs.loc[is_lrg & ~is_zap, "trial_label"] = "UnPun"
+        obs.loc[~is_lrg & ~is_sml, 'trial_label'] = 'NoResponse'
         
         # ensure all Sml and Lrg do not overlap and Sml trials have no Zap timestamp
         obs.loc[is_lrg & is_sml, "trial_label"] = pd.NA
@@ -145,7 +147,7 @@ class RDT_PhotometryData(PhotometryData):
         Returns:
             str: Multi-line string with counts and unique values per column.
         """        
-        info_str = "\n"
+        info_str = f"\nRDT_Photometry data object with {self.n_trials} trials and {self.n_times} timepoints:\n"
         for col in info_on:
             if col in self.obs:
                 info_str += f'\t{col} - {self.get_text_value_counts(col)}; {self.obs[col].unique().size} unique\n'
@@ -162,7 +164,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         event_labels: list[str] = ("Lrg", "Sml", "Hsl", "Zap"),
         signal_label: str = "_465",
         isosbestic_label: str = "_405",
-        notes_filename: str = "Notes.txt",
+        annot_filename: str = "annotations.json",
     ) -> "RDT_PhotometryExperiment":
         """
         Initialize an RDT_PhotometryExperiment with TDT and RDT settings.
@@ -172,21 +174,21 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
             event_labels (list[str]): Event labels to extract for RDT.
             signal_label (str): Base label for the signal stream.
             isosbestic_label (str): Base label for the isosbestic stream.
-            notes_filename (str): File name of the notes file in the data folder.
+            annot_filename (str): File name of the notes file in the data folder.
         Returns:
             RDT_PhotometryExperiment
         """
-        super().__init__(data_folder, box, event_labels, signal_label, isosbestic_label, notes_filename)
+        super().__init__(data_folder, box, event_labels, signal_label, isosbestic_label, annot_filename)
 
-        self.parse_notes_file(self.notes_filename)
-        self.metadata["Data Folder"] = self.data_folder
+        self.parse_annotations(self.notes_filename)
+        self.metadata['folder'] = self.data_folder
         self.id = (
             f"{self.metadata.get('rat', 'UnknownRat')}_"
             f"{self.metadata.get('current', 'UnknownCurrent')}uA_"
             f"Box{self.box}_"
             f"{self.metadata.get('stripped_date', 'UnknownDate')}"
         )
-        f"{self.metadata.get('rat', 'UnknownRat')}_{self.metadata.get('current', 'UnknownCurrent')}uA_{self.metadata.get('stripped_date', 'UnknownDate')}"
+        self.metadata['uid'] = self.id
                 
     # --- pipeline API ---
     def run_pipeline(
@@ -279,7 +281,7 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         self.trials.quality_control(drop=qc_drop)
 
         # step 5: pass down important metadata
-        self.trials.add_obs_columns(self.metadata, keys=['rat', 'box', 'current', 'date'])
+        self.trials.add_obs_columns(self.metadata, keys=['rat', 'box', 'current', 'date', 'uid'])
         self.trials.drop_obs_columns(to_drop=to_trim)
         log.info(f"Done. {self.trials.n_trials} trials remain.")
 
@@ -376,7 +378,35 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
 
         return trials, baselines
         
-    def parse_notes_file(self, filename: str = "Notes.txt") -> None:
+    def parse_annotations(self, filename: str = 'annotations.json') -> None:
+        """
+        Parse a generated .json annotation file and populate self.metadata. 
+        Annotation is expected to be a nested dictionary with the first keys being the box e.g. 'A',
+        and the second level containing any amount of annotations, but must include 'rat' and 'current'.
+        Reverts to ``parse_notes_file`` if annotation file does not exsist.
+        Args:
+            filename (str): Generated annotation file name relative to the data folder.
+        Returns:
+            None
+        """
+        self.metadata['box'] = self.box
+        annot_file = os.path.join(self.data_folder, filename)
+
+        if not os.path.exists(annot_file):
+            self.parse_notes_file()
+            return
+
+        with open(annot_file, 'r') as f:
+            annot = json.load(f)
+            self.metadata.update(annot[self.box])
+        
+        # check for rat and current
+        rat = self.metadata.get('rat')
+        current = self.metadata.get('current')
+        if (rat is None) or (current is None):
+            raise ValueError(f'Rat or current not found in notes file')
+
+    def parse_notes_file(self, filename: str = 'Notes.txt') -> None:
         """
         Parse the TDT notes file and populate self.metadata.
         Args:
@@ -384,42 +414,50 @@ class RDT_PhotometryExperiment(PhotometryExperiment):
         Returns:
             None
         """
-        path = os.path.join(self.data_folder, filename)
-        if not os.path.exists(path):
-            self.metadata = {"box": self.box}
-            return
+        meta = {}
+        file = os.path.join(self.data_folder, filename)
 
-        meta = {"box": self.box}
-        with open(path, "r") as f:
-            for line in f:
-                if line.startswith("Experiment:"):
-                    meta["experiment"] = line.split(":", 1)[1].strip()
-                elif line.startswith("Subject:"):
-                    meta["subject"] = line.split(":", 1)[1].strip()
-                elif line.startswith("User:"):
-                    meta["user"] = line.split(":", 1)[1].strip()
-                elif line.startswith("Start:"):
-                    m = re.match(r"Start:\s*([\d:apmAPM]+)\s+(\d{1,2}/\d{1,2}/\d{4})", line)
-                    if m:
-                        meta["start_time"] = m.group(1)
-                        date = m.group(2)
-                        meta["date"] = date
-                        meta['stripped_date'] = date[0:2] + date[3:5] + date[8:10]
-                elif line.startswith("Stop:"):
-                    m = re.match(r"Stop:\s*([\d:apmAPM]+)\s+(\d{1,2}/\d{1,2}/\d{4})", line)
-                    if m:
-                        meta["stop_time"] = m.group(1)
-                        meta["stop_date"] = m.group(2)
-                # Box-specific animal/current line
-                elif re.search(r"[Nn]ote", line):
-                    m = re.search(rf'(?:[Bb]ox|\s*)\s*{self.box}\s*[: ;]\s*(\w+|\w+\s*\d+)\s*RDT\s*(\d+)(?:\s*uA)?', line)
-                    if m:
-                        meta["rat"] = m.group(1).replace(' ', '')
-                        meta["current"] = int(m.group(2))
-                    else:
-                        raise Warning('Rat and current information not found in notes file.')
+        if not os.path.exists(file):
+            raise ValueError(f'Notes file {file} does not exist.')
         
-        self.metadata = meta
+        with open(file, "r") as f:
+            for line in f:
+                line = line.lower()
+                if line.startswith('experiment:'):
+                    meta['experiment'] = line.split(":", 1)[1].strip()
+
+                elif line.startswith('subject:'):
+                    meta['subject'] = line.split(":", 1)[1].strip()
+
+                elif line.startswith('user:'):
+                    meta['user'] = line.split(":", 1)[1].strip()
+
+                elif line.startswith('start:'):
+                    m = re.match(r"(?i)start:\s*([\d:apm]+)\s+(\d{1,2}/\d{1,2}/\d{4})", line)
+                    if m:
+                        meta['start_time'] = m.group(1)
+                        date = m.group(2)
+                        meta['date'] = date
+                        meta['stripped_date'] = date[0:2] + date[3:5] + date[8:10]
+
+                elif line.startswith('stop:'):
+                    m = re.match(r"(?i)stop:\s*([\d:apm]+)\s+(\d{1,2}/\d{1,2}/\d{4})", line)
+                    if m:
+                        meta['stop_time'] = m.group(1)
+
+                elif line.startswith('note'):
+                    search_str = r'(?i)(?:"\s*box' + self.box + r'\s*|\s*' + self.box + r'[:\s*])\s*(\w{3}[\s]*\d{3})[\s]*[a-z]*[\s]*(\d{1,4})[\w*\s*;"]'
+                    m = re.search(search_str, line)
+                    if m:
+                        meta['rat'] = m.group(1).replace(' ', '')
+                        meta['current'] = int(m.group(2))
+
+        self.metadata.update(meta)
+        # check for rat and current
+        rat = self.metadata.get('rat')
+        current = self.metadata.get('current')
+        if (rat is None) or (current is None):
+            raise ValueError(f'Rat or current not found in notes file')
     
 def RDT_process_whole_directory(
     data_dir: str,
@@ -438,7 +476,7 @@ def RDT_process_whole_directory(
     event_labels: list[str] = ('Lrg', 'Sml', 'Hsl', 'Zap'),
     signal_label: str = '_465',
     isosbestic_label: str = '_405',
-    notes_filename: str = 'Notes.txt',
+    annotation_filename: str = 'annotations.json',
 
     pipeline_kwargs: Dict[str, Any] = {},
     photobleaching_fit_kwargs: Dict[str, Any] = {}
@@ -462,7 +500,7 @@ def RDT_process_whole_directory(
         event_labels (list[str]): Event labels to extract for RDT.
         signal_label (str): Base label for the signal stream.
         isosbestic_label (str): Base label for the isosbestic stream.
-        notes_filename (str): File name of the notes file in the data folder.
+        annotation_filename (str): File name of the annotations file (externally generated) in the data folder.
 
         pipeline_kwargs (dict[str, Any]): Arguments to be passed to ``run_pipeline()``, see function for more details.
         photobleaching_fit_kwargs (dict[str, Any]): Arguments to be passed to ``fit_photobleaching_curve()``, see function for more details.
@@ -512,7 +550,7 @@ def RDT_process_whole_directory(
                     event_labels=event_labels,
                     signal_label=signal_label,
                     isosbestic_label=isosbestic_label,
-                    notes_filename=notes_filename
+                    annot_filename=annotation_filename
                     )
                 exp.run_pipeline(
                     logger=log,
