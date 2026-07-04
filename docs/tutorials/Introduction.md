@@ -256,8 +256,8 @@ exp.metadata
      'sex': 'male',
      'age': 'young',
      'reference_fit': {'type': 'isosbestic',
-      'r2_val': 0.9993291237999945,
-      'coeffs': array([-0.00914491,  1.25010411])},
+      'r2_val': 0.9993991834603729,
+      'coeffs': array([0.02467583, 1.24905654])},
      'correction_method': 'dF/F'}
 
 
@@ -521,7 +521,7 @@ trials
 
 
 
-    Photometry dataset with 20 trials, 1598 timepoints, and 7 observations.
+    Photometry dataset with 20 trials, 1600 timepoints, and 7 observations.
 
 
 
@@ -966,7 +966,7 @@ trials.obs.head(5)
       <td>NaN</td>
       <td>NaN</td>
       <td>type2</td>
-      <td>0.078010</td>
+      <td>0.074713</td>
     </tr>
     <tr>
       <th>1</th>
@@ -976,7 +976,7 @@ trials.obs.head(5)
       <td>NaN</td>
       <td>1.22</td>
       <td>type3</td>
-      <td>0.150384</td>
+      <td>0.150258</td>
     </tr>
     <tr>
       <th>2</th>
@@ -986,7 +986,7 @@ trials.obs.head(5)
       <td>NaN</td>
       <td>NaN</td>
       <td>NoResponse</td>
-      <td>0.031360</td>
+      <td>0.030606</td>
     </tr>
     <tr>
       <th>3</th>
@@ -996,7 +996,7 @@ trials.obs.head(5)
       <td>NaN</td>
       <td>NaN</td>
       <td>type2</td>
-      <td>0.087299</td>
+      <td>0.083858</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1006,7 +1006,7 @@ trials.obs.head(5)
       <td>NaN</td>
       <td>NaN</td>
       <td>type2</td>
-      <td>0.091308</td>
+      <td>0.087954</td>
     </tr>
   </tbody>
 </table>
@@ -1075,19 +1075,19 @@ trials.ANOVA(
     <tr>
       <th>0</th>
       <td>trial_label</td>
-      <td>0.016580</td>
+      <td>0.016438</td>
       <td>3</td>
-      <td>0.005527</td>
-      <td>49.619326</td>
-      <td>2.512064e-08</td>
-      <td>0.902947</td>
+      <td>0.005479</td>
+      <td>51.521322</td>
+      <td>1.916450e-08</td>
+      <td>0.906194</td>
     </tr>
     <tr>
       <th>1</th>
       <td>Within</td>
-      <td>0.001782</td>
+      <td>0.001702</td>
       <td>16</td>
-      <td>0.000111</td>
+      <td>0.000106</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1164,31 +1164,45 @@ avg.obs
       <td>type2</td>
       <td>6</td>
       <td>-3.358333</td>
-      <td>0.083880</td>
+      <td>0.080484</td>
       <td>0.644190</td>
-      <td>0.006322</td>
+      <td>0.006149</td>
     </tr>
     <tr>
       <th>1</th>
       <td>type3</td>
       <td>3</td>
       <td>-2.680000</td>
-      <td>0.129047</td>
+      <td>0.128538</td>
       <td>0.225536</td>
-      <td>0.016952</td>
+      <td>0.017163</td>
     </tr>
     <tr>
       <th>2</th>
       <td>type1</td>
       <td>6</td>
       <td>-3.030000</td>
-      <td>0.066485</td>
+      <td>0.063665</td>
       <td>0.514101</td>
-      <td>0.010062</td>
+      <td>0.009130</td>
     </tr>
   </tbody>
 </table>
 </div>
+
+
+
+
+```python
+trials.filter_rows(
+    trials.obs['trial_label'].str.startswith('No')
+)
+```
+
+
+
+
+    Photometry dataset with 5 trials, 1598 timepoints, and 7 observations.
 
 
 
@@ -1225,7 +1239,7 @@ avg.plot_trials(
 
 
     
-![png](Introduction_files/Introduction_64_0.png)
+![png](Introduction_files/Introduction_65_0.png)
     
 
 
@@ -1255,7 +1269,7 @@ recentered_avg.plot_trials(err_layer='std')
 
 
     
-![png](Introduction_files/Introduction_66_0.png)
+![png](Introduction_files/Introduction_67_0.png)
     
 
 
@@ -1404,8 +1418,8 @@ trials.obs.head(5)
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>15.4924</td>
-      <td>31.457552</td>
+      <td>15.50</td>
+      <td>31.45</td>
       <td>-3.50</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1418,8 +1432,8 @@ trials.obs.head(5)
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>65.1924</td>
-      <td>81.157553</td>
+      <td>65.20</td>
+      <td>81.15</td>
       <td>-2.70</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1432,8 +1446,8 @@ trials.obs.head(5)
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>112.9924</td>
-      <td>128.957552</td>
+      <td>113.00</td>
+      <td>128.95</td>
       <td>0.00</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1446,8 +1460,8 @@ trials.obs.head(5)
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>167.4924</td>
-      <td>183.457552</td>
+      <td>167.50</td>
+      <td>183.45</td>
       <td>-3.95</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1460,8 +1474,8 @@ trials.obs.head(5)
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>217.8424</td>
-      <td>233.807552</td>
+      <td>217.85</td>
+      <td>233.80</td>
       <td>-3.80</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1576,8 +1590,8 @@ trials.obs.head(5)
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>15.4924</td>
-      <td>31.457552</td>
+      <td>15.50</td>
+      <td>31.45</td>
       <td>-3.50</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1590,8 +1604,8 @@ trials.obs.head(5)
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>65.1924</td>
-      <td>81.157553</td>
+      <td>65.20</td>
+      <td>81.15</td>
       <td>-2.70</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1604,8 +1618,8 @@ trials.obs.head(5)
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>112.9924</td>
-      <td>128.957552</td>
+      <td>113.00</td>
+      <td>128.95</td>
       <td>0.00</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1618,8 +1632,8 @@ trials.obs.head(5)
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>167.4924</td>
-      <td>183.457552</td>
+      <td>167.50</td>
+      <td>183.45</td>
       <td>-3.95</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1632,8 +1646,8 @@ trials.obs.head(5)
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>217.8424</td>
-      <td>233.807552</td>
+      <td>217.85</td>
+      <td>233.80</td>
       <td>-3.80</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1748,8 +1762,8 @@ trials.obs.head(5)
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>15.4924</td>
-      <td>31.457552</td>
+      <td>15.50</td>
+      <td>31.45</td>
       <td>-3.50</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1764,8 +1778,8 @@ trials.obs.head(5)
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>65.1924</td>
-      <td>81.157553</td>
+      <td>65.20</td>
+      <td>81.15</td>
       <td>-2.70</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1780,8 +1794,8 @@ trials.obs.head(5)
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>112.9924</td>
-      <td>128.957552</td>
+      <td>113.00</td>
+      <td>128.95</td>
       <td>0.00</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1796,8 +1810,8 @@ trials.obs.head(5)
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>167.4924</td>
-      <td>183.457552</td>
+      <td>167.50</td>
+      <td>183.45</td>
       <td>-3.95</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1812,8 +1826,8 @@ trials.obs.head(5)
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>217.8424</td>
-      <td>233.807552</td>
+      <td>217.85</td>
+      <td>233.80</td>
       <td>-3.80</td>
       <td>0.0</td>
       <td>NaN</td>

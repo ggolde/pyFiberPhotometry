@@ -175,6 +175,59 @@ class PhotobleachingLayer_alt:
 #####################
 
 @dataclass
+class NoiseMultiplicativeLayer:
+    """Multiplicative noise layer.
+    
+    Creates multiplicative noise with the variation given by:
+
+        std(t) = Nm * sqrt(C_norm ^ p)
+
+    Where C_norm is the normalized clean trace, Nm is the magnitude, 
+    and p is the proportionality exponent. p = 1 gives Poisson-like shot noise.
+
+        p = 0   : constant variance (additive noise)
+        p = 1   : shot-noise variance (Poissonian)
+        p = 2   : multiplicative/fractional-noise-like variance (dynamic-like)
+        p < 1   : sublinear signal-dependent noise
+        p > 1   : superlinear signal-dependent noise
+    """
+
+    magnitude: float | None
+    exponent: float = 1
+
+    def __post_init__(self) -> None:
+        """Validate multiplicative noise parameters."""
+        if (self.magnitude is not None) and (self.magnitude < 0):
+            raise ValueError(f'magnitude must be >= 0, is {self.magnitude}')
+        if (self.exponent < 0):
+            raise ValueError(f'proportionality must be >= 0, is {self.exponent}')
+        
+
+    def render(self, clean_trace: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+        """Render multiplicative noise for a clean trace.
+
+        Parameters
+        ----------
+        clean_trace : np.ndarray
+            Clean fluorescence trace used to set expected photon counts.
+        rng : np.random.Generator
+            Random number generator.
+
+        Returns
+        -------
+        np.ndarray
+            Shot-noise trace in fluorescence units.
+        """
+        if self.magnitude is None:
+            return np.zeros_like(clean_trace)
+        
+        norm_trace = np.maximum( clean_trace / clean_trace[0], 0.0)
+        std_t = self.magnitude * np.sqrt( np.power(norm_trace, self.exponent) )
+        noise = rng.normal(0, scale=std_t, size=clean_trace.size)
+        
+        return noise
+
+@dataclass
 class NoiseShotLayer:
     """Poisson shot-noise layer."""
 

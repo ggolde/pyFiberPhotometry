@@ -288,7 +288,7 @@ def _sim_clean_layer_labels(condensed: bool) -> dict[str, str]:
             'movement_artifacts',
             'spike_artifacts',
             'jump_artifacts',
-            'shot_noise',
+            'multiplicative_noise',
             'gaussian_noise',
             'full_signal'
         ]

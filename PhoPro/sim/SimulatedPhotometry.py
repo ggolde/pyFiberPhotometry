@@ -27,7 +27,7 @@ from .layers import (
     TimeBase, 
     PhotobleachingLayer,
     EventLayer, EventSpec,
-    NoiseShotLayer, NoiseGaussianLayer,
+    NoiseMultiplicativeLayer, NoiseGaussianLayer,
     NeuralDynamicNoiseLayer,
     MovementAttenuationLayer,
     ArtifactSpikeLayer, ArtifactJumpLayer,
@@ -46,8 +46,8 @@ class SimulatedPhotometry:
             bleaching_exp: PhotobleachingLayer,
             bleaching_iso: PhotobleachingLayer,
             event_layer: EventLayer,
-            noise_shot_exp: NoiseShotLayer,
-            noise_shot_iso: NoiseShotLayer,
+            noise_mult_exp: NoiseMultiplicativeLayer,
+            noise_mult_iso: NoiseMultiplicativeLayer,
             noise_gaussian_exp: NoiseGaussianLayer,
             noise_gaussian_iso: NoiseGaussianLayer,
             dynamic_noise: NeuralDynamicNoiseLayer,
@@ -70,10 +70,10 @@ class SimulatedPhotometry:
             Photobleaching layer for the isosbestic channel.
         event_layer : EventLayer
             Event layer rendered into the experimental channel.
-        noise_shot_exp : NoiseShotLayer
-            Shot-noise layer in the experimental channel.
-        noise_shot_iso : NoiseShotLayer
-            Shot-noise layer in the isosbestic channel.
+        noise_mult_exp : NoiseMultiplicativeLayer
+            Multiplicative-noise layer in the experimental channel.
+        noise_mult_iso : NoiseMultiplicativeLayer
+            Multiplicative-noise layer in the isosbestic channel.
         noise_gaussian_exp : NoiseGaussianLayer
             Additive Gaussian noise layer in experimental channel.
         noise_gaussian_iso : NoiseGaussianLayer
@@ -99,8 +99,8 @@ class SimulatedPhotometry:
         self.event_layer = event_layer
         self.dynamic_noise = dynamic_noise
 
-        self.noise_shot_exp = noise_shot_exp
-        self.noise_shot_iso = noise_shot_iso
+        self.noise_mult_exp = noise_mult_exp
+        self.noise_mult_iso = noise_mult_iso
 
         self.noise_gaussian_exp = noise_gaussian_exp
         self.noise_gaussian_iso = noise_gaussian_iso
@@ -135,8 +135,11 @@ class SimulatedPhotometry:
             iso_bleach_scale: float | None = 0.8,
             iso_bleach_offset: float | None = None,
 
-            photons_per_unit_exp: int | None = 1e5,
-            photons_per_unit_iso: int | None = None,
+            mult_noise_magnitude_exp: float | None = 1e-3,
+            mult_noise_magnitude_iso: float | None = None,
+
+            mult_noise_exponent_exp: float = 1.0,
+            mult_noise_exponent_iso: float | None = None,
 
             gaussian_noise_scale_exp: float | None = 0.2,
             gaussian_noise_scale_iso: float | None = None,
@@ -191,11 +194,25 @@ class SimulatedPhotometry:
         iso_bleach_offset : float or None, default=None
             Offset applied to experimental bleaching parameters when building
             the isosbestic layer.
-        photons_per_unit_exp : int or None, default=1e5
-            Photon-count scale for shot noise in the experimental channel.
-        photons_per_unit_iso : int or None, default=None
-            Photon-count scale for shot noise in the isosbestic channel.
-            If ``None``, it is set equal to ``photons_per_unit_exp``.
+        mult_noise_magnitude_exp : float or None, default=0.1
+            Standard deviation of multiplicative noise at the time = 0
+            in the experimental channel.
+        mult_noise_magnitude_iso : float or None, default=None
+            Standard deviation of multiplicative noise at the time = 0
+            in the isosbestic channel. If ``None``, it is set equal to 
+            ``mult_noise_magnitude_exp``.
+        mult_noise_exponent_exp : float or None, default=1.0
+            Proportionality exponent of multiplicative noise in the experimental channel.
+
+            - p = 0: constant variance (additive noise)
+            - p = 1: shot-noise variance (Poissonian)
+            - p = 2: multiplicative/fractional-noise-like variance (dynamic-like)
+            - p < 1: sublinear signal-dependent noise
+            - p > 1: superlinear signal-dependent noise
+
+        mult_noise_exponent_iso : float or None, default=None
+           Proportionality exponent of multiplicative noise in the isosbestic channel.
+            If ``None``, it is set equal to ``mult_noise_exponent_exp``.
         gaussian_noise_scale_exp : float or None, default=0.2
             Standard deviation of additive Gaussian noise in the experimental channel.
         gaussion_noise_scale_iso : float or None, default=None
@@ -267,10 +284,11 @@ class SimulatedPhotometry:
         else:
             raise ValueError('One of bleaching_params_iso or (iso_bleach_scale | iso_bleach_offset) has to be be specified')
 
-        # shot noise
-        photons_per_unit_iso = photons_per_unit_exp if photons_per_unit_iso is None else photons_per_unit_iso
-        noise_shot_exp = NoiseShotLayer(photons_per_unit_exp)
-        noise_shot_iso = NoiseShotLayer(photons_per_unit_iso)
+        # multiplicative noise
+        mult_noise_magnitude_iso = mult_noise_magnitude_exp if mult_noise_magnitude_iso is None else mult_noise_magnitude_iso
+        mult_noise_exponent_iso = mult_noise_exponent_exp if mult_noise_exponent_iso is None else mult_noise_exponent_iso
+        noise_mult_exp = NoiseMultiplicativeLayer(mult_noise_magnitude_exp, mult_noise_exponent_exp)
+        noise_mult_iso = NoiseMultiplicativeLayer(mult_noise_magnitude_iso, mult_noise_exponent_iso)
 
         # gaussian noise
         gaussian_noise_scale_iso = gaussian_noise_scale_exp if gaussian_noise_scale_iso is None else gaussian_noise_scale_iso
@@ -302,8 +320,8 @@ class SimulatedPhotometry:
             bleaching_exp=bleaching_exp,
             bleaching_iso=bleaching_iso,
             event_layer=event_layer,
-            noise_shot_exp=noise_shot_exp,
-            noise_shot_iso=noise_shot_iso,
+            noise_mult_exp=noise_mult_exp,
+            noise_mult_iso=noise_mult_iso,
             noise_gaussian_exp=noise_gaussian_exp,
             noise_gaussian_iso=noise_gaussian_iso,
             dynamic_noise=dynamic_noise,
@@ -368,13 +386,13 @@ class SimulatedPhotometry:
         noiseless_iso = self.clean_iso * self.A
 
         # noise
-        self.N_shot_exp = self.noise_shot_exp.render(noiseless_exp, rng)
+        self.N_mult_exp = self.noise_mult_exp.render(noiseless_exp, rng)
         self.N_gauss_exp = self.noise_gaussian_exp.render(self.time, rng)
-        self.N_exp = self.N_shot_exp + self.N_gauss_exp
+        self.N_exp = self.N_mult_exp + self.N_gauss_exp
 
-        self.N_shot_iso = self.noise_shot_iso.render(noiseless_iso, rng)
+        self.N_mult_iso = self.noise_mult_iso.render(noiseless_iso, rng)
         self.N_gauss_iso = self.noise_gaussian_iso.render(self.time, rng)
-        self.N_iso = self.N_shot_iso + self.N_gauss_iso
+        self.N_iso = self.N_mult_iso + self.N_gauss_iso
 
         # composite final signal
         self.F_exp = noiseless_exp + self.N_exp
@@ -866,7 +884,7 @@ class SimulatedPhotometry:
             Optional layer name or collection of layer names to include.
         condensed : bool, default=True
             If ``True``, combine related components into summary layers. If
-            ``False``, export movement, spike, jump, shot-noise, and
+            ``False``, export movement, spike, jump, multiplicative-noise, and
             Gaussian-noise components separately.
         downsample : int or None, default=None
             Downsampling factor applied before export.
@@ -915,7 +933,7 @@ class SimulatedPhotometry:
                 movement_artifacts = self.M,
                 spike_artifacts = self.AS,
                 jump_artifacts = self.AJ,
-                shot_noise = self.N_shot_exp,
+                multiplicative_noise = self.N_mult_exp,
                 gaussian_noise = self.N_gauss_exp,
                 full_signal = self.F_exp,
             )
@@ -927,7 +945,7 @@ class SimulatedPhotometry:
                 movement_artifacts = self.M,
                 spike_artifacts = self.AS,
                 jump_artifacts = self.AJ,
-                shot_noise = self.N_shot_iso,
+                multiplicative_noise = self.N_mult_iso,
                 gaussian_noise = self.N_gauss_iso,
                 full_signal = self.F_iso,
             )
@@ -951,16 +969,19 @@ class SimulatedPhotometry:
     
     def to_experiment_csv(
             self,
+            path: str,
             export_events: bool = True,
             downsample: int | None = None,
             downsample_kwargs: dict = {},
-            ) -> pd.DataFrame:
+            ) -> None:
         """Export F_exp, F_iso, and neural trace to a wide dataframe.
 
         Mainly used for exporting to CSVLoader compatible files with a comparable ground truth.
 
         Parameters
         ----------
+        path : str
+            Path to save the CSV file.
         export_events : bool, default=True
             If ``True``, add one boolean column per event label with nearest
             sampled time points marked as event occurrences.
@@ -995,7 +1016,7 @@ class SimulatedPhotometry:
                 time_has_event = self._nearest_timestamp_mask(export_time, timestamps)
                 df[label] = time_has_event
 
-        return df
+        df.to_csv(path, index=False)
 
     #endregion
 

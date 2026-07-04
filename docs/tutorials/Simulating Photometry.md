@@ -60,7 +60,7 @@ With this background knowledge, we can breakdown photometry traces into its requ
 <br>
 
 2. **Photobleaching attenuation**
-    * The irreversible process of $P_{ex} \rightarrow P_b$, decreasing overall signal over time.
+    * The irreversible process of $P_{ex} \rightarrow P_b$, decreasing overall fluorescence over time.
 
 <br>
 
@@ -69,8 +69,8 @@ With this background knowledge, we can breakdown photometry traces into its requ
 
 <br>
 
-4. **Photonic noise**
-    * Possion noise with magnitude $\propto \sqrt{N_{\text{photons}}}$, so roughly $\propto \sqrt{I}$ if $I \propto N_{\text{photons}}$.
+3. **Multiplicative noise**
+    * Multiplicative noise whose magnitude depends on signal intensity from photonic shot-noise, laser power fluctuations, etc.
 
 <br>
 
@@ -80,7 +80,7 @@ With this background knowledge, we can breakdown photometry traces into its requ
 
 <br>
 
-6. **Background autofluorecence**
+6. **Background autofluorescence**
     * The fluorecent response of the tissue and fiber.
 
 # 2. The Simulation Model
@@ -110,8 +110,8 @@ $$
 
 <br>
 
-4. **Photonic noise**
-    * ``NoiseShotLayer`` ($\mathbf{N_s}$): Possion noise with magnitude $\propto \sqrt{I \times \text{photons-per-unit}}$
+4. **Multiplicative noise**
+    * ``NoiseMultiplicativeLayer`` ($\mathbf{N_m}$): Noise dependent on signal intensity with $\text{Var}(t) \propto k \cdot (I_{sig})^{p}$.
 
 <br>
 
@@ -130,7 +130,7 @@ Then the **experimental trace** is calculated by:
 
 * $\text{Artifact} \, (\mathbf{A}) = \mathbf{M} \cdot \mathbf{AS} \cdot \mathbf{AJ}$
 
-* $\text{Noise} \, (\mathbf{N}) = \mathbf{N_g} + \mathbf{N_s}(\mathbf{C \cdot A})$
+* $\text{Noise} \, (\mathbf{N}) = \mathbf{N_g} + \mathbf{N_m}(\mathbf{C \cdot A})$
 
 * $F(\lambda_{exp}) = \mathbf{C} \cdot \mathbf{A} + \mathbf{N}$
 
@@ -140,7 +140,7 @@ And the **isosbestic trace** is calculated by:
 
 * $\text{Artifact} \, (\mathbf{A}) = \mathbf{M} \cdot \mathbf{AS} \cdot \mathbf{AJ}$
 
-* $\text{Noise} \, (\mathbf{N_{iso}}) = \mathbf{N_{g,iso}} + \mathbf{N_{s,iso}}(\mathbf{C_{iso} \cdot A})$
+* $\text{Noise} \, (\mathbf{N_{iso}}) = \mathbf{N_{g,iso}} + \mathbf{N_{m,iso}}(\mathbf{C_{iso} \cdot A})$
 
 * $F(\lambda_{iso}) = \mathbf{C_{iso}} \cdot \mathbf{A} + \mathbf{N_{iso}}$
 
@@ -190,10 +190,12 @@ sim = SimulatedPhotometry.from_parameters(
     movement_attenuation=0.3,
     attenuation_cutoff_hz=0.1,
 
-    # magnitude of the Ns layer
-    photons_per_unit_exp=1e4,
+    # magnitude of the Nm layer
+    mult_noise_magnitude_exp=1e-4,
     # when iso param is None, it default to exp value
-    photons_per_unit_iso=None,
+    mult_noise_magnitude_iso=None,
+    # how Nm scales with intensity
+    mult_noise_exponent_exp=1.0,
 
     # magnitude of the Ng layer
     gaussian_noise_scale_exp=0.2,
@@ -560,8 +562,8 @@ print(
 )
 ```
 
-    RMSD = 0.0028 +/- 0.0008
-    MAE = 0.0022 +/- 0.0007
+    RMSD = 0.0030 +/- 0.0008
+    MAE = 0.0024 +/- 0.0006
 
 
 By comparing the error metrics of multiple different preprocessing methods we can better understand what methods are most accurate for different types of real-world data.
@@ -590,8 +592,8 @@ sim = SimulatedPhotometry.from_parameters(
     movement_attenuation=0.5,
     attenuation_cutoff_hz=0.1,
 
-    photons_per_unit_exp=1e4,
-    gaussian_noise_scale_exp=0.5,
+    mult_noise_magnitude_exp=0.1,
+    gaussian_noise_scale_exp=0.4,
 
     dynamic_noise_amplitude=0.004,
     dynamic_noise_center=0.0,

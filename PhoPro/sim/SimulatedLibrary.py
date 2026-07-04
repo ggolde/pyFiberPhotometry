@@ -1,7 +1,7 @@
 """Utilities for generating and loading simulated photometry libraries."""
 
 from __future__ import annotations
-from typing import Any, Callable
+from typing import Any, Callable, Self
 
 import itertools
 import inspect
@@ -15,63 +15,82 @@ from pathlib import Path
 from . import SimulatedPhotometry
 from ..core.PhotometryLoader import PhotometryLoader
 
-#########################
-#region --- GENERATOR ---
-#########################
-class SimulatedLibraryGenerator:
-    """Generate simulated photometry libraries from parameter permutations.
+#############################
+#region --- LIBRARY CLASS ---
+#############################
+class SimulatedLibrary:
+    """Store and generate libraries of simulated photometry parameters.
 
     Parameters
     ----------
-    contanst_kwargs : dict[str, Any]
-        Keyword arguments passed unchanged to
-        ``SimulatedPhotometry.from_parameters()`` for every simulation.
-    to_permute_kwargs : dict[str, list[Any]]
-        Keyword arguments whose values are fully crossed to create parameter
-        permutations. Each dictionary value must be a list of candidate values.
-    replicates : int, optional
-        Number of replicates generated for each parameter permutation, by
-        default 1.
-    seed : int | None, optional
-        Seed used to shuffle the generated per-simulation seeds, by default
-        None.
+    params : dict[str, dict[str, Any]]
+        Parameter dictionary for each simulated library member. Keys are
+        normalized to strings for JSON round-tripping and loader lookup.
 
     Attributes
     ----------
-    params : dict[int, dict[str, Any]]
-        Parameter dictionary for each generated library member.
-    n_permutations : int
-        Number of unique parameter permutations.
-    n_samples : int
-        Total number of generated samples, including replicates.
+    params : dict[str, dict[str, Any]]
+        Normalized parameter dictionary keyed by library identifier.
     """
 
-    params: dict[int, dict[str, Any]]
+    params: dict[str, dict[str, Any]]
 
     def __init__(
             self,
-            contanst_kwargs: dict[str, Any],
-            to_permute_kwargs: dict[str, list[Any]],
-            replicates: int = 1,
-            seed: int | None = None,
+            params: dict[str, dict[str, Any]]
             ) -> None:
-        """Initialize the generator and build the parameter table."""
-        # pre-validate kwargs
-        self._validate_kwargs(SimulatedPhotometry.from_parameters, contanst_kwargs)
-        self._validate_kwargs(SimulatedPhotometry.from_parameters, to_permute_kwargs)
+        """Initialize a simulated library from parameter dictionaries."""
+        self.params = self._normalize_param_input(params)
 
-        # assign attrs
-        self.constants = contanst_kwargs
-        self.to_permute = to_permute_kwargs
-        self.replicates = replicates
-        self.seed = seed
+    # --- PROPERTIES ---
+    @property
+    def n_samples(self) -> int:
+        """Number of parameter sets in the library."""
+        return len(self.params)
 
-        # build param permutations
-        self._build_params()
-
-    # --- VALIDATION ---
-    def _validate_kwargs(
+    # --- I/O ---
+    def to_json(
             self,
+            fpath: str | Path
+            ) -> None:
+        """Write library parameters to a JSON file.
+
+        Parameters
+        ----------
+        fpath : str or Path
+            Destination path for the JSON parameter table.
+        """
+        with open(fpath, 'w') as f:
+            json.dump(self.params, f)
+
+    @classmethod
+    def from_json(
+            cls,
+            file: str | Path,
+            ) -> Self:
+        """Read library parameters from a JSON file.
+
+        Parameters
+        ----------
+        file : str or Path
+            Path to a JSON parameter table.
+
+        Returns
+        -------
+        SimulatedLibrary
+            Library initialized from the saved parameter table.
+        """
+        with open(file, 'r') as f:
+            params = json.load(f)
+        return cls(params)
+
+    # --- HELPERS ---
+    def _normalize_param_input(self, params: dict) -> dict:
+        """Return parameter dictionaries keyed by strings."""
+        return {str(k) : v for k, v in params.items()}
+
+    @staticmethod
+    def _validate_kwargs(
             func: Callable,
             kwargs: dict[str, Any],
             ) -> None:
@@ -112,38 +131,53 @@ class SimulatedLibraryGenerator:
         if unexpected:
             raise TypeError(f"Unexpected kwargs for {func.__qualname__}(): {sorted(unexpected)}")
 
-    # --- PERMUTAION ---
-    def _permutation_generator(self):
-        """Yield dictionaries for each crossed parameter permutation."""
-        for inp in itertools.product(*self.to_permute.values()):
-            yield dict(zip(self.to_permute.keys(), inp))
+    # --- PARAM GENERATION ---
+    @classmethod
+    def from_permutations(
+            cls,
+            contanst_kwargs: dict[str, Any],
+            to_permute_kwargs: dict[str, list[Any]],
+            replicates: int = 1,
+            seed: int | None = None,
+            ) -> Self:
+        """Create a library from the permutation of parameter values.
 
-    def _build_params(self) -> None:
-        """Build parameter dictionaries and assign unique simulation seeds."""
-        # generate permutations
-        permutations = [p for p in self._permutation_generator()]
-        self.n_permutations = len(permutations)
-        self.n_samples = self.n_permutations * self.replicates
+        Parameters
+        ----------
+        contanst_kwargs : dict[str, Any]
+            Keyword arguments passed unchanged to
+            ``SimulatedPhotometry.from_parameters()`` for every simulation.
+        to_permute_kwargs : dict[str, list[Any]]
+            Keyword arguments whose values are fully crossed to create
+            parameter permutations. Each value must be a list of candidates.
+        replicates : int, default=1
+            Number of replicate simulations generated for each permutation.
+            Each replicate gets its own seed.
+        seed : int or None, default=None
+            Optional seed used to shuffle the generated per-simulation seeds.
 
-        # set up unique seeds
-        rng = np.random.default_rng(self.seed)
-        seed_bank = np.arange(1, self.n_samples + 1).astype(int)
-        rng.shuffle(seed_bank)
+        Returns
+        -------
+        SimulatedLibrary
+            Library containing one parameter dictionary per generated sample.
+        """
+        # pre-validate kwargs
+        cls._validate_kwargs(SimulatedPhotometry.from_parameters, contanst_kwargs)
+        cls._validate_kwargs(SimulatedPhotometry.from_parameters, to_permute_kwargs)
 
-        # set up iteration
-        i = 0
-        self.params = {}
+        generator = ParamPermutationGenerator(
+            contanst_kwargs=contanst_kwargs,
+            to_permute_kwargs=to_permute_kwargs,
+            replicates=replicates,
+            seed=seed,
+        )
 
-        for perm_id, perm in enumerate(permutations):
-            for rep_id in range(self.replicates):
-                self.params[i] = (
-                    self.constants | perm | {'seed' : int(seed_bank[i])}
-                )
-                i = i + 1
+        params = generator.build()
+        return cls(params)
 
     # --- OPERATIONS ---
     def update_params(self, to_update: dict[str, Any]) -> None:
-        """Update every built parameter dictionary.
+        """Update every parameter dictionary in the library.
 
         Parameters
         ----------
@@ -153,7 +187,7 @@ class SimulatedLibraryGenerator:
         for i, args in self.params.items():
             self.params[i] = args | to_update
 
-    # --- generation ---
+    # --- BUILD LIBRARY ---
     def generate_library(
             self,
             output_dir: Path,
@@ -165,36 +199,32 @@ class SimulatedLibraryGenerator:
             log_file: str | None = None,
             operation: Callable[[SimulatedPhotometry], None] | None = None,
             ) -> None:
-        """Generate simulated experiments and combined true-signal trials.
+        """Generate simulated experiments and combined true-signal trial data.
 
         Parameters
         ----------
         output_dir : Path
-            Directory where generated files are written.
+            Directory where generated files will be written.
         to_trials_kwargs : dict[str, Any]
             Keyword arguments passed to
             ``SimulatedPhotometry.to_PhotometryData()`` when building the true
-            signal ``PhotometryData`` object.
-        prefix : str, optional
-            Prefix for generated per-experiment CSV files, by default
-            ``"simlib"``.
-        param_file : str, optional
-            File name for the saved parameter table, by default
-            ``"_params.json"``.
-        true_file : str, optional
-            File name for the combined true-signal ``PhotometryData`` object,
-            by default ``"_true_trials.h5ad"``.
-        exp_folder : str | None, optional
+            signal trial object.
+        prefix : str, default='simlib'
+            Prefix for generated per-experiment CSV files.
+        param_file : str, default='_params.json'
+            File name for the saved parameter table.
+        true_file : str, default='_true_trials.h5ad'
+            File name for the combined true-signal ``PhotometryData`` object.
+        exp_folder : str or None, default=None
             The subfolder within ``output_dir`` in which per-experiment CSVs
-            are saved. If ``None``, experiment CSVs are not saved, by default
-            None.
-        log_file : str | None, optional
-            Optional log file path relative to ``output_dir``, by default None.
-        operation : Callable[[SimulatedPhotometry], None] | None, optional
+            are saved. If ``None``, experiment CSVs are not saved.
+        log_file : str or None, default=None
+            Optional log file path relative to ``output_dir``.
+        operation : Callable[[SimulatedPhotometry], None] or None, default=None
             Optional function applied to each generated
-            ``SimulatedPhotometry`` object before export and trial extraction.
-            This can be used to add events or otherwise modify generated data,
-            by default None.
+            ``SimulatedPhotometry`` object before CSV export and trial
+            extraction. This can be used to add events or otherwise modify
+            generated data.
         """
 
         # coerce inputs
@@ -209,16 +239,13 @@ class SimulatedLibraryGenerator:
         if log_file is not None:
             logging.basicConfig(filename=output_dir / log_file, filemode='w', level=logging.INFO, force=True)
         logger.info(
-            f'Beginning generation of {self.n_samples} simulated datasets '
-            f'from {self.n_permutations} permutations of parameters with '
-            f'{self.replicates} replicates each.\n'
+            f'Beginning generation of {self.n_samples} simulated datasets...'
         )
 
         # save param file
         param_file_path = output_dir / param_file
         logger.info(f'Saving parameters to {str(param_file_path)}...\n')
-        with open(param_file_path, 'w') as f:
-            json.dump(self.params, f, indent=4)
+        self.to_json(param_file_path)
 
         # iterate over all params
         i = 0
@@ -276,12 +303,11 @@ class SimulatedLibraryGenerator:
 
         Parameters
         ----------
-        operation : Callable[[SimulatedPhotometry], None] | None, optional
+        operation : Callable[[SimulatedPhotometry], None] or None, default=None
             Optional function applied after simulation in
-            ``SimulatedParamLoader``, by default None.
-        as_single_channel : bool, optional
-            Whether loaders should omit the isosbestic channel, by default
-            False.
+            ``SimulatedParamLoader``.
+        as_single_channel : bool, default=False
+            Whether loaders should omit the isosbestic channel.
 
         Returns
         -------
@@ -295,6 +321,92 @@ class SimulatedLibraryGenerator:
 
 #endregion
 
+
+##########################
+#region --- GENERATORS ---
+##########################
+class ParamPermutationGenerator:
+    """Build simulation parameter dictionaries from crossed values.
+
+    Parameters
+    ----------
+    contanst_kwargs : dict[str, Any]
+        Keyword arguments passed unchanged to
+        ``SimulatedPhotometry.from_parameters()`` for every simulation.
+    to_permute_kwargs : dict[str, list[Any]]
+        Keyword arguments whose values are fully crossed to create parameter
+        permutations.
+    replicates : int, default=1
+        Number of replicate simulations generated for each permutation.
+    seed : int or None, default=None
+        Optional seed used to shuffle generated per-simulation seeds.
+
+    Attributes
+    ----------
+    constants : dict[str, Any]
+        Keyword arguments reused for every generated sample.
+    to_permute : dict[str, list[Any]]
+        Keyword arguments crossed to create unique parameter permutations.
+    replicates : int
+        Number of generated samples per permutation.
+    seed : int or None
+        Seed for assigning reproducible per-sample seeds.
+    """
+
+    def __init__(
+            self,
+            contanst_kwargs: dict[str, Any],
+            to_permute_kwargs: dict[str, list[Any]],
+            replicates: int = 1,
+            seed: int | None = None,
+            ) -> None:
+        """Initialize the parameter permutation generator."""
+        # assign attrs
+        self.constants = contanst_kwargs
+        self.to_permute = to_permute_kwargs
+        self.replicates = replicates
+        self.seed = seed
+
+    # --- PERMUTAION ---
+    def _permutation_generator(self):
+        """Yield dictionaries for each crossed parameter permutation."""
+        for inp in itertools.product(*self.to_permute.values()):
+            yield dict(zip(self.to_permute.keys(), inp))
+
+    def build(self) -> dict:
+        """Generate parameter dictionaries with unique simulation seeds.
+
+        Returns
+        -------
+        dict[int, dict[str, Any]]
+            Parameter dictionaries keyed by generated sample index.
+        """
+        # generate permutations
+        permutations = [p for p in self._permutation_generator()]
+        self.n_permutations = len(permutations)
+        self.n_samples = self.n_permutations * self.replicates
+
+        # set up unique seeds
+        rng = np.random.default_rng(self.seed)
+        seed_bank = np.arange(1, self.n_samples + 1).astype(int)
+        rng.shuffle(seed_bank)
+
+        # set up iteration
+        i = 0
+        params = {}
+
+        for perm_id, perm in enumerate(permutations):
+            for rep_id in range(self.replicates):
+                params[i] = (
+                    self.constants | perm | {'seed' : int(seed_bank[i])}
+                )
+                i = i + 1
+
+        return params
+
+#endregion
+
+
 ######################
 #region --- LOADER ---
 ######################
@@ -304,16 +416,14 @@ class SimulatedParamLoader(PhotometryLoader):
     Parameters
     ----------
     json : str
-        Path to the JSON parameter table written by
-        ``SimulatedLibraryGenerator.generate_library()``.
+        Path to the JSON parameter table written by ``SimulatedLibrary``.
     key : str
         Identifier of the parameter set to load.
-    operation : Callable[[SimulatedPhotometry], None] | None, optional
+    operation : Callable[[SimulatedPhotometry], None] or None, default=None
         Optional function applied to the generated ``SimulatedPhotometry``
-        object before extracting loader data, by default None.
-    as_single_channel : bool, optional
-        Whether to omit the isosbestic channel from extracted data, by default
-        False.
+        object before extracting loader data.
+    as_single_channel : bool, default=False
+        Whether to omit the isosbestic channel from extracted data.
     """
 
     def __init__(
@@ -323,7 +433,20 @@ class SimulatedParamLoader(PhotometryLoader):
             operation: Callable[[SimulatedPhotometry], None] | None = None,
             as_single_channel: bool = False,
             ) -> None:
-        """Initialize the simulated-parameter loader."""
+        """Initialize the simulated-parameter loader.
+
+        Parameters
+        ----------
+        json : str
+            Path to the JSON parameter table.
+        key : str
+            Identifier of the parameter set to generate.
+        operation : Callable[[SimulatedPhotometry], None] or None, default=None
+            Optional function applied to the generated simulator before data
+            extraction.
+        as_single_channel : bool, default=False
+            Whether to omit the isosbestic channel.
+        """
         self.json = json
         self.key = key
         self.operation = operation
@@ -349,9 +472,13 @@ class SimulatedParamLoader(PhotometryLoader):
             'lib_id' : str(self.key),
         }
 
+        normed = {}
         for k, v in metadata.items():
             if isinstance(v, dict):
-                metadata[k] = '; '.join([f'{nk}={nv}' for nk, nv in v.items()])
+                for nk, nv in v.items():
+                    normed[str(f'{k}:{nk}')] = nv
+
+        metadata.update(normed)
 
         if self.operation is not None:
             self.operation(sim)
