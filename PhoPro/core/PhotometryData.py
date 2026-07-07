@@ -15,6 +15,7 @@ import os
 
 from ..analysis.peaks import PeakResult, RollingThresholdDetector, StaticThresholdDetector
 from ..utils import graphing, window
+from ..utils.io import clean_axis_dtype
 from ..utils.operations import downsample_signal, downsample_time
 
 ad.settings.allow_write_nullable_strings = True
@@ -194,15 +195,32 @@ class PhotometryData:
         """
         return cls(ad.read_zarr(path))
 
-    def write_h5ad(self, path: str) -> None:
+    def write_h5ad(self, path: str, **kwargs) -> None:
         """Write the underlying AnnData to an `.h5ad` file.
+
+        Cleans dtypes of ``.obs`` and ``.var`` before saving.
 
         Parameters
         ----------
         path : str
             Path to the output ``.h5ad`` file.
+        kwargs :
+            Keyword arguments passed to ``anndata.write_h5ad``.
         """
-        self.adata.write_h5ad(path)
+        convert_strings_to_categoricals = kwargs.get(
+            "convert_strings_to_categoricals",
+            True,
+        )
+        adata = self.adata.copy()
+        adata.obs = clean_axis_dtype(
+            adata.obs,
+            convert_strings_to_categoricals=convert_strings_to_categoricals,
+        )
+        adata.var = clean_axis_dtype(
+            adata.var,
+            convert_strings_to_categoricals=convert_strings_to_categoricals,
+        )
+        adata.write_h5ad(path, **kwargs)
 
     def write_zarr(self, path: str) -> None:
         """Write the underlying AnnData to zarr storage.

@@ -9,11 +9,36 @@ import logging
 import json
 
 import numpy as np
+import pandas as pd
 
 from pathlib import Path
 
 from . import SimulatedPhotometry
 from ..core.PhotometryLoader import PhotometryLoader
+
+#######################
+#region --- HELPERS ---
+#######################
+def _accepted_args_for_SimPho() -> set:
+    sig = inspect.signature(SimulatedPhotometry.from_parameters)
+    params = sig.parameters
+    ACCEPTED_ARGS = {
+        name for name, p in params.items()
+        if p.kind in (
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        )
+        and name not in ()
+    }
+    return ACCEPTED_ARGS
+
+def safe_SimPho_from_params(params: dict) -> SimulatedPhotometry:
+    ACCEPTED_ARGS = _accepted_args_for_SimPho()
+    params = {k : v for k, v in params.items() if k in ACCEPTED_ARGS}
+    return SimulatedPhotometry.from_parameters(**params)
+
+#endregion
+
 
 #############################
 #region --- LIBRARY CLASS ---
@@ -47,6 +72,31 @@ class SimulatedLibrary:
     def n_samples(self) -> int:
         """Number of parameter sets in the library."""
         return len(self.params)
+    
+    # --- EXPORT ---
+    def to_table(self) -> pd.DataFrame:
+        def _normalize_dict_col(df: pd.DataFrame, col: str) -> pd.DataFrame:
+            normed_res = pd.json_normalize(df[col])
+            normed_res.columns = [f'{col}:{s}' for s in normed_res.columns]
+            return normed_res
+
+        out = (
+            pd.DataFrame(self.params).T
+            .reset_index(names='LIB_ID')
+            .infer_objects()
+        )
+        to_norm = out.select_dtypes(['object']).columns
+
+        for col in to_norm:
+            normed = _normalize_dict_col(out, col)
+            if not normed.empty:
+                out.drop(columns=col, inplace=True)
+                out[normed.columns] = normed
+
+        first_cols = out.columns[out.columns.str.endswith('_ID')].to_list()
+        other_cols = [col for col in out.columns if col not in first_cols]
+        out = out[first_cols + other_cols]
+        return out
 
     # --- I/O ---
     def to_json(
@@ -253,7 +303,7 @@ class SimulatedLibrary:
 
         for lib_id, params in self.params.items():
             logger.info(f'Generating experiment {lib_id} ({i+1}/{self.n_samples})...')
-            sim = SimulatedPhotometry.from_parameters(**params)
+            sim = safe_SimPho_from_params(params)
 
             if operation is not None:
                 logger.info(f'Executing custom operation...')
@@ -262,7 +312,7 @@ class SimulatedLibrary:
             if exp_folder is not None:
                 save_path = output_dir / exp_folder / f'{prefix}_{lib_id}.csv'
                 logger.info(f'Saving generated data to {save_path}...')
-                sim.to_experiment_csv(save_path).to_csv(save_path, index=False)
+                sim.to_experiment_csv(save_path)
 
             logger.info(f'Extracting trial data...')
             if i == 0:
@@ -270,7 +320,7 @@ class SimulatedLibrary:
                data = (
                    sim
                    .to_PhotometryData(**to_trials_kwargs)
-                   .mutate_obs(lib_id = lib_id)
+                   .mutate_obs(LIB_ID = lib_id)
                )
                trials = data.copy()
             else:
@@ -278,7 +328,7 @@ class SimulatedLibrary:
                 data = (
                     sim
                     .to_PhotometryData(**to_trials_kwargs)
-                    .mutate_obs(lib_id = lib_id)
+                    .mutate_obs(LIB_ID = lib_id)
                 )
                 trials.combine_obj(data, inplace=True) #type: ignore
 
@@ -398,7 +448,11 @@ class ParamPermutationGenerator:
         for perm_id, perm in enumerate(permutations):
             for rep_id in range(self.replicates):
                 params[i] = (
-                    self.constants | perm | {'seed' : int(seed_bank[i])}
+                    self.constants | perm | {
+                        'seed' : int(seed_bank[i]),
+                        'PERM_ID' : perm_id,
+                        'REP_ID' : rep_id,
+                    }
                 )
                 i = i + 1
 
@@ -462,14 +516,14 @@ class SimulatedParamLoader(PhotometryLoader):
             time values, event onsets, and metadata.
         """
         with open(self.json, 'r') as f:
-            params = json.load(f)
+            params: dict = json.load(f)
         params = params[self.key]
 
-        sim = SimulatedPhotometry.from_parameters(**params)
+        sim = safe_SimPho_from_params(params)
 
         metadata: dict = params | {
             'source' : str(self.json),
-            'lib_id' : str(self.key),
+            'LIB_ID' : str(self.key),
         }
 
         normed = {}

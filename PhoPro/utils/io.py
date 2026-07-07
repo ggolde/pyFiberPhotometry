@@ -1,5 +1,44 @@
-import pandas as pd
+import json
 import os
+
+import numpy as np
+import pandas as pd
+from pandas.api.types import infer_dtype
+
+
+def _natsorted(values: pd.Index) -> list:
+    try:
+        from natsort import natsorted
+    except ImportError:
+        return sorted(values)
+    return natsorted(values)
+
+
+def _is_missing_scalar(value) -> bool:
+    if value is None or value is pd.NA:
+        return True
+    if not np.isscalar(value):
+        return False
+    return bool(pd.isna(value))
+
+
+def _json_default(value):
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, pd.Timestamp):
+        return value.isoformat()
+    if isinstance(value, pd.Timedelta):
+        return str(value)
+    return str(value)
+
+
+def _json_dumps_or_na(value):
+    if _is_missing_scalar(value):
+        return pd.NA
+    return json.dumps(value, default=_json_default)
+
 
 ######################
 #region --- OUTPUT ---
@@ -46,6 +85,37 @@ def write_dict_to_txt(d: dict, filename: str, indent: int = 0) -> None:
         _write_dict(f, d, indent)
 
 #endregion
+
+def clean_axis_dtype(
+        df: pd.DataFrame,
+        convert_strings_to_categoricals: bool = True
+        ) -> pd.DataFrame:
+    """Return a copy with axis metadata dtypes normalized for AnnData writing."""
+    out = df.copy().infer_objects()
+    out.index = out.index.astype(str)
+
+    for col in out.columns:
+        values = out[col]._values
+        if isinstance(values, pd.arrays.FloatingArray):
+            out[col] = out[col].astype(float)
+
+    if convert_strings_to_categoricals:
+        for col in out.columns:
+            if infer_dtype(out[col]) != "string":
+                continue
+
+            categories = pd.Categorical(out[col])
+            if len(categories.categories) >= len(categories):
+                continue
+
+            out[col] = categories
+
+    for col in out.columns:
+        if out[col].dtype != object or infer_dtype(out[col]) == "string":
+            continue
+        out[col] = out[col].map(_json_dumps_or_na).astype("string")
+
+    return out
 
 #####################
 #region --- INPUT ---

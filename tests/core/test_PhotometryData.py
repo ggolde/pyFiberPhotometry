@@ -1,4 +1,5 @@
 import warnings
+import json
 
 import numpy as np
 import pandas as pd
@@ -6,6 +7,7 @@ import pytest
 
 from PhoPro.core.PhotometryData import PhotometryData
 from PhoPro.analysis.peaks import PeakResult
+from PhoPro.utils.io import clean_axis_dtype
 
 
 # --- constructors and basic shape contracts ---
@@ -64,6 +66,61 @@ def test_h5ad_roundtrip_preserves_data_layers_and_metadata(photometry_data, tmp_
     assert np.allclose(loaded.get_layer("layer"), photometry_data.get_layer("layer"))
     assert loaded.obs["animal"].tolist() == photometry_data.obs["animal"].tolist()
     assert loaded.uns["frequency"] == photometry_data.uns["frequency"]
+
+
+def test_clean_axis_dtype_matches_anndata_string_categorical_logic():
+    df = pd.DataFrame(
+        {
+            "low_card": ["b", "a", "b"],
+            "unique": ["a", "b", "c"],
+            "numeric": pd.Series([1, None, 3], dtype="object"),
+            "payload": pd.Series(
+                [[1, np.int64(2)], {"a": np.float64(1.5)}, None],
+                dtype="object",
+            ),
+        },
+        index=[0, 1, 2],
+    )
+
+    cleaned = clean_axis_dtype(df)
+
+    assert cleaned.index.tolist() == ["0", "1", "2"]
+    assert isinstance(cleaned["low_card"].dtype, pd.CategoricalDtype)
+    assert cleaned["low_card"].cat.categories.tolist() == ["a", "b"]
+    assert not isinstance(cleaned["unique"].dtype, pd.CategoricalDtype)
+    assert cleaned["numeric"].dtype == float
+    assert str(cleaned["payload"].dtype) == "string"
+    assert json.loads(cleaned["payload"].iloc[0]) == [1, 2]
+    assert json.loads(cleaned["payload"].iloc[1]) == {"a": 1.5}
+    assert pd.isna(cleaned["payload"].iloc[2])
+
+
+def test_h5ad_write_cleans_axis_dtypes_without_mutating_source(tmp_path):
+    obs = pd.DataFrame(
+        {
+            "animal": ["b", "a", "b"],
+            "score": pd.Series([1, None, 3], dtype="object"),
+            "payload": pd.Series([[1, 2], {"a": np.int64(3)}, None], dtype="object"),
+        }
+    )
+    data = np.ones((3, 4))
+    time = np.arange(4, dtype=float)
+    trials = PhotometryData.from_arrays(obs=obs, data=data, time_points=time)
+    path = tmp_path / "cleaned.h5ad"
+
+    trials.write_h5ad(str(path))
+    loaded = PhotometryData.read_h5ad(str(path))
+
+    assert isinstance(loaded.obs["animal"].dtype, pd.CategoricalDtype)
+    assert loaded.obs["animal"].tolist() == ["b", "a", "b"]
+    assert loaded.obs["score"].dtype == float
+    assert loaded.obs["score"].isna().tolist() == [False, True, False]
+    assert json.loads(loaded.obs["payload"].iloc[0]) == [1, 2]
+    assert json.loads(loaded.obs["payload"].iloc[1]) == {"a": 3}
+    assert pd.isna(loaded.obs["payload"].iloc[2])
+    assert not isinstance(trials.obs["animal"].dtype, pd.CategoricalDtype)
+    assert trials.obs["score"].dtype == object
+    assert trials.obs["payload"].dtype == object
 
 
 def test_zarr_roundtrip_preserves_shape_if_zarr_is_available(photometry_data, tmp_path):
