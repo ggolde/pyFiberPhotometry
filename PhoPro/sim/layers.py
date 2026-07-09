@@ -366,7 +366,7 @@ class ArtifactSpikeLayer:
     n_spikes: int
     amplitude_range: tuple[float, float]
     tau_range: tuple[float, float]
-    tail_cutoff: float = 1e-4
+    tail_cutoff: float = 1e-3 # relative cutoff
 
     def __post_init__(self) -> None:
         """Validate spike artifact parameters."""
@@ -382,7 +382,7 @@ class ArtifactSpikeLayer:
             ) -> np.ndarray:
         """Render one exponential spike artifact."""
         # find time at cutoff
-        t_cutoff = -1 * tau_sec * np.log(cutoff / np.abs(amplitude))
+        t_cutoff = -1 * tau_sec * np.log(cutoff)
 
         # build time base to point after cutoff
         timebase = TimeBase(time_sec=t_cutoff, frequency=frequency)
