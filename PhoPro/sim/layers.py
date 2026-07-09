@@ -186,7 +186,7 @@ class NoiseMultiplicativeLayer:
     and p is the proportionality exponent. p = 1 gives Poisson-like shot noise.
 
         p = 0   : constant variance (additive noise)
-        p = 1   : shot-noise variance (Poissonian)
+        p = 1   : shot-noise variance (Poissonian-like, assuming large photon count)
         p = 2   : multiplicative/fractional-noise-like variance (dynamic-like)
         p < 1   : sublinear signal-dependent noise
         p > 1   : superlinear signal-dependent noise
@@ -228,41 +228,6 @@ class NoiseMultiplicativeLayer:
         return noise
 
 @dataclass
-class NoiseShotLayer:
-    """Poisson shot-noise layer."""
-
-    photons_per_unit: int | None
-
-    def __post_init__(self) -> None:
-        """Validate shot-noise parameters."""
-        if (self.photons_per_unit is not None) and (self.photons_per_unit <= 0):
-            raise ValueError(f'electrons_per_unit must be positive, is {self.photons_per_unit}')
-
-    def render(self, clean_trace: np.ndarray, rng: np.random.Generator) -> np.ndarray:
-        """Render shot noise for a clean trace.
-
-        Parameters
-        ----------
-        clean_trace : np.ndarray
-            Clean fluorescence trace used to set expected photon counts.
-        rng : np.random.Generator
-            Random number generator.
-
-        Returns
-        -------
-        np.ndarray
-            Shot-noise trace in fluorescence units.
-        """
-        if self.photons_per_unit is None:
-            return np.zeros_like(clean_trace)
-
-        expected_electrons = np.round(clean_trace * self.photons_per_unit, 0)
-        observed_electrons = rng.poisson(expected_electrons)
-
-        shot_noise = (observed_electrons - expected_electrons) / self.photons_per_unit
-        return shot_noise
-
-@dataclass
 class NoiseGaussianLayer:
     """Additive Gaussian noise layer."""
 
@@ -270,8 +235,8 @@ class NoiseGaussianLayer:
 
     def __post_init__(self) -> None:
         """Validate Gaussian-noise parameters."""
-        if (self.sigma is not None) and (self.sigma <= 0):
-            raise ValueError(f'sigma must be positive, is {self.sigma}')
+        if (self.sigma is not None) and (self.sigma < 0):
+            raise ValueError(f'sigma must be >= 0, is {self.sigma}')
 
     def render(self, time: np.ndarray, rng: np.random.Generator) -> np.ndarray:
         """Render Gaussian noise.
@@ -289,7 +254,7 @@ class NoiseGaussianLayer:
             Gaussian noise trace.
         """
         if self.sigma is None:
-            return np.ones_like(time)
+            return np.zeros_like(time)
 
         return rng.normal(0.0, scale=self.sigma, size=time.size)
     

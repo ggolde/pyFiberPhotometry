@@ -51,13 +51,13 @@ def test_preprocess_rejects_channel_incompatible_correction_methods(
 
 
 def test_fit_photobleaching_curve_recovers_smooth_bleaching_trend(experiment):
-    params = (2.0, 0.08, 1.0, 0.01, 5.0)
+    params = (2.0, 12.5, 1.0, 100.0, 5.0)
     expected = neg_bi_exponential_5(experiment.time, *params)
     signal = expected + 1e-3 * np.sin(0.7 * experiment.time)
 
     fitted_curve, r2_val, fitted_params = experiment.fit_photobleaching_curve(
         signal=signal,
-        window_dur=2.0,
+        window_dur_sec=2.0,
     )
 
     assert fitted_curve.shape == signal.shape

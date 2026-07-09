@@ -15,12 +15,12 @@ def simulate_data() -> SimulatedPhotometry:
         length_sec=120,
         frequency=20,
         event_label='event',
+        event_amplitude=0.05,
         n_events=12,
         iso_bleach_scale=1.0,
-        gaussian_noise_scale_exp=None,
-        gaussian_noise_scale_iso=None,
-        photons_per_unit_exp=None,
-        photons_per_unit_iso=None,
+        gaussian_noise_scale_exp=0.1,
+        mult_noise_magnitude_exp=0.1,
+        mult_noise_exponent_exp=1,
         seed=7,
     )
     sim.add_event_relative_to(
@@ -28,6 +28,7 @@ def simulate_data() -> SimulatedPhotometry:
         time_range=(0.2, 0.8),
         overall_prob=1.0,
         labels=['choice_left', 'choice_right'],
+        amplitudes=[0.1, 0.1],
         choice_probs=[0.5, 0.5],
     )
     return sim

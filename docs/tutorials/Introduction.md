@@ -303,7 +303,7 @@ The general scheme for processing a **single-channel** experiment is:
 1. Apply a low-pass filter to both the experimental signal to filter out high frequency noise.
 
 2. Fit a photobleaching curve to the experimental signal.
-    * This package uses a negative biexponential equation to model photobleaching: $\quad \alpha_1 \exp(\beta_1 t )+ \alpha_2 \exp(\beta_2 t)$
+    * This package uses a negative biexponential equation to model photobleaching: $\quad \alpha_1 \exp(-t / \tau_1) + \alpha_2 \exp(-t / \tau_2) + c$
 
 3. Apply an reference correction either ``dB/B`` or ``dB``.
     * ``dF/F`` $= (\text{Exp.} - \text{B}_\text{ fitted}) / \text{B}_\text{ fitted}$

@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any, Callable, Self
 
 import itertools
+import importlib
 import inspect
 import logging
 import json
@@ -32,9 +33,43 @@ def _accepted_args_for_SimPho() -> set:
     }
     return ACCEPTED_ARGS
 
+def _callable_to_import_path(func: Callable) -> str:
+    module = getattr(func, '__module__', None)
+    qualname = getattr(func, '__qualname__', None)
+
+    if module is None or qualname is None:
+        return str(func)
+    return f'{module}.{qualname}'
+
+def _import_callable(path: str) -> Callable:
+    module_name, _, qualname = path.rpartition('.')
+    if module_name == '':
+        raise ValueError(f'Cannot import callable from unqualified path: {path}')
+
+    obj: Any = importlib.import_module(module_name)
+    for attr in qualname.split('.'):
+        obj = getattr(obj, attr)
+
+    if not callable(obj):
+        raise TypeError(f'Imported object is not callable: {path}')
+    return obj
+
+def _stringify_callables(value: Any) -> Any:
+    if inspect.isfunction(value) or inspect.ismethod(value):
+        return _callable_to_import_path(value)
+    if isinstance(value, dict):
+        return {k: _stringify_callables(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_stringify_callables(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(_stringify_callables(v) for v in value)
+    return value
+
 def safe_SimPho_from_params(params: dict) -> SimulatedPhotometry:
     ACCEPTED_ARGS = _accepted_args_for_SimPho()
     params = {k : v for k, v in params.items() if k in ACCEPTED_ARGS}
+    if isinstance(params.get('event_kernel'), str):
+        params['event_kernel'] = _import_callable(params['event_kernel'])
     return SimulatedPhotometry.from_parameters(**params)
 
 #endregion
@@ -81,7 +116,7 @@ class SimulatedLibrary:
             return normed_res
 
         out = (
-            pd.DataFrame(self.params).T
+            pd.DataFrame(_stringify_callables(self.params)).T
             .reset_index(names='LIB_ID')
             .infer_objects()
         )
@@ -111,7 +146,7 @@ class SimulatedLibrary:
             Destination path for the JSON parameter table.
         """
         with open(fpath, 'w') as f:
-            json.dump(self.params, f)
+            json.dump(_stringify_callables(self.params), f, indent=4)
 
     @classmethod
     def from_json(
@@ -187,6 +222,7 @@ class SimulatedLibrary:
             cls,
             contanst_kwargs: dict[str, Any],
             to_permute_kwargs: dict[str, list[Any]],
+            across_kwargs: list[dict[str, Any]] | None = None,
             replicates: int = 1,
             seed: int | None = None,
             ) -> Self:
@@ -200,6 +236,9 @@ class SimulatedLibrary:
         to_permute_kwargs : dict[str, list[Any]]
             Keyword arguments whose values are fully crossed to create
             parameter permutations. Each value must be a list of candidates.
+        across_kwargs : list[dict[str, Any]] or None, default=None
+            List of keyword arguments to iterate through making a new combination
+            for each element in the list.
         replicates : int, default=1
             Number of replicate simulations generated for each permutation.
             Each replicate gets its own seed.
@@ -214,10 +253,14 @@ class SimulatedLibrary:
         # pre-validate kwargs
         cls._validate_kwargs(SimulatedPhotometry.from_parameters, contanst_kwargs)
         cls._validate_kwargs(SimulatedPhotometry.from_parameters, to_permute_kwargs)
+        if across_kwargs is not None:
+            for kwargs in across_kwargs:
+                cls._validate_kwargs(SimulatedPhotometry.from_parameters, kwargs)
 
         generator = ParamPermutationGenerator(
             contanst_kwargs=contanst_kwargs,
             to_permute_kwargs=to_permute_kwargs,
+            across_kwargs=across_kwargs,
             replicates=replicates,
             seed=seed,
         )
@@ -236,6 +279,19 @@ class SimulatedLibrary:
         """
         for i, args in self.params.items():
             self.params[i] = args | to_update
+
+    def mutate_params(self, to_update: dict[str, Any]) -> Self:
+        """Mutate every parameter dictionary a copy of the library.
+
+        Parameters
+        ----------
+        to_update : dict[str, Any]
+            Keyword-value pairs to merge into each built parameter dictionary.
+        """
+        params = self.params.copy()
+        for i, args in params.items():
+            params[i] = args | to_update
+        return type(self)(params)
 
     # --- BUILD LIBRARY ---
     def generate_library(
@@ -386,6 +442,9 @@ class ParamPermutationGenerator:
     to_permute_kwargs : dict[str, list[Any]]
         Keyword arguments whose values are fully crossed to create parameter
         permutations.
+    across_kwargs : list[dict[str, Any]] or None, default=None
+        List of keyword arguments to iterate through making a new combination
+        for each element in the list.
     replicates : int, default=1
         Number of replicate simulations generated for each permutation.
     seed : int or None, default=None
@@ -397,6 +456,9 @@ class ParamPermutationGenerator:
         Keyword arguments reused for every generated sample.
     to_permute : dict[str, list[Any]]
         Keyword arguments crossed to create unique parameter permutations.
+    across : list[dict[str, Any]]
+        List of keyword arguements to iterate through to make combinations
+        within each permutation.
     replicates : int
         Number of generated samples per permutation.
     seed : int or None
@@ -407,6 +469,7 @@ class ParamPermutationGenerator:
             self,
             contanst_kwargs: dict[str, Any],
             to_permute_kwargs: dict[str, list[Any]],
+            across_kwargs: list[dict[str, Any]] | None = None,
             replicates: int = 1,
             seed: int | None = None,
             ) -> None:
@@ -414,8 +477,23 @@ class ParamPermutationGenerator:
         # assign attrs
         self.constants = contanst_kwargs
         self.to_permute = to_permute_kwargs
+        self.across = [{}] if across_kwargs is None else across_kwargs
+        self.has_across = across_kwargs is not None
         self.replicates = replicates
         self.seed = seed
+
+        # validate
+        self._validate_across_and_permutation_kwargs()
+
+    # --- VALIDATE ---
+    def _validate_across_and_permutation_kwargs(self) -> None:
+        for across_kwargs in self.across:
+            key_overlap = set(across_kwargs.keys()) & set(self.to_permute.keys())
+            if len(key_overlap) != 0:
+                raise ValueError(
+                    f'Keys cannot be shared between to_permute_kwargs and across_kwargs. '
+                    f'Keys {", ".join(list(key_overlap))} are shared.'
+                )
 
     # --- PERMUTAION ---
     def _permutation_generator(self):
@@ -434,7 +512,8 @@ class ParamPermutationGenerator:
         # generate permutations
         permutations = [p for p in self._permutation_generator()]
         self.n_permutations = len(permutations)
-        self.n_samples = self.n_permutations * self.replicates
+        self.n_across = len(self.across)
+        self.n_samples = self.n_permutations * self.n_across * self.replicates
 
         # set up unique seeds
         rng = np.random.default_rng(self.seed)
@@ -443,18 +522,26 @@ class ParamPermutationGenerator:
 
         # set up iteration
         i = 0
+        combo_id = 0
         params = {}
 
         for perm_id, perm in enumerate(permutations):
-            for rep_id in range(self.replicates):
-                params[i] = (
-                    self.constants | perm | {
-                        'seed' : int(seed_bank[i]),
-                        'PERM_ID' : perm_id,
-                        'REP_ID' : rep_id,
-                    }
-                )
-                i = i + 1
+            for across_id, across in enumerate(self.across):
+                combo = self.constants | perm | across
+
+                for rep_id in range(self.replicates):
+                    params[i] = (
+                        combo | {
+                            'seed' : int(seed_bank[i]),
+                            'COMBO_ID' : combo_id,
+                            'ACROSS_ID' : across_id,
+                            'PERM_ID' : perm_id,
+                            'REP_ID' : rep_id,
+                        }
+                    )
+                    i += 1
+
+                combo_id += 1
 
         return params
 

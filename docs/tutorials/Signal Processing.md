@@ -96,7 +96,7 @@ print(exp.frequency)
     dual
     True
     100000
-    99.90109791306607
+    100.0
 
 
 The continuous arrays are stored on the object. ``time`` aligns with ``raw_signal`` and, when present, ``raw_isosbestic``.
@@ -109,8 +109,8 @@ print(exp.raw_isosbestic[:5]) #type: ignore
 ```
 
     [0.   0.01 0.02 0.03 0.04]
-    [60.72501182 59.62409786 60.76089457 60.44649406 59.42376882]
-    [48.43589551 47.4642179  46.94416148 48.21042178 47.25050209]
+    [59.54784198 60.0574298  59.03015301 59.7573142  59.54165367]
+    [47.59561321 47.39307264 47.60456976 48.05470631 48.2274789 ]
 
 
 Events are stored in a dictionary mapping event labels to timestamp arrays.
@@ -230,8 +230,8 @@ raw_wide.head()
     <tr>
       <th>0</th>
       <td>0.495</td>
-      <td>59.842783</td>
-      <td>47.942846</td>
+      <td>59.842767</td>
+      <td>47.842826</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -240,8 +240,8 @@ raw_wide.head()
     <tr>
       <th>1</th>
       <td>1.495</td>
-      <td>60.270320</td>
-      <td>48.244646</td>
+      <td>60.204349</td>
+      <td>48.203209</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -250,8 +250,8 @@ raw_wide.head()
     <tr>
       <th>2</th>
       <td>2.495</td>
-      <td>60.875302</td>
-      <td>48.473810</td>
+      <td>60.822751</td>
+      <td>48.539868</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -260,8 +260,8 @@ raw_wide.head()
     <tr>
       <th>3</th>
       <td>3.495</td>
-      <td>60.532914</td>
-      <td>48.501635</td>
+      <td>60.502840</td>
+      <td>48.514150</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -270,8 +270,8 @@ raw_wide.head()
     <tr>
       <th>4</th>
       <td>4.495</td>
-      <td>59.995382</td>
-      <td>48.312218</td>
+      <td>59.996514</td>
+      <td>48.391587</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -322,31 +322,31 @@ raw_long.head()
       <th>0</th>
       <td>0.495</td>
       <td>raw_signal</td>
-      <td>59.842783</td>
+      <td>59.842767</td>
     </tr>
     <tr>
       <th>1</th>
       <td>1.495</td>
       <td>raw_signal</td>
-      <td>60.270320</td>
+      <td>60.204349</td>
     </tr>
     <tr>
       <th>2</th>
       <td>2.495</td>
       <td>raw_signal</td>
-      <td>60.875302</td>
+      <td>60.822751</td>
     </tr>
     <tr>
       <th>3</th>
       <td>3.495</td>
       <td>raw_signal</td>
-      <td>60.532914</td>
+      <td>60.502840</td>
     </tr>
     <tr>
       <th>4</th>
       <td>4.495</td>
       <td>raw_signal</td>
-      <td>59.995382</td>
+      <td>59.996514</td>
     </tr>
   </tbody>
 </table>
@@ -380,7 +380,7 @@ filtered_signal[:5]
 
 
 
-    array([60.71852848, 60.60089085, 60.48557731, 60.37416651, 60.26810553])
+    array([59.53001198, 59.56028827, 59.59053474, 59.6204367 , 59.64970329])
 
 
 
@@ -400,8 +400,8 @@ print(r2_val)
 print(coeffs)
 ```
 
-    0.9993291237999945
-    [-0.00914491  1.25010411]
+    0.9993991834603729
+    [0.02467583 1.24905654]
 
 
 The fitted reference is the trace that will be subtracted or divided away during preprocessing.
@@ -447,37 +447,37 @@ pd.DataFrame({
     <tr>
       <th>0</th>
       <td>0.00</td>
-      <td>60.718528</td>
-      <td>48.483138</td>
-      <td>60.599827</td>
+      <td>59.530012</td>
+      <td>47.625996</td>
+      <td>59.512238</td>
     </tr>
     <tr>
       <th>1</th>
       <td>0.01</td>
-      <td>60.600891</td>
-      <td>48.388588</td>
-      <td>60.481628</td>
+      <td>59.560288</td>
+      <td>47.656528</td>
+      <td>59.550373</td>
     </tr>
     <tr>
       <th>2</th>
       <td>0.02</td>
-      <td>60.485577</td>
-      <td>48.293900</td>
-      <td>60.363258</td>
+      <td>59.590535</td>
+      <td>47.684835</td>
+      <td>59.585732</td>
     </tr>
     <tr>
       <th>3</th>
       <td>0.03</td>
-      <td>60.374167</td>
-      <td>48.200785</td>
-      <td>60.246857</td>
+      <td>59.620437</td>
+      <td>47.710558</td>
+      <td>59.617859</td>
     </tr>
     <tr>
       <th>4</th>
       <td>0.04</td>
-      <td>60.268106</td>
-      <td>48.110847</td>
-      <td>60.134422</td>
+      <td>59.649703</td>
+      <td>47.733396</td>
+      <td>59.646385</td>
     </tr>
   </tbody>
 </table>
@@ -526,8 +526,8 @@ exp.metadata['reference_fit']
 
 
     {'type': 'isosbestic',
-     'r2_val': 0.9993291237999945,
-     'coeffs': array([-0.00914491,  1.25010411])}
+     'r2_val': 0.9993991834603729,
+     'coeffs': array([0.02467583, 1.24905654])}
 
 
 
@@ -570,7 +570,7 @@ print(df_exp.signal[:5])
 ```
 
     dF
-    [0.11870166 0.11926243 0.12231895 0.12730982 0.13368323]
+    [0.01777443 0.0099152  0.00480323 0.00257781 0.0033181 ]
 
 
 Whole-signal normalization can be applied after correction. Built-in options are ``'none'``, ``'zscore'``, and ``'nullZ'``.
@@ -583,7 +583,7 @@ print(np.mean(z_exp.signal))
 print(np.std(z_exp.signal))
 ```
 
-    7.958078640513121e-18
+    -9.094947017729283e-18
     1.0
 
 
@@ -601,7 +601,7 @@ print(custom_exp.signal[:5])
 ```
 
     percent_dF_F
-    [0.19587789 0.19718786 0.20263808 0.21131362 0.22230733]
+    [0.02986685 0.0166501  0.00806105 0.00432389 0.00556295]
 
 
 # 5. Single-channel Preprocessing
@@ -635,7 +635,7 @@ print(single.metadata['reference_fit']['r2_val'])
 ```
 
     photobleaching
-    0.8032179060068196
+    0.8024286718698792
 
 
 The photobleaching curve can also be fit directly with ``fit_photobleaching_curve``.
@@ -650,9 +650,9 @@ print(bleach_r2)
 print(bleach_params)
 ```
 
-    0.8032179060068196
-    [5.38883450e-10 5.00005000e-03 4.00708720e+01 3.11392112e-03
-     2.05621528e+01]
+    0.8024286718698792
+    [4.00215366e+01 3.20521630e+02 2.36696064e-13 2.12983463e+03
+     2.05897601e+01]
 
 
 # 6. Optional Artifact Detection and Correction
@@ -684,8 +684,8 @@ print(detector)
 print(corrector)
 ```
 
-    <PhoPro.analysis.artifact.ODS_Detector object at 0x3279dfa90>
-    <PhoPro.analysis.artifact.Spline_Corrector object at 0x3216bb890>
+    <PhoPro.analysis.artifact.ODS_Detector object at 0x348cc46d0>
+    <PhoPro.analysis.artifact.Spline_Corrector object at 0x341ea1090>
 
 
 To run artifact correction, pass the detector and corrector to ``preprocess_signal``. This cell is commented out so the tutorial does not imply that one detector configuration is universally appropriate.
@@ -792,12 +792,12 @@ processed_wide.head()
     <tr>
       <th>0</th>
       <td>0.495</td>
-      <td>59.842783</td>
-      <td>47.942846</td>
-      <td>-0.001494</td>
-      <td>59.955814</td>
-      <td>59.865875</td>
-      <td>47.967974</td>
+      <td>59.842767</td>
+      <td>47.842826</td>
+      <td>0.001123</td>
+      <td>59.772316</td>
+      <td>59.839362</td>
+      <td>47.834213</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -806,12 +806,12 @@ processed_wide.head()
     <tr>
       <th>1</th>
       <td>1.495</td>
-      <td>60.270320</td>
-      <td>48.244646</td>
-      <td>-0.000418</td>
-      <td>60.297531</td>
-      <td>60.272064</td>
-      <td>48.241322</td>
+      <td>60.204349</td>
+      <td>48.203209</td>
+      <td>-0.000197</td>
+      <td>60.226421</td>
+      <td>60.214495</td>
+      <td>48.197776</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -820,12 +820,12 @@ processed_wide.head()
     <tr>
       <th>2</th>
       <td>2.495</td>
-      <td>60.875302</td>
-      <td>48.473810</td>
-      <td>0.004628</td>
-      <td>60.604191</td>
-      <td>60.884103</td>
-      <td>48.486630</td>
+      <td>60.822751</td>
+      <td>48.539868</td>
+      <td>0.002501</td>
+      <td>60.659348</td>
+      <td>60.810882</td>
+      <td>48.544379</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -834,12 +834,12 @@ processed_wide.head()
     <tr>
       <th>3</th>
       <td>3.495</td>
-      <td>60.532914</td>
-      <td>48.501635</td>
-      <td>-0.001277</td>
-      <td>60.611847</td>
-      <td>60.534332</td>
-      <td>48.492754</td>
+      <td>60.502840</td>
+      <td>48.514150</td>
+      <td>-0.001993</td>
+      <td>60.616940</td>
+      <td>60.495888</td>
+      <td>48.510423</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -848,12 +848,12 @@ processed_wide.head()
     <tr>
       <th>4</th>
       <td>4.495</td>
-      <td>59.995382</td>
-      <td>48.312218</td>
-      <td>-0.006628</td>
-      <td>60.393551</td>
-      <td>59.993045</td>
-      <td>48.318133</td>
+      <td>59.996514</td>
+      <td>48.391587</td>
+      <td>-0.007808</td>
+      <td>60.481491</td>
+      <td>60.009231</td>
+      <td>48.401984</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -902,31 +902,31 @@ processed_long.head()
       <th>0</th>
       <td>0.495</td>
       <td>raw_signal</td>
-      <td>59.842783</td>
+      <td>59.842767</td>
     </tr>
     <tr>
       <th>1</th>
       <td>1.495</td>
       <td>raw_signal</td>
-      <td>60.270320</td>
+      <td>60.204349</td>
     </tr>
     <tr>
       <th>2</th>
       <td>2.495</td>
       <td>raw_signal</td>
-      <td>60.875302</td>
+      <td>60.822751</td>
     </tr>
     <tr>
       <th>3</th>
       <td>3.495</td>
       <td>raw_signal</td>
-      <td>60.532914</td>
+      <td>60.502840</td>
     </tr>
     <tr>
       <th>4</th>
       <td>4.495</td>
       <td>raw_signal</td>
-      <td>59.995382</td>
+      <td>59.996514</td>
     </tr>
   </tbody>
 </table>
@@ -988,12 +988,12 @@ pd.read_csv('output/processed_experiment_wide.csv').head()
       <th>0</th>
       <td>0</td>
       <td>0.495</td>
-      <td>59.842783</td>
-      <td>47.942846</td>
-      <td>-0.001494</td>
-      <td>59.955814</td>
-      <td>59.865875</td>
-      <td>47.967974</td>
+      <td>59.842767</td>
+      <td>47.842826</td>
+      <td>0.001123</td>
+      <td>59.772316</td>
+      <td>59.839362</td>
+      <td>47.834213</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -1003,12 +1003,12 @@ pd.read_csv('output/processed_experiment_wide.csv').head()
       <th>1</th>
       <td>1</td>
       <td>1.495</td>
-      <td>60.270320</td>
-      <td>48.244646</td>
-      <td>-0.000418</td>
-      <td>60.297530</td>
-      <td>60.272064</td>
-      <td>48.241322</td>
+      <td>60.204349</td>
+      <td>48.203209</td>
+      <td>-0.000197</td>
+      <td>60.226420</td>
+      <td>60.214495</td>
+      <td>48.197776</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -1018,12 +1018,12 @@ pd.read_csv('output/processed_experiment_wide.csv').head()
       <th>2</th>
       <td>2</td>
       <td>2.495</td>
-      <td>60.875302</td>
-      <td>48.473810</td>
-      <td>0.004628</td>
-      <td>60.604190</td>
-      <td>60.884103</td>
-      <td>48.486630</td>
+      <td>60.822751</td>
+      <td>48.539868</td>
+      <td>0.002501</td>
+      <td>60.659348</td>
+      <td>60.810882</td>
+      <td>48.544379</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -1033,12 +1033,12 @@ pd.read_csv('output/processed_experiment_wide.csv').head()
       <th>3</th>
       <td>3</td>
       <td>3.495</td>
-      <td>60.532914</td>
-      <td>48.501635</td>
-      <td>-0.001277</td>
-      <td>60.611847</td>
-      <td>60.534332</td>
-      <td>48.492754</td>
+      <td>60.502840</td>
+      <td>48.514150</td>
+      <td>-0.001993</td>
+      <td>60.616940</td>
+      <td>60.495888</td>
+      <td>48.510423</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -1048,12 +1048,12 @@ pd.read_csv('output/processed_experiment_wide.csv').head()
       <th>4</th>
       <td>4</td>
       <td>4.495</td>
-      <td>59.995382</td>
-      <td>48.312218</td>
-      <td>-0.006628</td>
-      <td>60.393550</td>
-      <td>59.993045</td>
-      <td>48.318133</td>
+      <td>59.996514</td>
+      <td>48.391587</td>
+      <td>-0.007808</td>
+      <td>60.481490</td>
+      <td>60.009231</td>
+      <td>48.401984</td>
       <td>False</td>
       <td>False</td>
       <td>False</td>
@@ -1114,7 +1114,7 @@ trials
 
 
 
-    Photometry dataset with 20 trials, 1598 timepoints, and 5 observations.
+    Photometry dataset with 20 trials, 1600 timepoints, and 7 observations.
 
 
 
@@ -1147,6 +1147,8 @@ trials.obs.head()
     <tr style="text-align: right;">
       <th></th>
       <th>trial_num</th>
+      <th>start_time</th>
+      <th>stop_time</th>
       <th>trial_cue</th>
       <th>lever1</th>
       <th>lever2</th>
@@ -1157,6 +1159,8 @@ trials.obs.head()
     <tr>
       <th>0</th>
       <td>1</td>
+      <td>15.52</td>
+      <td>31.51</td>
       <td>-3.52</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1165,6 +1169,8 @@ trials.obs.head()
     <tr>
       <th>1</th>
       <td>2</td>
+      <td>65.23</td>
+      <td>81.22</td>
       <td>-2.71</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1173,6 +1179,8 @@ trials.obs.head()
     <tr>
       <th>2</th>
       <td>3</td>
+      <td>113.05</td>
+      <td>129.04</td>
       <td>0.00</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1181,6 +1189,8 @@ trials.obs.head()
     <tr>
       <th>3</th>
       <td>4</td>
+      <td>167.51</td>
+      <td>183.50</td>
       <td>-3.94</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1189,6 +1199,8 @@ trials.obs.head()
     <tr>
       <th>4</th>
       <td>5</td>
+      <td>217.89</td>
+      <td>233.88</td>
       <td>-3.79</td>
       <td>0.0</td>
       <td>NaN</td>
@@ -1232,7 +1244,7 @@ trial_exp.baseline_data
 
 
 
-    Photometry dataset with 20 trials, 400 timepoints, and 4 observations.
+    Photometry dataset with 20 trials, 400 timepoints, and 7 observations.
 
 
 
@@ -1277,6 +1289,8 @@ cue_centered.trial_data.obs.head()
     <tr style="text-align: right;">
       <th></th>
       <th>trial_num</th>
+      <th>start_time</th>
+      <th>stop_time</th>
       <th>trial_cue</th>
       <th>lever1</th>
       <th>lever2</th>
@@ -1287,6 +1301,8 @@ cue_centered.trial_data.obs.head()
     <tr>
       <th>0</th>
       <td>1</td>
+      <td>16.00</td>
+      <td>25.99</td>
       <td>0.0</td>
       <td>3.52</td>
       <td>NaN</td>
@@ -1295,6 +1311,8 @@ cue_centered.trial_data.obs.head()
     <tr>
       <th>1</th>
       <td>2</td>
+      <td>66.52</td>
+      <td>76.51</td>
       <td>0.0</td>
       <td>2.71</td>
       <td>NaN</td>
@@ -1303,6 +1321,8 @@ cue_centered.trial_data.obs.head()
     <tr>
       <th>2</th>
       <td>3</td>
+      <td>117.05</td>
+      <td>127.04</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1311,6 +1331,8 @@ cue_centered.trial_data.obs.head()
     <tr>
       <th>3</th>
       <td>4</td>
+      <td>167.57</td>
+      <td>177.56</td>
       <td>0.0</td>
       <td>3.94</td>
       <td>NaN</td>
@@ -1319,6 +1341,8 @@ cue_centered.trial_data.obs.head()
     <tr>
       <th>4</th>
       <td>5</td>
+      <td>218.10</td>
+      <td>228.09</td>
       <td>0.0</td>
       <td>3.79</td>
       <td>NaN</td>
@@ -1369,64 +1393,76 @@ choice_aligned.trial_data.obs.head()
     <tr style="text-align: right;">
       <th></th>
       <th>trial_num</th>
-      <th>align_event</th>
+      <th>start_time</th>
+      <th>stop_time</th>
       <th>ALIGNMENTS</th>
       <th>shock</th>
       <th>trial_cue</th>
       <th>lever1</th>
       <th>lever2</th>
+      <th>align_event</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>lever1</td>
+      <td>19.52</td>
+      <td>27.51</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>-3.52</td>
       <td>0.0</td>
       <td>NaN</td>
+      <td>lever1</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>lever1</td>
+      <td>69.23</td>
+      <td>77.22</td>
       <td>0.0</td>
       <td>1.22</td>
       <td>-2.71</td>
       <td>0.0</td>
       <td>NaN</td>
+      <td>lever1</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>lever1</td>
+      <td>171.51</td>
+      <td>179.50</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>-3.94</td>
       <td>0.0</td>
       <td>NaN</td>
+      <td>lever1</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>lever1</td>
+      <td>221.89</td>
+      <td>229.88</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>-3.79</td>
       <td>0.0</td>
       <td>NaN</td>
+      <td>lever1</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>lever2</td>
+      <td>322.71</td>
+      <td>330.70</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>-3.56</td>
       <td>NaN</td>
       <td>0.0</td>
+      <td>lever2</td>
     </tr>
   </tbody>
 </table>
@@ -1471,6 +1507,8 @@ manual_aligned.trial_data.obs.head()
     <tr style="text-align: right;">
       <th></th>
       <th>trial_num</th>
+      <th>start_time</th>
+      <th>stop_time</th>
       <th>ALIGNMENTS</th>
       <th>trial_cue</th>
       <th>lever1</th>
@@ -1482,6 +1520,8 @@ manual_aligned.trial_data.obs.head()
     <tr>
       <th>0</th>
       <td>1</td>
+      <td>98.0</td>
+      <td>101.99</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1491,6 +1531,8 @@ manual_aligned.trial_data.obs.head()
     <tr>
       <th>1</th>
       <td>2</td>
+      <td>198.0</td>
+      <td>201.99</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1500,6 +1542,8 @@ manual_aligned.trial_data.obs.head()
     <tr>
       <th>2</th>
       <td>3</td>
+      <td>298.0</td>
+      <td>301.99</td>
       <td>0.0</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1540,8 +1584,8 @@ print(nearest_exp.trial_data.ts[:5])
 print(interp_exp.trial_data.ts[:5])
 ```
 
-    [-2.00198   -1.9919701 -1.9819602 -1.9719503 -1.9619404]
-    [-2.        -1.9899901 -1.9799802 -1.9699703 -1.9599604]
+    [-2.   -1.99 -1.98 -1.97 -1.96]
+    [-2.   -1.99 -1.98 -1.97 -1.96]
 
 
 # 12. Invalid Windows
@@ -1583,7 +1627,7 @@ print(drop_case.trial_data)
 ```
 
     [0]
-    Photometry dataset with 1 trials, 1598 timepoints, and 6 observations.
+    Photometry dataset with 1 trials, 1600 timepoints, and 8 observations.
 
 
 # 13. Trial-wise Normalization
@@ -1619,8 +1663,8 @@ zero_exp.trial_data.X[:2, :5]
 
 
 
-    array([[-0.0059258 , -0.00598701, -0.00605401, -0.00612497, -0.00619701],
-           [-0.00365945, -0.00435889, -0.00503023, -0.00566372, -0.00625046]])
+    array([[ 0.00092141,  0.00078276,  0.00064532,  0.00051357,  0.00039203],
+           [-0.00111444, -0.00087772, -0.00067669, -0.0005156 , -0.00039684]])
 
 
 
@@ -1645,10 +1689,10 @@ custom_trial_norm.trial_data.X[:2, :5]
 
 
 
-    array([[-375.42330787, -379.30132751, -383.54610345, -388.04167829,
-            -392.60547244],
-           [-475.3028605 , -566.14840833, -653.34418739, -735.62449125,
-            -811.83279246]])
+    array([[165.19599303, 140.33778971, 115.69673012,  92.07650281,
+             70.28621454],
+           [-78.25548717, -61.63363494, -47.5170997 , -36.20528335,
+            -27.86618643]])
 
 
 
@@ -1667,7 +1711,7 @@ loaded_trials
 
 
 
-    Photometry dataset with 20 trials, 1598 timepoints, and 5 observations.
+    Photometry dataset with 20 trials, 1600 timepoints, and 7 observations.
 
 
 

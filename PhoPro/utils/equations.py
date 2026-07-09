@@ -17,20 +17,20 @@ def neg_exponential_3(x, a, b, c):
     """
     return a * np.exp(-b * x) + c
 
-def neg_bi_exponential_5(x, a1, b1, a2, b2, c):
+def neg_bi_exponential_5(x, a1, tau1, a2, tau2, c):
     """
     Negative bi-exponential for photobleaching curve fitting.
     Args:
         x (array-like): Independent variable (e.g., time).
         a1 (float): Amplitude of the fast exponential component.
-        b1 (float): Decay rate of the fast component.
+        tau1 (float): Time constant of the fast component.
         a2 (float): Amplitude of the slow exponential component.
-        b2 (float): Decay rate of the slow component.
+        tau2 (float): Time constant of the slow component.
         c (float): Constant offset term.
     Returns:
         np.ndarray: Evaluated bi-exponential curve with the same shape as ``x``.
     """
-    return a1 * np.exp(-b1 * x) + a2 * np.exp(-b2 * x) + c
+    return a1 * np.exp(-x / tau1) + a2 * np.exp(-x / tau2) + c
 
 #endregion
 

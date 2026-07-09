@@ -321,6 +321,8 @@ class PhotometryExperiment:
             signal_label=signal_label,
             isosbestic_label=isosbestic_label,
             downsample=downsample,
+            annotation_file=annotation_file,
+            annotation_handler=annotation_handler,
         )
         return loader.load()
 
@@ -386,9 +388,10 @@ class PhotometryExperiment:
             order: int = 4,
             signal_normalization: Literal['zscore', 'nullZ', 'none'] | Callable = 'none',
             correction_method: Literal['dF/F', 'dF', 'dB/B', 'dB', 'none'] | Callable = 'dF/F',
-            fit_using: Literal['OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept'] | Callable = 'IRLS',
+            fit_using: Literal['OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept', 'PB_fit'] | Callable = 'IRLS',
             maxiter: int = 1000,
             c: float | None = 3,
+            window_dur_sec: float = 5.0,
             channel_mode: Literal['auto', 'dual', 'single'] = 'auto',
             artifact_detector: ArtifactDetector | None = None,
             artifact_corrector: ArtifactCorrector | None = None,
@@ -411,15 +414,26 @@ class PhotometryExperiment:
             ``'dB'`` compute ``signal - fitted_reference``. Custom callables
             must accept ``signal`` and ``fitted_reference`` and return a
             one-dimensional array.
-        fit_using : {'OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept'} or Callable, default='IRLS'
+        fit_using : {'OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept' 'PB_fit'} or Callable, default='IRLS'
             Method used to fit the isosbestic trace to the signal in
             dual-channel experiments. Custom callables must accept ``signal``
             and ``isosbestic`` and return ``(fitted_reference, params)``.
+
+            - ``OLS``: ordinary least squares (simplest and fastest)
+            - ``IRLS``: iteratively re-weighted least squares (recommended default)
+            - ``*_no_intercept``: without intercept, leaving only the scaling parameter
+                (recommended for expreiments with long-large transients)
+            - ``PB_fit``: map the photobleaching curve from the isosbestic to the
+                experimental signal (recommended when the bleaching dyanmics
+                between the experimental and isosbestic are drastically different)
+
         maxiter : int, default=1000
             Maximum iterations for IRLS fitting.
-        c : float or None, default=3
-            IRLS tuning constant. Smaller values increase downweighting of
-            large residuals.
+        c : float or None, default=None
+            IRLS tuning constant.
+        window_dur_sec : float, default=5
+            Sliding-window duration for photobleaching strided median
+            downsampling in seconds.
         channel_mode : {'auto', 'dual', 'single'}, default='auto'
             Optional channel mode overwrite.
         artifact_detector : ArtifactDetector or None, default=None
@@ -479,6 +493,7 @@ class PhotometryExperiment:
                 maxiter=maxiter,
                 fit_using=fit_using,
                 c=c,
+                window_dur_sec=window_dur_sec,
             )
             reference_type = 'isosbestic'
 
@@ -488,7 +503,8 @@ class PhotometryExperiment:
         elif channel_mode == 'single':
             # fit photobleaching curve
             fitted_ref, r2_val, coeffs = self.fit_photobleaching_curve(
-                signal=filt_sig
+                signal=filt_sig,
+                window_dur_sec=window_dur_sec,
             )
             reference_type = 'photobleaching'
 
@@ -769,9 +785,10 @@ class PhotometryExperiment:
             self,
             signal: np.ndarray,
             isosbestic: np.ndarray,
-            fit_using: Literal['OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept'] | Callable = 'IRLS',
+            fit_using: Literal['OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept', 'PB_fit'] | Callable = 'IRLS',
             maxiter: int = 1000,
             c: float | None = None,
+            window_dur_sec: float = 5,
             ) -> tuple[np.ndarray, float, Any]:
         """Fit the isosbestic channel to the signal.
 
@@ -781,13 +798,16 @@ class PhotometryExperiment:
             Filtered signal trace.
         isosbestic : np.ndarray
             Filtered isosbestic trace.
-        fit_using : {'OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept'} or Callable, default='IRLS'
+        fit_using : {'OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept', 'PB_fit'} or Callable, default='IRLS'
             Fitting method. Custom callables must return
-            ``(fitted_isosbestic, params)``.
+            ``(fitted_isosbestic: np.ndarray, params: list[float])``.
         maxiter : int, default=1000
             Maximum iterations for IRLS fitting.
         c : float or None, default=None
             IRLS tuning constant.
+        window_dur_sec : float, default=5
+            Sliding-window duration for photobleaching strided median
+            downsampling in seconds.
 
         Returns
         -------
@@ -823,6 +843,11 @@ class PhotometryExperiment:
                 fitted_iso, params = reference_fitting.IRLS_fit(
                     signal, isosbestic, maxiter=maxiter, c=c, add_intercept=False
                 )
+            case 'PB_fit':
+                window = int(self.frequency * window_dur_sec)
+                fitted_iso, params = reference_fitting.detrend_retrend(
+                    signal, isosbestic, self.time, window,
+                )
             case _:
                 raise ValueError(f'{fit_using} fitting method not recognized!')
 
@@ -835,7 +860,7 @@ class PhotometryExperiment:
     def fit_photobleaching_curve(
             self,
             signal: np.ndarray,
-            window_dur: float =  5,
+            window_dur_sec: float =  5,
             ) -> tuple[np.ndarray, float, list[float]]:
         """Fit a curve with a negative bi-exponential photobleaching model.
 
@@ -846,7 +871,7 @@ class PhotometryExperiment:
         ----------
         signal : np.ndarray
             Signal array to fit.
-        window_dur : float, default=5
+        window_dur_sec : float, default=5
             Sliding-window duration in seconds.
 
         Returns
@@ -856,14 +881,15 @@ class PhotometryExperiment:
         r2_val : float
             Coefficient of determination for the fit.
         params : list[float]
-            Fitted model parameters.
+            Fitted model parameters: ``a1``, ``tau1``, ``a2``, ``tau2``, and
+            ``c``.
 
         Raises
         ------
         ValueError
             If the fitted curve contains NaN values.
         """
-        window_len = int(window_dur * self.frequency)
+        window_len = int(window_dur_sec * self.frequency)
         fitted_curve, params = reference_fitting.fit_photobleaching(signal, self.time, window=window_len)
         r2_val = r2_score(signal, fitted_curve)
 
