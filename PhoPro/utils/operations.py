@@ -13,7 +13,7 @@ def downsample_signal(
         arr: np.ndarray,
         factor: int | None,
         axis: int = -1,
-        method: Literal['mean', 'resample'] = 'mean',
+        method: Literal['mean', 'resample'] = 'resample',
         upsample: int = 1, 
         window = ('kaiser', 5),
         padtype: str = 'line',
@@ -46,7 +46,7 @@ def downsample_signal(
 def downsample_time(
         time: np.ndarray,
         factor: int | None,
-        method: Literal['mean', 'resample'] = 'mean',
+        method: Literal['mean', 'resample'] = 'resample',
         upsample: int = 1, 
         **kwargs
         ) -> np.ndarray:

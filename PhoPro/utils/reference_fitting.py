@@ -126,7 +126,7 @@ def OLS_fit(
         signal: np.ndarray,
         isosbestic: np.ndarray,
         add_intercept: bool = True,
-        ) -> tuple[np.ndarray, Any]:
+        ) -> tuple[np.ndarray, list[float]]:
     sig = _process_arr(signal)
     iso = _process_arr(isosbestic)
     if add_intercept:
@@ -135,7 +135,7 @@ def OLS_fit(
     model = sm.OLS(endog=sig, exog=iso)
     res = model.fit()
     fitted_iso = res.fittedvalues.astype(np.float32, copy=False)
-    return fitted_iso, res.params
+    return fitted_iso, list(res.params)
 
 def IRLS_fit(
         signal: np.ndarray,
@@ -143,7 +143,7 @@ def IRLS_fit(
         maxiter: int,
         c: float,
         add_intercept: bool = True,
-        ) -> tuple[np.ndarray, Any]:
+        ) -> tuple[np.ndarray, list[float]]:
     sig = _process_arr(signal)
     iso = _process_arr(isosbestic)
     if add_intercept:
@@ -152,13 +152,13 @@ def IRLS_fit(
     model = sm.RLM(endog=sig, exog=iso, M=sm.robust.norms.TukeyBiweight(c=c))
     res = model.fit(maxiter=maxiter)
     fitted_iso = res.fittedvalues.astype(np.float32, copy=False)
-    return fitted_iso, res.params
+    return fitted_iso, list(res.params)
 
 def windowed_OLS_fit(
         signal: np.ndarray,
         isosbestic: np.ndarray,
         n_windows: int,
-    ) -> tuple[np.ndarray, Any]:
+        ) -> tuple[np.ndarray, list[float]]:
 
     sig_windows = np.array_split(signal, n_windows)
     iso_windows = np.array_split(isosbestic, n_windows)
@@ -171,7 +171,7 @@ def windowed_OLS_fit(
         fitted_params.append(params)
 
     fitted_iso = np.concat(fitted_windows)
-    return fitted_iso, fitted_params
+    return fitted_iso, list(fitted_params)
 
 def detrend_retrend(
         signal: np.ndarray,
@@ -179,13 +179,45 @@ def detrend_retrend(
         time: np.ndarray,
         window: int,
         stride: int | None = None,
-        ) -> tuple[np.ndarray, Any]:
+        ) -> tuple[np.ndarray, list[float]]:
 
     bleach_exp, params_exp = fit_photobleaching(signal, time, window, stride)
     bleach_iso, params_iso = fit_photobleaching(isosbestic, time, window, stride)
 
     dBB_iso = (isosbestic - bleach_iso) / bleach_iso
     fitted_iso = dBB_iso * bleach_exp + bleach_exp
-    return fitted_iso, params_iso + params_exp
+
+    all_params = list(params_iso + params_exp)
+    return fitted_iso, all_params
+
+def detrend_fit_retrend(
+        signal: np.ndarray,
+        isosbestic: np.ndarray,
+        time: np.ndarray,
+        window: int,
+        maxiter: int,
+        c: float,
+        add_intercept: bool = True,
+        stride: int | None = None,
+        ) -> tuple[np.ndarray, list[float]]:
+
+    bleach_exp, params_exp = fit_photobleaching(signal, time, window, stride)
+    bleach_iso, params_iso = fit_photobleaching(isosbestic, time, window, stride)
+
+    dBB_iso = (isosbestic - bleach_iso) / bleach_iso
+    dBB_exp = (signal - bleach_exp) / bleach_exp
+
+    fitted_dBB_iso, dBB_fit_params = IRLS_fit(
+        signal=dBB_exp, 
+        isosbestic=dBB_iso, 
+        maxiter=maxiter,
+        c=c,
+        add_intercept=add_intercept,
+    )
+
+    fitted_iso = fitted_dBB_iso * bleach_exp + bleach_exp
+
+    all_params = list(params_iso + params_exp + dBB_fit_params)
+    return fitted_iso, all_params
 
 #endregion

@@ -3,7 +3,7 @@
 from __future__ import annotations
 from collections.abc import Sequence
 from numbers import Real
-from typing import Any, Literal, Callable
+from typing import Any, Literal, Callable, TypeAlias
 from scipy.signal import butter, sosfiltfilt
 from sklearn.metrics import r2_score, mean_squared_error
 from plotnine import ggplot
@@ -20,6 +20,25 @@ from ..utils import graphing, operations, reference_fitting, window
 
 from ..utils.window import WindowResult
 from ..analysis.artifact import ArtifactResult, ArtifactDetector, ArtifactCorrector
+
+##########################
+#region --- DATA TYPES ---
+##########################
+
+IsoFitMethod: TypeAlias = (
+    Literal[
+        'OLS', 
+        'IRLS',  
+        'detrend_retrend',
+        'detrend_fit_retrend',
+    ]
+    | Callable[
+        [np.ndarray, np.ndarray],
+        np.ndarray,
+    ]
+)
+
+#endregion
 
 class PhotometryExperiment:
     """Handle processing and trial extraction for continuous photometry data."""
@@ -388,7 +407,8 @@ class PhotometryExperiment:
             order: int = 4,
             signal_normalization: Literal['zscore', 'nullZ', 'none'] | Callable = 'none',
             correction_method: Literal['dF/F', 'dF', 'dB/B', 'dB', 'none'] | Callable = 'dF/F',
-            fit_using: Literal['OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept', 'PB_fit'] | Callable = 'IRLS',
+            fit_using: IsoFitMethod = 'IRLS',
+            add_intercept: bool = True,
             maxiter: int = 1000,
             c: float | None = 3,
             window_dur_sec: float = 5.0,
@@ -421,19 +441,27 @@ class PhotometryExperiment:
 
             - ``OLS``: ordinary least squares (simplest and fastest)
             - ``IRLS``: iteratively re-weighted least squares (recommended default)
-            - ``*_no_intercept``: without intercept, leaving only the scaling parameter
-                (recommended for expreiments with long-large transients)
-            - ``PB_fit``: map the photobleaching curve from the isosbestic to the
+            - ``detrend_retrend``: map the photobleaching curve from the isosbestic to the
                 experimental signal (recommended when the bleaching dyanmics
                 between the experimental and isosbestic are drastically different)
+            - ``detrend_fit_retrend``: same as ``detrend_retrend``, but the detrended
+                isosbestic is fit to the detrended experimental signal using IRLS before
+                retrending.
 
+        add_intercept : bool, default=True
+            Whether to include an intercept in the isosbestic fitting, if applicable to
+            ``fit_using`` selection. Any ``fit_using`` method that uses OLS or IRLS
+            will be effected by this parameter.
         maxiter : int, default=1000
-            Maximum iterations for IRLS fitting.
+            Maximum iterations for IRLS fitting. Effects only ``fit_using == IRLS 
+            or detrend_fit_retrend``.
         c : float or None, default=None
-            IRLS tuning constant.
+            IRLS tuning constant. Effects only ``fit_using == IRLS 
+            or detrend_fit_retrend``.
         window_dur_sec : float, default=5
             Sliding-window duration for photobleaching strided median
-            downsampling in seconds.
+            downsampling in seconds. Relevant to ``correction_method == dB or dB/B``
+            and ``fit_using == detrend_retrend or detrend_fit_retrend``.
         channel_mode : {'auto', 'dual', 'single'}, default='auto'
             Optional channel mode overwrite.
         artifact_detector : ArtifactDetector or None, default=None
@@ -490,6 +518,7 @@ class PhotometryExperiment:
             fitted_ref, r2_val, coeffs = self.fit_isosbestic_to_signal(
                 filt_sig,
                 filt_iso,
+                add_intercept=add_intercept,
                 maxiter=maxiter,
                 fit_using=fit_using,
                 c=c,
@@ -786,6 +815,7 @@ class PhotometryExperiment:
             signal: np.ndarray,
             isosbestic: np.ndarray,
             fit_using: Literal['OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept', 'PB_fit'] | Callable = 'IRLS',
+            add_intercept: bool = True,
             maxiter: int = 1000,
             c: float | None = None,
             window_dur_sec: float = 5,
@@ -829,24 +859,24 @@ class PhotometryExperiment:
                 fitted_iso, params = fit_using(signal, isosbestic)
             case 'OLS':
                 fitted_iso, params = reference_fitting.OLS_fit(
-                    signal, isosbestic, add_intercept=True
+                    signal, isosbestic, add_intercept=add_intercept
                 )
             case 'IRLS':
                 fitted_iso, params = reference_fitting.IRLS_fit(
-                    signal, isosbestic, maxiter=maxiter, c=c, add_intercept=True
+                    signal, isosbestic, maxiter=maxiter, c=c, add_intercept=add_intercept
                 )
-            case 'OLS_no_intercept':
-                fitted_iso, params = reference_fitting.OLS_fit(
-                    signal, isosbestic, add_intercept=False
-                )
-            case 'IRLS_no_intercept':
-                fitted_iso, params = reference_fitting.IRLS_fit(
-                    signal, isosbestic, maxiter=maxiter, c=c, add_intercept=False
-                )
-            case 'PB_fit':
+            case 'detrend_retrend':
                 window = int(self.frequency * window_dur_sec)
                 fitted_iso, params = reference_fitting.detrend_retrend(
                     signal, isosbestic, self.time, window,
+                )
+            case 'detrend_fit_retrend':
+                window = int(self.frequency * window_dur_sec)
+                fitted_iso, params = reference_fitting.detrend_fit_retrend(
+                    signal, isosbestic, self.time, window,
+                    maxiter=maxiter,
+                    c=c,
+                    add_intercept=add_intercept,
                 )
             case _:
                 raise ValueError(f'{fit_using} fitting method not recognized!')

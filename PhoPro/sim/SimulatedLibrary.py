@@ -222,7 +222,7 @@ class SimulatedLibrary:
             cls,
             contanst_kwargs: dict[str, Any],
             to_permute_kwargs: dict[str, list[Any]],
-            across_kwargs: list[dict[str, Any]] | None = None,
+            across_kwargs: dict[str, dict[str, Any]] | None = None,
             replicates: int = 1,
             seed: int | None = None,
             ) -> Self:
@@ -236,8 +236,8 @@ class SimulatedLibrary:
         to_permute_kwargs : dict[str, list[Any]]
             Keyword arguments whose values are fully crossed to create
             parameter permutations. Each value must be a list of candidates.
-        across_kwargs : list[dict[str, Any]] or None, default=None
-            List of keyword arguments to iterate through making a new combination
+        across_kwargs : dict[str, dict[str, Any]] | None or None, default=None
+            Labeled dictionary of keyword arguments to iterate through making a new combination
             for each element in the list.
         replicates : int, default=1
             Number of replicate simulations generated for each permutation.
@@ -252,9 +252,10 @@ class SimulatedLibrary:
         """
         # pre-validate kwargs
         cls._validate_kwargs(SimulatedPhotometry.from_parameters, contanst_kwargs)
-        cls._validate_kwargs(SimulatedPhotometry.from_parameters, to_permute_kwargs)
+        if to_permute_kwargs is not None:
+            cls._validate_kwargs(SimulatedPhotometry.from_parameters, to_permute_kwargs)
         if across_kwargs is not None:
-            for kwargs in across_kwargs:
+            for label, kwargs in across_kwargs.items():
                 cls._validate_kwargs(SimulatedPhotometry.from_parameters, kwargs)
 
         generator = ParamPermutationGenerator(
@@ -442,8 +443,8 @@ class ParamPermutationGenerator:
     to_permute_kwargs : dict[str, list[Any]]
         Keyword arguments whose values are fully crossed to create parameter
         permutations.
-    across_kwargs : list[dict[str, Any]] or None, default=None
-        List of keyword arguments to iterate through making a new combination
+    across_kwargs : dict[str, dict[str, Any]] | None or None, default=None
+        Labeled dictionary of keyword arguments to iterate through making a new combination
         for each element in the list.
     replicates : int, default=1
         Number of replicate simulations generated for each permutation.
@@ -468,15 +469,15 @@ class ParamPermutationGenerator:
     def __init__(
             self,
             contanst_kwargs: dict[str, Any],
-            to_permute_kwargs: dict[str, list[Any]],
-            across_kwargs: list[dict[str, Any]] | None = None,
+            to_permute_kwargs: dict[str, list[Any]] | None = None,
+            across_kwargs: dict[str, dict[str, Any]] | None = None,
             replicates: int = 1,
             seed: int | None = None,
             ) -> None:
         """Initialize the parameter permutation generator."""
         # assign attrs
         self.constants = contanst_kwargs
-        self.to_permute = to_permute_kwargs
+        self.to_permute = {} if to_permute_kwargs is None else to_permute_kwargs
         self.across = [{}] if across_kwargs is None else across_kwargs
         self.has_across = across_kwargs is not None
         self.replicates = replicates
@@ -487,7 +488,7 @@ class ParamPermutationGenerator:
 
     # --- VALIDATE ---
     def _validate_across_and_permutation_kwargs(self) -> None:
-        for across_kwargs in self.across:
+        for label, across_kwargs in self.across.items():
             key_overlap = set(across_kwargs.keys()) & set(self.to_permute.keys())
             if len(key_overlap) != 0:
                 raise ValueError(
@@ -526,7 +527,7 @@ class ParamPermutationGenerator:
         params = {}
 
         for perm_id, perm in enumerate(permutations):
-            for across_id, across in enumerate(self.across):
+            for across_id, (across_label, across) in enumerate(self.across.items()):
                 combo = self.constants | perm | across
 
                 for rep_id in range(self.replicates):
@@ -537,6 +538,7 @@ class ParamPermutationGenerator:
                             'ACROSS_ID' : across_id,
                             'PERM_ID' : perm_id,
                             'REP_ID' : rep_id,
+                            'CONDITION_ID' : across_label
                         }
                     )
                     i += 1
