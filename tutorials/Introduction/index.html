@@ -1,0 +1,2676 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for the PhoPro Python package">
+      
+      
+      
+        <link rel="canonical" href="https://ggolde.github.io/PhoPro/tutorials/Introduction/">
+      
+      
+        <link rel="prev" href="../../installation/">
+      
+      
+        <link rel="next" href="../Simulating%20Photometry/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Introduction - PhoPro</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#introduction" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PhoPro" class="md-header__button md-logo" aria-label="PhoPro" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PhoPro
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Introduction
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PhoPro" class="md-nav__button md-logo" aria-label="PhoPro" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PhoPro
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Simulating%20Photometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulating Photometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Signal%20Processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signal Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Data%20Handling%20and%20Analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Handling & Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Batch%20Processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batch Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhoPro
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PhoPro
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryExperiment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryExperiment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryData/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryData
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryLoader/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryLoader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryPipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryPipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Simulation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/sim/SimulatedPhotometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SimulatedPhotometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/sim/layers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation Layers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/artifact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/peaks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Peaks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/FMM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FMM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="introduction">Introduction</h1>
+<p>This tutorial requires ipykernel and Jupyter Notebooks. It covers the basics of the <code>PhoPro</code> package for photometry data processing, handling, and analysis.</p>
+<p>While using this package does not require much coding or technical knowledge, it is the good to get familiar with:</p>
+<ul>
+<li>
+<p><a href="https://www.w3schools.com/python/default.asp">Basic Python</a>.</p>
+</li>
+<li>
+<p>The <a href="https://www.w3schools.com/python/numpy/default.asp">numpy package</a> and numpy arrays.</p>
+</li>
+<li>
+<p>The <a href="https://www.w3schools.com/python/pandas/">pandas package</a> and pandas DataFrames.</p>
+</li>
+<li>
+<p>The <a href="">components of photometry measurements</a>.</p>
+</li>
+<li>
+<p>(Optional) the <a href="https://plotnine.org">plotnine package</a> as that is what this package uses as a plotting backend.</p>
+</li>
+</ul>
+<p><code>PhoPro</code> is organized into 4 main modules:</p>
+<ul>
+<li>
+<p><strong>PhotometryLoader</strong> - classes to load various photometry data formats.</p>
+</li>
+<li>
+<p><strong>PhotometryExperiment</strong> - a class for processing and windowing photometry experiments with many avaliable preprocessing methods.</p>
+</li>
+<li>
+<p><strong>PhotometryData</strong> - a class holding trial-wise signals and metadata with advanced filtering, averaging, windowing, and analysis functionality.</p>
+</li>
+<li>
+<p><strong>PhotometryPipeline</strong> - a class for easy, highly-customizable bulk processing of photometry data.</p>
+</li>
+</ul>
+<h1 id="setup">Setup</h1>
+<p>First we need to import the necessary packages. If you have trouble importing any of the <code>PhoPro</code> modules check to make sure your enviroment is active in the Jupyter Notebook and all dependencies are install properly (see the <a href="">Installation</a> guide on the docs).</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PhoPro</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotometryExperiment</span><span class="p">,</span> <span class="n">PhotometryData</span><span class="p">,</span> <span class="n">PhotometryPipeline</span>
+</span></code></pre></div>
+<h1 id="1-loading-data">1. Loading Data</h1>
+<p>We will begin by learning how to load data from a CSV file into the <code>PhoPro</code> package. The CSV file contains the columns: "time", containing timepoints; "raw_signal" and "raw_isosbestic", containing the signal from experimental and isosbestic wavelengths; and "trial_cue", "lever1", "lever2", and "shock", containing event timestamps.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># import the loader class for your specifc data format</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PhoPro</span><span class="w"> </span><span class="kn">import</span> <span class="n">CSVLoader</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># initialize the loader</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">loader</span> <span class="o">=</span> <span class="n">CSVLoader</span><span class="p">(</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">csv</span><span class="o">=</span> <span class="s1">&#39;data/experiments/example_experiment.csv&#39;</span><span class="p">,</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">time_col</span><span class="o">=</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">signal_col</span><span class="o">=</span> <span class="s1">&#39;raw_signal&#39;</span><span class="p">,</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">isosbestic_col</span><span class="o">=</span> <span class="s1">&#39;raw_isosbestic&#39;</span><span class="p">,</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">event_cols</span><span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">]</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># extract the data and load it into the PhotometryExperiment class</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">exp</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># see if data was successfully loaded</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">exp</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Dual channel photometry experiment with 100000 timepoints.
+</code></pre></div>
+<p>We can also load in important metadata from annotation files. Currently supported formats are JSON and YML. Built-in loaders also automatically pass down the source file to experimental metadata.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># initialize the loader</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">loader</span> <span class="o">=</span> <span class="n">CSVLoader</span><span class="p">(</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">csv</span><span class="o">=</span> <span class="s1">&#39;data/experiments/example_experiment.csv&#39;</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">time_col</span><span class="o">=</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">signal_col</span><span class="o">=</span> <span class="s1">&#39;raw_signal&#39;</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">isosbestic_col</span><span class="o">=</span> <span class="s1">&#39;raw_isosbestic&#39;</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">event_cols</span><span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">],</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">annotation_file</span><span class="o">=</span><span class="s1">&#39;data/experiments/example_annotation.json&#39;</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">annotation_handler</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># extract the data and load it into the PhotometryExperiment class</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">exp</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1"># see what matedata was picked up</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">exp</span><span class="o">.</span><span class="n">metadata</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>{&#39;source&#39;: &#39;data/experiments/example_experiment.csv&#39;,
+ &#39;subject&#39;: &#39;animal_1&#39;,
+ &#39;sex&#39;: &#39;male&#39;,
+ &#39;age&#39;: &#39;young&#39;}
+</code></pre></div>
+<p>Other built in loaders, like the <code>TDTLoader</code>, behave very similarly to the <code>CSVLoader</code>.</p>
+<h1 id="2-signal-processing">2. Signal processing</h1>
+<p>Once you have your data loaded, the next step in most workflows is to preprocess the signals. The exact steps depend on whether or not the experiment conatins an isosbestic trace:</p>
+<ul>
+<li>
+<p><strong>Dual-channel</strong> experiments have an isosbestic reference signal. They are generally more common and produce a cleaner signal by using the concentration agnostic isosbestic signal to correct signal artifacts and photobleaching. </p>
+</li>
+<li>
+<p><strong>Single-channel</strong> experiments do NOT have an isosbestic signal. They are usually less common and require extra steps to correct for photobleaching and artifacts.</p>
+</li>
+</ul>
+<h2 id="21-dual-channel-processing">2.1. Dual-channel processing</h2>
+<p>The general scheme for processing a <strong>dual-channel</strong> experiment is:</p>
+<ol>
+<li>
+<p>Apply a low-pass filter to both the experimental and isosbestic signals to filter out high frequency noise.</p>
+</li>
+<li>
+<p>Fit the isosbestic to the experimental signal using a linear equation: <span class="arithmatex">\(\text{Exp} = \beta_1 \cdot \text{Iso} + \beta_0\)</span>.</p>
+</li>
+<li>
+<p>Apply an isosbestic correction either <code>dF/F</code> or <code>dF</code>.</p>
+<ul>
+<li><code>dF/F</code> <span class="arithmatex">\(= (\text{Exp.} - \text{Iso}_\text{ fitted}) / \text{Iso}_\text{ fitted}\)</span></li>
+<li><code>dF</code> <span class="arithmatex">\(= (\text{Exp.} - \text{Iso}_\text{ fitted})\)</span></li>
+</ul>
+</li>
+<li>
+<p>Optionally normalize the entire signal.</p>
+</li>
+</ol>
+<p>For most experiments the following parameters are recommended based on the findings in <a href="https://doi.org/10.1117/1.NPh.12.2.025003">Keevers et al., 2025</a>:</p>
+<ul>
+<li>A low-pass filter with a cutoff of 3 Hz and order of 4.</li>
+<li>Fitting the isosbestic curve with iteratively-reweighted least squares (IRLS).</li>
+<li>Using the <code>dF/F</code> correction.</li>
+<li>No whole-trial normalization.</li>
+</ul>
+<p>Let's begin by loading in our same example experiment from the previous section.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">loader</span> <span class="o">=</span> <span class="n">CSVLoader</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">csv</span><span class="o">=</span> <span class="s1">&#39;data/experiments/example_experiment.csv&#39;</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">time_col</span><span class="o">=</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">signal_col</span><span class="o">=</span> <span class="s1">&#39;raw_signal&#39;</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">isosbestic_col</span><span class="o">=</span> <span class="s1">&#39;raw_isosbestic&#39;</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">event_cols</span><span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">],</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">annotation_file</span><span class="o">=</span><span class="s1">&#39;data/experiments/example_annotation.json&#39;</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">annotation_handler</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">exp</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="c1"># this time we will assign an ID to our experiment</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">exp</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s1">&#39;Dual-channel example&#39;</span>
+</span></code></pre></div>
+<p>Now we can examine the raw traces with <code>.plot_dashboard()</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">exp</span><span class="o">.</span><span class="n">plot_dashboard</span><span class="p">()</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_15_0.png" /></p>
+<p>We can see that the raw experimental and isosbestic signals have significant photobleaching attenuation and movement artifacts. Notice, however, that the stark movement artifacts are shared between experimental and isosbestic signals. This is why using the isosbestic as a reference channel is an effective way to correct for artifacts.</p>
+<p>Now is a good time to mention that all the ploting methods in this package return a <code>ggplot</code> object from the <code>plotnine</code> package, that can be directly modified to fit you publication or presentation needs. For example:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">plotnine</span><span class="w"> </span><span class="kn">import</span> <span class="n">ggplot</span><span class="p">,</span> <span class="n">theme</span><span class="p">,</span> <span class="n">labs</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">p</span><span class="p">:</span> <span class="n">ggplot</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">plot_dashboard</span><span class="p">()</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">p</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="o">+</span> <span class="n">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;New title&#39;</span><span class="p">)</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">p</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_18_0.png" /></p>
+<p>Now let's process the signal using the <code>.preprocess_signal()</code> methods. This method will:</p>
+<ul>
+<li>
+<p>Apply a low-pass <a href="https://en.wikipedia.org/wiki/Butterworth_filter">butterworth filter</a> with a specified cutoff frequency and order</p>
+</li>
+<li>
+<p>Fit the isosbestic to the experimental signal using a customizable method</p>
+</li>
+<li>
+<p>Apply the isosbestic correction</p>
+</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">exp</span><span class="o">.</span><span class="n">preprocess_signal</span><span class="p">(</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="c1"># lowpass butterworth params</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">cutoff_frequency</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="c1"># correction method and isosbestic fit params</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">correction_method</span><span class="o">=</span><span class="s1">&#39;dF/F&#39;</span><span class="p">,</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">fit_using</span><span class="o">=</span><span class="s1">&#39;IRLS&#39;</span><span class="p">,</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">maxiter</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="c1"># artifact correction params (mostly useful for single channel experiments)</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="n">artifact_detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="n">artifact_corrector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="n">channel_mode</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="p">)</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="c1"># examine the fitted isosbestic and processed signal</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="n">exp</span><span class="o">.</span><span class="n">plot_dashboard</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_20_0.png" /></p>
+<p>Notice how:</p>
+<ul>
+<li>
+<p>The filtered signals have much less high-frequency noise due to low-pass filtering.</p>
+</li>
+<li>
+<p>The fitted isosbestic overlaps very nicely with the experimental signal except for some peak transients.</p>
+</li>
+<li>
+<p>The processed signal is free of photobleaching attenuation and movement artifacts.</p>
+</li>
+<li>
+<p>The transient spikes in the processed signal have a relatively stable amplitudes over time, while the magnitude of noise increases. This is because photobleaching attenuation decreases the signal-to-noise ratio.</p>
+</li>
+</ul>
+<p>Once <code>.preprocess_signal()</code> is run, the <code>PhotometryExperiment</code> object automatically populates its <code>.metadata</code> with reference fitting and correction type information.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># view metadata</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">exp</span><span class="o">.</span><span class="n">metadata</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>{&#39;source&#39;: &#39;data/experiments/example_experiment.csv&#39;,
+ &#39;subject&#39;: &#39;animal_1&#39;,
+ &#39;sex&#39;: &#39;male&#39;,
+ &#39;age&#39;: &#39;young&#39;,
+ &#39;reference_fit&#39;: {&#39;type&#39;: &#39;isosbestic&#39;,
+  &#39;r2_val&#39;: 0.9993991834603729,
+  &#39;coeffs&#39;: array([0.02467583, 1.24905654])},
+ &#39;correction_method&#39;: &#39;dF/F&#39;}
+</code></pre></div>
+<p>Let's now compare the <code>dF/F</code> correction to the <code>dF</code> correction.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">exp</span><span class="o">.</span><span class="n">preprocess_signal</span><span class="p">(</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">cutoff_frequency</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="c1"># same parameters as before but with dF</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">correction_method</span><span class="o">=</span><span class="s1">&#39;dF&#39;</span><span class="p">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">fit_using</span><span class="o">=</span><span class="s1">&#39;IRLS&#39;</span><span class="p">,</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">maxiter</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="n">artifact_detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="n">artifact_corrector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="p">)</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="n">exp</span><span class="o">.</span><span class="n">plot_dashboard</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_25_0.png" /></p>
+<p>Now notice how:</p>
+<ul>
+<li>
+<p>The noise is constant while the transient peaks are decreasing in amplitude.</p>
+</li>
+<li>
+<p>This is because the <code>dF</code> correction does not correct for the photobleaching attenuation of the signal.</p>
+</li>
+</ul>
+<h2 id="22-single-channel-processing">2.2. Single-channel processing</h2>
+<p>The general scheme for processing a <strong>single-channel</strong> experiment is:</p>
+<ol>
+<li>
+<p>Apply a low-pass filter to both the experimental signal to filter out high frequency noise.</p>
+</li>
+<li>
+<p>Fit a photobleaching curve to the experimental signal.</p>
+<ul>
+<li>This package uses a negative biexponential equation to model photobleaching: <span class="arithmatex">\(\quad \alpha_1 \exp(-t / \tau_1) + \alpha_2 \exp(-t / \tau_2) + c\)</span></li>
+</ul>
+</li>
+<li>
+<p>Apply an reference correction either <code>dB/B</code> or <code>dB</code>.</p>
+<ul>
+<li><code>dF/F</code> <span class="arithmatex">\(= (\text{Exp.} - \text{B}_\text{ fitted}) / \text{B}_\text{ fitted}\)</span></li>
+<li><code>dF</code> <span class="arithmatex">\(= (\text{Exp.} - \text{B}_\text{ fitted})\)</span></li>
+</ul>
+</li>
+<li>
+<p>Detect and correct artifacts.</p>
+<ul>
+<li>Since a reference channel isosbestic curve that shares artifacts is not present manual artifact detection and correction is required.</li>
+</ul>
+</li>
+</ol>
+<p>We will begin by loading our example experiment like in 2.1, but we will not load the isosbestic trace. Notice how our dashboard plot only contains the raw experimental signal now.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># initialize the loader</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">loader</span> <span class="o">=</span> <span class="n">CSVLoader</span><span class="p">(</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">csv</span> <span class="o">=</span> <span class="s1">&#39;data/experiments/example_experiment.csv&#39;</span><span class="p">,</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">time_col</span> <span class="o">=</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">signal_col</span> <span class="o">=</span> <span class="s1">&#39;raw_signal&#39;</span><span class="p">,</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">isosbestic_col</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="n">event_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">]</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="p">)</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># extract the data and load it into the PhotometryExperiment class</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="n">exp</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="n">exp</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s1">&#39;Single-channel Example&#39;</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="n">exp</span><span class="o">.</span><span class="n">plot_dashboard</span><span class="p">()</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_29_0.png" /></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">exp</span><span class="o">.</span><span class="n">preprocess_signal</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="c1"># lowpass butterworth params</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">cutoff_frequency</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="c1"># correction method and isosbestic fit params</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">correction_method</span><span class="o">=</span><span class="s1">&#39;dB/B&#39;</span><span class="p">,</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">fit_using</span><span class="o">=</span><span class="s1">&#39;IRLS&#39;</span><span class="p">,</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="p">)</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">exp</span><span class="o">.</span><span class="n">plot_dashboard</span><span class="p">()</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_30_0.png" /></p>
+<p>Our photobleaching curve fit very well. However, our processed signal still contains major artifacts - most prominently one large "jump" artifact.</p>
+<p>To correct those artifacts, we need to setup our artifact handlers from the <code>artifact</code> module. The two most common types of artifacts are:</p>
+<ul>
+<li>
+<p>Spike artifacts: sharp pings that readily return to baseline</p>
+</li>
+<li>
+<p>Jump artifacts: sharp changes that change the baseline value of signal for an extended period</p>
+</li>
+</ul>
+<p>Below we will use a detector the uses outlier derivative score-based detection and a corrector that fills artifacts with a spline interpolator.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># import artifact handlers</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PhoPro.analysis.artifact</span><span class="w"> </span><span class="kn">import</span> <span class="n">ODS_Detector</span><span class="p">,</span> <span class="n">Spline_Corrector</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># instantiate artifact detector and corrector</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">ODS_Detector</span><span class="p">(</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">score_threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">jump_score_threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="n">expand_sec</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="n">buffer_sec</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="n">n_chunks</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="p">)</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="n">corrector</span> <span class="o">=</span> <span class="n">Spline_Corrector</span><span class="p">(</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    <span class="n">anchor_sec</span><span class="o">=</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>    <span class="n">correct_spikes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>    <span class="n">correct_jumps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="p">)</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="n">exp</span><span class="o">.</span><span class="n">preprocess_signal</span><span class="p">(</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>    <span class="c1"># lowpass butterworth params</span>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>    <span class="n">cutoff_frequency</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>    <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a>    <span class="c1"># correction method and isosbestic fit params</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>    <span class="n">correction_method</span><span class="o">=</span><span class="s1">&#39;dB/B&#39;</span><span class="p">,</span>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>    <span class="n">fit_using</span><span class="o">=</span><span class="s1">&#39;IRLS&#39;</span><span class="p">,</span>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a>    <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a>    <span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a>
+</span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a>    <span class="c1"># pass in our artifact handlers</span>
+</span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a>    <span class="n">artifact_detector</span><span class="o">=</span><span class="n">detector</span><span class="p">,</span>
+</span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>    <span class="n">artifact_corrector</span><span class="o">=</span><span class="n">corrector</span><span class="p">,</span>
+</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="p">)</span>
+</span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="n">exp</span><span class="o">.</span><span class="n">plot_dashboard</span><span class="p">()</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_32_0.png" /></p>
+<p>We can see the recovered signal with artifact correction has much less artifacting. Manual artifact correction is not perfect so using an isosbestic reference signal is preferred.</p>
+<h1 id="3-trial-windowing">3. Trial Windowing</h1>
+<p>Once we have our processed, hopefully artifact-free, signal, we usually want to window the whole it into many smalled trials based on event or manual timestamps.</p>
+<p>First, let's reload and process our example signal and inspect which events are present.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># load</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">loader</span> <span class="o">=</span> <span class="n">CSVLoader</span><span class="p">(</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">csv</span><span class="o">=</span> <span class="s1">&#39;data/experiments/example_experiment.csv&#39;</span><span class="p">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">time_col</span><span class="o">=</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">signal_col</span><span class="o">=</span> <span class="s1">&#39;raw_signal&#39;</span><span class="p">,</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">isosbestic_col</span><span class="o">=</span> <span class="s1">&#39;raw_isosbestic&#39;</span><span class="p">,</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">event_cols</span><span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">],</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">annotation_file</span><span class="o">=</span><span class="s1">&#39;data/experiments/example_annotation.json&#39;</span><span class="p">,</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">annotation_handler</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="p">)</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="n">exp</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="n">exp</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="s1">&#39;Trial Extraction Example&#39;</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="c1"># process</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="n">exp</span><span class="o">.</span><span class="n">preprocess_signal</span><span class="p">(</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="n">correction_method</span><span class="o">=</span><span class="s1">&#39;dF/F&#39;</span><span class="p">,</span>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    <span class="n">fit_using</span><span class="o">=</span><span class="s1">&#39;IRLS&#39;</span><span class="p">,</span>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="p">)</span>
+</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>
+</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="c1"># examine events present</span>
+</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="n">exp</span><span class="o">.</span><span class="n">event_labels</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>[&#39;trial_cue&#39;, &#39;lever1&#39;, &#39;lever2&#39;, &#39;shock&#39;]
+</code></pre></div>
+<p>This simulated dataset models a risky-decision making behavioral experiment wherein:
+*  A light turns on signifying the beginning of trial, represented by "trial_cue".</p>
+<ul>
+<li>
+<p>Then the rat has between 2 and 4 seconds after the "trial_cue" to choose 1 of 2 levers that when pressed register as "lever1" and "lever2".</p>
+</li>
+<li>
+<p>"lever1" gives the rat a large food reward but there is a chance of the rat being shocked immediately after, represented by the "shock" event.</p>
+</li>
+<li>
+<p>"lever2" gives the rat a small food reward.</p>
+</li>
+</ul>
+<p>To slice the processed signal in <code>PhotometryExperiment</code> into a many events we use the method <code>.extract_trial_data()</code>, which holds its result as a <code>PhotometryData</code> object in the <code>.trial_data</code> attribute.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">exp</span><span class="o">.</span><span class="n">extract_trial_data</span><span class="p">(</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="c1"># what event should we consider the &quot;start&quot; of a trial</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">align_to</span><span class="o">=</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="c1"># what event(s) within a trial do we want to center on, i.e. be 0s</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    <span class="c1"># they should be mutually exclusive and if none are present in a trial it is centered to &quot;align_to&quot;</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="n">center_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">],</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="c1"># how long in seconds should our trials be relative to &quot;center_on&quot;</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">trial_bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="c1"># expected range of our events relative to &quot;align_to&quot;</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>    <span class="c1"># if the value is None, the range defaults to &quot;trial_bounds&quot;</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>    <span class="n">event_tolerences</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>        <span class="s1">&#39;lever1&#39;</span><span class="p">:(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>        <span class="s1">&#39;lever2&#39;</span><span class="p">:(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>        <span class="s1">&#39;shock&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>    <span class="p">},</span>
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>    <span class="c1"># optional bounds for a &quot;baseline&quot; relative to the &quot;align_to&quot; event in seconds</span>
+</span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>    <span class="n">baseline_bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-13-22"><a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a>
+</span><span id="__span-13-23"><a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a>    <span class="c1"># which trial-wise normalization should be preformed</span>
+</span><span id="__span-13-24"><a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a>    <span class="c1"># most normalization require a baseline bound to be present</span>
+</span><span id="__span-13-25"><a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>    <span class="n">trial_normalization</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+</span><span id="__span-13-26"><a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a>
+</span><span id="__span-13-27"><a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a>    <span class="c1"># if multiple of the same event are within specified tolerences which should be picked</span>
+</span><span id="__span-13-28"><a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a>    <span class="n">event_conflict_logic</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span>
+</span><span id="__span-13-29"><a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a>
+</span><span id="__span-13-30"><a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a>    <span class="c1"># should an error be thrown if multiple &quot;center_on&quot; event are present in the same trial and within tolerence</span>
+</span><span id="__span-13-31"><a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a>    <span class="n">check_overlap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-13-32"><a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a>
+</span><span id="__span-13-33"><a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a>    <span class="c1"># toggle whether events that are not in &quot;event_tolerences&quot; are passed down</span>
+</span><span id="__span-13-34"><a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a>    <span class="n">all_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-13-35"><a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a>
+</span><span id="__span-13-36"><a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a>    <span class="c1"># the method for how windows are constructed</span>
+</span><span id="__span-13-37"><a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a>    <span class="n">window_alignment</span><span class="o">=</span><span class="s1">&#39;interp&#39;</span>
+</span><span id="__span-13-38"><a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a><span class="p">)</span>
+</span><span id="__span-13-39"><a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a>
+</span><span id="__span-13-40"><a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a><span class="n">trials</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">trial_data</span>
+</span><span id="__span-13-41"><a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a><span class="n">trials</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 20 trials, 1600 timepoints, and 7 observations.
+</code></pre></div>
+<p>We can see from the displayed <code>PhotometryData</code>, that we extracted 20 trials, each with 999 timepoints.</p>
+<h1 id="4-handling-trial-wise-data">4. Handling Trial-wise Data</h1>
+<p>This package stores trial-wise information in a <code>PhotometryData</code> object that uses <a href="https://github.com/scverse/anndata">anndata</a> as the underlying data structure. This object can be written to and read from the .h5ad format and has many useful functions for data handling and analysis. It can also hold the trial-wise data from multiple experiments.</p>
+<p>First let's save the data we extracted in 3. and load back in a clean file.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">trials</span><span class="o">.</span><span class="n">write_h5ad</span><span class="p">(</span><span class="s1">&#39;output/example_trials.h5ad&#39;</span><span class="p">)</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">trials</span> <span class="o">=</span> <span class="n">PhotometryData</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s1">&#39;data/trials/example_trials.h5ad&#39;</span><span class="p">)</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">trials</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 20 trials, 1598 timepoints, and 7 observations.
+</code></pre></div>
+<p>The main attributes of a <code>PhotometryData</code> object are:</p>
+<ul>
+<li>
+<p><code>.obs</code> a pandas DataFrame holding trial-wise metadata (i.e. subject, event timestamps)</p>
+</li>
+<li>
+<p><code>.X</code> a 2D numpy array holding the processed signals of each trial (of shape n_trials, n_times)</p>
+</li>
+<li>
+<p><code>.ts</code> a 1D numpy array of the time series</p>
+</li>
+</ul>
+<p>Let's examine these attributes below. Note that the event timestamp present in the experiment automatically populate <code>.obs</code>, with <code>NaN</code> values corresponding to the event being abscent in that trial. </p>
+<p>Three other columns are also automatically populated by <code>extract_trial_data()</code>:</p>
+<ul>
+<li>
+<p><code>trial_num</code>: the order of trials found in the experiment.</p>
+</li>
+<li>
+<p><code>start_time</code>: the time within the experiment that the trial starts.</p>
+</li>
+<li>
+<p><code>stop_time</code>: the time within the experiment that the trial ends.</p>
+</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>start_time</th>
+      <th>stop_time</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>15.52</td>
+      <td>31.50581</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>65.23</td>
+      <td>81.21581</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>113.05</td>
+      <td>129.03581</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>167.51</td>
+      <td>183.49581</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>217.89</td>
+      <td>233.87581</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">display</span><span class="p">(</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">trials</span><span class="o">.</span><span class="n">ts</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span>     <span class="c1"># time series</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">trials</span><span class="o">.</span><span class="n">X</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">10</span><span class="p">],</span>  <span class="c1"># trial signals</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">trials</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>     <span class="c1"># of shape (n_trials, n_times)</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>array([-8.       , -7.9899901, -7.9799802, -7.9699703, -7.9599604,
+       -7.9499505, -7.9399406, -7.9299307, -7.9199208, -7.9099109])
+
+
+
+array([[0.00568005, 0.00563251, 0.00561191, 0.00562358, 0.00567088,
+        0.00575452, 0.00587314, 0.00602279, 0.00619719, 0.00638825],
+       [0.00108119, 0.00089587, 0.00072785, 0.00058132, 0.00045983,
+        0.0003662 , 0.00030247, 0.00026987, 0.00026861, 0.0002981 ]])
+
+
+
+(20, 1598)
+</code></pre></div>
+<p>We will go ahead and drop the start and end time columns, as it is mainly diagnostic information and they won't be useful for us.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">trials</span><span class="o">.</span><span class="n">drop_obs_columns</span><span class="p">([</span><span class="s1">&#39;start_time&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_time&#39;</span><span class="p">])</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Now let's see what we are working with by graphing the trials with <code>.plot_trials()</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">trials</span><span class="o">.</span><span class="n">plot_trials</span><span class="p">()</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_49_0.png" /></p>
+<p>We can see that there are multiple distinct shapes of trials. Let's catagorize each trial by the events present. We can store this label in <code>.obs</code>. Manipulating and analyzing data often requires the manipulation of <code>.obs</code>.</p>
+<ul>
+<li>
+<p><code>NoResponse</code> corresponds to the subject failing to choose a lever.</p>
+</li>
+<li>
+<p><code>type1</code> corresponds to the subject choosing the small reward lever ("lever2").</p>
+</li>
+<li>
+<p><code>type2</code> corresponds to the subject choosing the large reward lever ("lever1") but NOT recieving a shock.</p>
+</li>
+<li>
+<p><code>type3</code> corresponds to the subject choosing the large reward lever ("lever1") AND recieving a shock.</p>
+</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># we can use a function to manipulate the .obs dataframe</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">label_trials</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="c1"># label trial outcome by event present</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="c1"># remeber a NaN value represents a missing event</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">has_lever1</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;lever1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="n">has_lever2</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;lever2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span class="n">has_shock</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;shock&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_lever2</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;type1&#39;</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_lever1</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">has_shock</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;type2&#39;</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_lever1</span> <span class="o">&amp;</span> <span class="n">has_shock</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;type3&#39;</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">has_lever1</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">has_lever2</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NoResponse&#39;</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span class="k">return</span> <span class="n">df</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="c1"># note the new &quot;trial_label&quot; column</span>
+</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">label_trials</span><span class="p">(</span><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>trial_label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+      <td>type3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NoResponse</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Now let's plot the trials again but group them by "trial_label".</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">trials</span><span class="o">.</span><span class="n">plot_trials</span><span class="p">(</span><span class="n">group_on</span><span class="o">=</span><span class="s1">&#39;trial_label&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_53_0.png" /></p>
+<p>We can clearly see that the different trial outcomes have different signal architectures. Also note, how the peaks after "trial_cue" are aligned in the "NoResponse" trial type, but spread out in the other trial types, this is because the "NoResponse" trials are aligned to "trial_cue" but the others are aligned to lever presses - meaning there are variable latencies between "trial_cue" and lever presses.</p>
+<p>We can quantitativly compare the signal architectures by calculating summary metrics like area under the curve (AUC).</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># lets calculate the AUC between 0 and 4.9 seconds</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="c1">#   but first take the absolute value of the signal before calculation</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="c1"># this is to capture the notable negative deviation in &quot;type3&quot; trails</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;AUC_abs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">area_under_curve</span><span class="p">(</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">centers</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">4.9</span><span class="p">),</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>    <span class="n">transformation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">,</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="p">)</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>trial_label</th>
+      <th>AUC_abs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+      <td>0.074713</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+      <td>type3</td>
+      <td>0.150258</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NoResponse</td>
+      <td>0.030606</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+      <td>0.083858</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+      <td>0.087954</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># quick plot using pandas to compare differences in AUC_abs</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;trial_label&#39;</span><span class="p">,</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;AUC_abs&#39;</span><span class="p">,</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="p">)</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_56_0.png" /></p>
+<p>We can directly run an ANOVA with <code>.ANOVA()</code> to see if the differences are significant.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">trials</span><span class="o">.</span><span class="n">ANOVA</span><span class="p">(</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>    <span class="n">dependent_var</span><span class="o">=</span><span class="s1">&#39;AUC_abs&#39;</span><span class="p">,</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">between</span><span class="o">=</span><span class="s1">&#39;trial_label&#39;</span><span class="p">,</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Source</th>
+      <th>SS</th>
+      <th>DF</th>
+      <th>MS</th>
+      <th>F</th>
+      <th>p_unc</th>
+      <th>np2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>trial_label</td>
+      <td>0.016438</td>
+      <td>3</td>
+      <td>0.005479</td>
+      <td>51.521322</td>
+      <td>1.916450e-08</td>
+      <td>0.906194</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Within</td>
+      <td>0.001702</td>
+      <td>16</td>
+      <td>0.000106</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>PhotometryData</code> also provides methods to filter out specific trials and average across groups.</p>
+<p>We can pass a boolean mask or a sequence of numeric indexes to <code>.filter_rows()</code> to select the desired trials.</p>
+<p>Using <code>.collapse</code> we can average across groups in <code>.obs</code> resulting in a new <code>PhotometryData</code> object.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># filter out &quot;NoResponse&quot; trials</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">filt_trials</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">filter_rows</span><span class="p">(</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;NoResponse&#39;</span><span class="p">,</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="p">)</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="c1"># average across trial types</span>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="n">avg</span> <span class="o">=</span> <span class="n">filt_trials</span><span class="o">.</span><span class="n">collapse</span><span class="p">(</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="c1"># what .obs columns to group on</span>
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">group_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_label&#39;</span><span class="p">],</span>
+</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>
+</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>    <span class="c1"># what metrics other than mean to compute</span>
+</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>    <span class="n">metrics</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;std&#39;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">},</span>
+</span><span id="__span-24-13"><a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>
+</span><span id="__span-24-14"><a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>    <span class="c1"># what columns in .obs to also perform the aggregation on</span>
+</span><span id="__span-24-15"><a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>    <span class="n">data_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;AUC_abs&#39;</span><span class="p">],</span>
+</span><span id="__span-24-16"><a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>
+</span><span id="__span-24-17"><a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>    <span class="c1"># what to call the count column</span>
+</span><span id="__span-24-18"><a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a>    <span class="n">count_col</span><span class="o">=</span><span class="s1">&#39;n_trials&#39;</span><span class="p">,</span>
+</span><span id="__span-24-19"><a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a><span class="p">)</span>
+</span><span id="__span-24-20"><a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a>
+</span><span id="__span-24-21"><a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a><span class="n">avg</span><span class="o">.</span><span class="n">obs</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_label</th>
+      <th>n_trials</th>
+      <th>trial_cue</th>
+      <th>AUC_abs</th>
+      <th>trial_cue_std</th>
+      <th>AUC_abs_std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>type2</td>
+      <td>6</td>
+      <td>-3.358333</td>
+      <td>0.080484</td>
+      <td>0.644190</td>
+      <td>0.006149</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>type3</td>
+      <td>3</td>
+      <td>-2.680000</td>
+      <td>0.128538</td>
+      <td>0.225536</td>
+      <td>0.017163</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>type1</td>
+      <td>6</td>
+      <td>-3.030000</td>
+      <td>0.063665</td>
+      <td>0.514101</td>
+      <td>0.009130</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">trials</span><span class="o">.</span><span class="n">filter_rows</span><span class="p">(</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>    <span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;No&#39;</span><span class="p">)</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 5 trials, 1598 timepoints, and 7 observations.
+</code></pre></div>
+<p>The averaged object now only has 3 trials since we filtered out "NoResponse" trials prior to averaging. <code>.X</code> is now the average signal and the other metrics that were calculated, like "std", are stored in the <code>.layers</code> attribute of the underlying adata structure. We can access them with <code>.get_layer()</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">avg</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s1">&#39;std&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>array([[0.00244562, 0.00257221, 0.00269665, ..., 0.00746858, 0.00713986,
+        0.00677318],
+       [0.00462332, 0.00531349, 0.00596617, ..., 0.0047484 , 0.00522709,
+        0.00571096],
+       [0.00528095, 0.00476425, 0.00446005, ..., 0.01031396, 0.01048537,
+        0.01053889]], shape=(3, 1598))
+</code></pre></div>
+<p>Now we can plot the average signal for each trial type, with labels and error bars.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">avg</span><span class="o">.</span><span class="n">plot_trials</span><span class="p">(</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    <span class="n">label_with</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_label&#39;</span><span class="p">,</span> <span class="s1">&#39;n_trials&#39;</span><span class="p">],</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    <span class="n">err_layer</span><span class="o">=</span><span class="s1">&#39;std&#39;</span><span class="p">,</span>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_65_0.png" /></p>
+<p>What if we want to refocus on the subject's response to "trial_cue"? We can do this with the <code>.window()</code> method. </p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">recentered</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>    <span class="c1"># you can pass in a scalar or a sequence of timestamps as centers</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>    <span class="c1"># in this case we are using an event timestamp column in &quot;.obs&quot;</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="n">centers</span> <span class="o">=</span> <span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">],</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>    <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>    <span class="c1"># which columns in .obs to also recenter</span>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>    <span class="n">event_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">]</span>
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="p">)</span>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="n">recentered_avg</span> <span class="o">=</span> <span class="n">recentered</span><span class="o">.</span><span class="n">collapse</span><span class="p">(</span>
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a>    <span class="c1"># passing None means all the trials will be averaged</span>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>    <span class="n">group_on</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="p">)</span>
+</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>
+</span><span id="__span-28-15"><a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a><span class="n">recentered_avg</span><span class="o">.</span><span class="n">plot_trials</span><span class="p">(</span><span class="n">err_layer</span><span class="o">=</span><span class="s1">&#39;std&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Introduction_files/Introduction_67_0.png" /></p>
+<p>With windowing we can easily get a clean, aligned view of the "trial_cue" peak across trials.</p>
+<h1 id="5-bulk-processing">5. Bulk Processing</h1>
+<p>Processing experiments one at a time is all well and good, but often times we need to process dozens to hundreds of experiments. The <code>PhotometryPipeline</code> class makes batch processing easy.</p>
+<p>Take a look in the "data/pipeline/" directory. There you can see two cases of file layouts:</p>
+<ul>
+<li>
+<p>Case 1: has data (CSV) and annotation (JSON) files seperated in different folders.</p>
+</li>
+<li>
+<p>Case 2: has all data (CSV) and annotation (JSON) files in the same directory.</p>
+</li>
+</ul>
+<p>First we will tackle case 1. To use <code>PhotometryPipeline</code> first you have to initialize the object then run it with specific processing parameters. </p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PhoPro</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotometryPipeline</span><span class="p">,</span> <span class="n">CSVLoader</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="c1"># initialize a pipeline object</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="n">pipeline1</span> <span class="o">=</span> <span class="n">PhotometryPipeline</span><span class="p">(</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="c1"># point it to files within the data directory</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    <span class="n">data_directory</span><span class="o">=</span><span class="s1">&#39;data/pipeline/case1&#39;</span><span class="p">,</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>    <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">,</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>    <span class="c1"># need to specify which loader to use</span>
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    <span class="n">loader_cls</span><span class="o">=</span><span class="n">CSVLoader</span><span class="p">,</span>
+</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>
+</span><span id="__span-29-12"><a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a>    <span class="c1"># needs to be recursive to search within subdirectory</span>
+</span><span id="__span-29-13"><a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a>    <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-29-14"><a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a>    <span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;experiment_*.csv&#39;</span>
+</span><span id="__span-29-15"><a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a><span class="p">)</span>
+</span><span id="__span-29-16"><a id="__codelineno-29-16" name="__codelineno-29-16" href="#__codelineno-29-16"></a>
+</span><span id="__span-29-17"><a id="__codelineno-29-17" name="__codelineno-29-17" href="#__codelineno-29-17"></a><span class="c1"># see what inputs are discovered</span>
+</span><span id="__span-29-18"><a id="__codelineno-29-18" name="__codelineno-29-18" href="#__codelineno-29-18"></a><span class="n">pipeline1</span><span class="o">.</span><span class="n">discover_inputs</span><span class="p">()</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>[PosixPath(&#39;data/pipeline/case1/experiment_1/experiment_1.csv&#39;),
+ PosixPath(&#39;data/pipeline/case1/experiment_3/experiment_3.csv&#39;),
+ PosixPath(&#39;data/pipeline/case1/experiment_2/experiment_2.csv&#39;)]
+</code></pre></div>
+<p>Now that we have confirmed the inputs are correct, we can run the pipeline by passing in keyword arguments for our selected <code>PhotometryLoader</code>, <code>PhotometryExperiment.preprocess_signal()</code>, and <code>PhotometryExperiment.extract_trial_data()</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="c1"># .preprocess_signal() arguments</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="n">preprocess_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>    <span class="n">correction_method</span> <span class="o">=</span> <span class="s1">&#39;dF/F&#39;</span><span class="p">,</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>    <span class="n">fit_using</span> <span class="o">=</span> <span class="s1">&#39;OLS&#39;</span><span class="p">,</span>
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="p">)</span>
+</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>
+</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="c1"># .extract_trial_data() arguments</span>
+</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="n">trial_extraction_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>    <span class="n">align_to</span><span class="o">=</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span>
+</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a>    <span class="n">center_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">],</span>
+</span><span id="__span-30-13"><a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a>    <span class="n">trial_bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+</span><span id="__span-30-14"><a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a>    <span class="n">trial_normalization</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+</span><span id="__span-30-15"><a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a>    <span class="n">check_overlap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-30-16"><a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a>    <span class="n">all_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-30-17"><a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a><span class="p">)</span>
+</span><span id="__span-30-18"><a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a>
+</span><span id="__span-30-19"><a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a><span class="c1"># loader arguments</span>
+</span><span id="__span-30-20"><a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a><span class="c1"># we can pass in loader kwargs as a function that takes in the csv file path</span>
+</span><span id="__span-30-21"><a id="__codelineno-30-21" name="__codelineno-30-21" href="#__codelineno-30-21"></a><span class="c1">#   so the pipeline can find the annotation files based on the csv path</span>
+</span><span id="__span-30-22"><a id="__codelineno-30-22" name="__codelineno-30-22" href="#__codelineno-30-22"></a><span class="k">def</span><span class="w"> </span><span class="nf">case1_loader_kwargs</span><span class="p">(</span><span class="n">csv</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+</span><span id="__span-30-23"><a id="__codelineno-30-23" name="__codelineno-30-23" href="#__codelineno-30-23"></a>    <span class="n">annotation_file</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;annotation.json&#39;</span>
+</span><span id="__span-30-24"><a id="__codelineno-30-24" name="__codelineno-30-24" href="#__codelineno-30-24"></a>    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span id="__span-30-25"><a id="__codelineno-30-25" name="__codelineno-30-25" href="#__codelineno-30-25"></a>        <span class="n">time_col</span> <span class="o">=</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+</span><span id="__span-30-26"><a id="__codelineno-30-26" name="__codelineno-30-26" href="#__codelineno-30-26"></a>        <span class="n">signal_col</span> <span class="o">=</span> <span class="s1">&#39;raw_signal&#39;</span><span class="p">,</span>
+</span><span id="__span-30-27"><a id="__codelineno-30-27" name="__codelineno-30-27" href="#__codelineno-30-27"></a>        <span class="n">isosbestic_col</span> <span class="o">=</span> <span class="s1">&#39;raw_isosbestic&#39;</span><span class="p">,</span>
+</span><span id="__span-30-28"><a id="__codelineno-30-28" name="__codelineno-30-28" href="#__codelineno-30-28"></a>        <span class="n">event_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">],</span>
+</span><span id="__span-30-29"><a id="__codelineno-30-29" name="__codelineno-30-29" href="#__codelineno-30-29"></a>        <span class="n">annotation_file</span> <span class="o">=</span> <span class="n">annotation_file</span><span class="p">,</span>
+</span><span id="__span-30-30"><a id="__codelineno-30-30" name="__codelineno-30-30" href="#__codelineno-30-30"></a>        <span class="n">annotation_handler</span> <span class="o">=</span> <span class="s1">&#39;json&#39;</span><span class="p">,</span>
+</span><span id="__span-30-31"><a id="__codelineno-30-31" name="__codelineno-30-31" href="#__codelineno-30-31"></a>    <span class="p">)</span>
+</span><span id="__span-30-32"><a id="__codelineno-30-32" name="__codelineno-30-32" href="#__codelineno-30-32"></a>
+</span><span id="__span-30-33"><a id="__codelineno-30-33" name="__codelineno-30-33" href="#__codelineno-30-33"></a><span class="c1"># run our pipeline</span>
+</span><span id="__span-30-34"><a id="__codelineno-30-34" name="__codelineno-30-34" href="#__codelineno-30-34"></a><span class="n">trials</span><span class="p">:</span> <span class="n">PhotometryData</span> <span class="o">=</span> <span class="n">pipeline1</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span><span id="__span-30-35"><a id="__codelineno-30-35" name="__codelineno-30-35" href="#__codelineno-30-35"></a>    <span class="c1"># pass in keyword arguments</span>
+</span><span id="__span-30-36"><a id="__codelineno-30-36" name="__codelineno-30-36" href="#__codelineno-30-36"></a>    <span class="n">loader_kwargs</span> <span class="o">=</span> <span class="n">case1_loader_kwargs</span><span class="p">,</span>
+</span><span id="__span-30-37"><a id="__codelineno-30-37" name="__codelineno-30-37" href="#__codelineno-30-37"></a>    <span class="n">preprocess_kwargs</span> <span class="o">=</span> <span class="n">preprocess_kwargs</span><span class="p">,</span>
+</span><span id="__span-30-38"><a id="__codelineno-30-38" name="__codelineno-30-38" href="#__codelineno-30-38"></a>    <span class="n">trial_extraction_kwargs</span> <span class="o">=</span> <span class="n">trial_extraction_kwargs</span><span class="p">,</span>
+</span><span id="__span-30-39"><a id="__codelineno-30-39" name="__codelineno-30-39" href="#__codelineno-30-39"></a>
+</span><span id="__span-30-40"><a id="__codelineno-30-40" name="__codelineno-30-40" href="#__codelineno-30-40"></a>    <span class="c1"># do not automatically save</span>
+</span><span id="__span-30-41"><a id="__codelineno-30-41" name="__codelineno-30-41" href="#__codelineno-30-41"></a>    <span class="n">output_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-30-42"><a id="__codelineno-30-42" name="__codelineno-30-42" href="#__codelineno-30-42"></a>
+</span><span id="__span-30-43"><a id="__codelineno-30-43" name="__codelineno-30-43" href="#__codelineno-30-43"></a>    <span class="c1"># log to a file</span>
+</span><span id="__span-30-44"><a id="__codelineno-30-44" name="__codelineno-30-44" href="#__codelineno-30-44"></a>    <span class="n">log_file</span> <span class="o">=</span> <span class="s1">&#39;output/example_pipeline_case1.log&#39;</span><span class="p">,</span>
+</span><span id="__span-30-45"><a id="__codelineno-30-45" name="__codelineno-30-45" href="#__codelineno-30-45"></a>
+</span><span id="__span-30-46"><a id="__codelineno-30-46" name="__codelineno-30-46" href="#__codelineno-30-46"></a>    <span class="c1"># passdown metadata loaded from the annotations to .obs</span>
+</span><span id="__span-30-47"><a id="__codelineno-30-47" name="__codelineno-30-47" href="#__codelineno-30-47"></a>    <span class="n">passdown_metadata</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">,</span> <span class="s1">&#39;sex&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">]</span>
+</span><span id="__span-30-48"><a id="__codelineno-30-48" name="__codelineno-30-48" href="#__codelineno-30-48"></a><span class="p">)</span>
+</span><span id="__span-30-49"><a id="__codelineno-30-49" name="__codelineno-30-49" href="#__codelineno-30-49"></a>
+</span><span id="__span-30-50"><a id="__codelineno-30-50" name="__codelineno-30-50" href="#__codelineno-30-50"></a><span class="c1"># view output</span>
+</span><span id="__span-30-51"><a id="__codelineno-30-51" name="__codelineno-30-51" href="#__codelineno-30-51"></a><span class="nb">print</span><span class="p">(</span><span class="n">trials</span><span class="p">)</span>
+</span><span id="__span-30-52"><a id="__codelineno-30-52" name="__codelineno-30-52" href="#__codelineno-30-52"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 60 trials, 320 timepoints, and 11 observations.
+</code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>start_time</th>
+      <th>stop_time</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>source</th>
+      <th>subject</th>
+      <th>sex</th>
+      <th>age</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>15.50</td>
+      <td>31.45</td>
+      <td>-3.50</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>65.20</td>
+      <td>81.15</td>
+      <td>-2.70</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.25</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>113.00</td>
+      <td>128.95</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>167.50</td>
+      <td>183.45</td>
+      <td>-3.95</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>217.85</td>
+      <td>233.80</td>
+      <td>-3.80</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Dealing with case 2 is very similar; however, we do not need to make it recursive and we need to change the loader keyword arguments.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># initialize a pipeline object</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">pipeline2</span> <span class="o">=</span> <span class="n">PhotometryPipeline</span><span class="p">(</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>    <span class="n">data_directory</span><span class="o">=</span><span class="s1">&#39;data/pipeline/case2&#39;</span><span class="p">,</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>    <span class="n">target_type</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">,</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>    <span class="n">loader_cls</span><span class="o">=</span><span class="n">CSVLoader</span><span class="p">,</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>    <span class="c1"># does not need to be recursive</span>
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>    <span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>    <span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;experiment_*.csv&#39;</span>
+</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="p">)</span>
+</span><span id="__span-31-11"><a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a>
+</span><span id="__span-31-12"><a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="c1"># .preprocess_signal() arguments</span>
+</span><span id="__span-31-13"><a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="n">preprocess_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span id="__span-31-14"><a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a>    <span class="n">correction_method</span> <span class="o">=</span> <span class="s1">&#39;dF/F&#39;</span><span class="p">,</span>
+</span><span id="__span-31-15"><a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a>    <span class="n">fit_using</span> <span class="o">=</span> <span class="s1">&#39;OLS&#39;</span><span class="p">,</span>
+</span><span id="__span-31-16"><a id="__codelineno-31-16" name="__codelineno-31-16" href="#__codelineno-31-16"></a><span class="p">)</span>
+</span><span id="__span-31-17"><a id="__codelineno-31-17" name="__codelineno-31-17" href="#__codelineno-31-17"></a>
+</span><span id="__span-31-18"><a id="__codelineno-31-18" name="__codelineno-31-18" href="#__codelineno-31-18"></a><span class="c1"># .extract_trial_data() arguments</span>
+</span><span id="__span-31-19"><a id="__codelineno-31-19" name="__codelineno-31-19" href="#__codelineno-31-19"></a><span class="n">trial_extraction_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span id="__span-31-20"><a id="__codelineno-31-20" name="__codelineno-31-20" href="#__codelineno-31-20"></a>    <span class="n">align_to</span><span class="o">=</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span>
+</span><span id="__span-31-21"><a id="__codelineno-31-21" name="__codelineno-31-21" href="#__codelineno-31-21"></a>    <span class="n">center_on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">],</span>
+</span><span id="__span-31-22"><a id="__codelineno-31-22" name="__codelineno-31-22" href="#__codelineno-31-22"></a>    <span class="n">trial_bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+</span><span id="__span-31-23"><a id="__codelineno-31-23" name="__codelineno-31-23" href="#__codelineno-31-23"></a>    <span class="n">trial_normalization</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+</span><span id="__span-31-24"><a id="__codelineno-31-24" name="__codelineno-31-24" href="#__codelineno-31-24"></a>    <span class="n">check_overlap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-31-25"><a id="__codelineno-31-25" name="__codelineno-31-25" href="#__codelineno-31-25"></a>    <span class="n">all_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-31-26"><a id="__codelineno-31-26" name="__codelineno-31-26" href="#__codelineno-31-26"></a><span class="p">)</span>
+</span><span id="__span-31-27"><a id="__codelineno-31-27" name="__codelineno-31-27" href="#__codelineno-31-27"></a>
+</span><span id="__span-31-28"><a id="__codelineno-31-28" name="__codelineno-31-28" href="#__codelineno-31-28"></a><span class="c1"># loader arguments</span>
+</span><span id="__span-31-29"><a id="__codelineno-31-29" name="__codelineno-31-29" href="#__codelineno-31-29"></a><span class="c1"># we can shorten the loader_kwargs function with lambda notation</span>
+</span><span id="__span-31-30"><a id="__codelineno-31-30" name="__codelineno-31-30" href="#__codelineno-31-30"></a><span class="n">case2_loader_kwargs</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">csv</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span>
+</span><span id="__span-31-31"><a id="__codelineno-31-31" name="__codelineno-31-31" href="#__codelineno-31-31"></a>    <span class="n">time_col</span> <span class="o">=</span> <span class="s1">&#39;time&#39;</span><span class="p">,</span>
+</span><span id="__span-31-32"><a id="__codelineno-31-32" name="__codelineno-31-32" href="#__codelineno-31-32"></a>    <span class="n">signal_col</span> <span class="o">=</span> <span class="s1">&#39;raw_signal&#39;</span><span class="p">,</span>
+</span><span id="__span-31-33"><a id="__codelineno-31-33" name="__codelineno-31-33" href="#__codelineno-31-33"></a>    <span class="n">isosbestic_col</span> <span class="o">=</span> <span class="s1">&#39;raw_isosbestic&#39;</span><span class="p">,</span>
+</span><span id="__span-31-34"><a id="__codelineno-31-34" name="__codelineno-31-34" href="#__codelineno-31-34"></a>    <span class="n">event_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">],</span>
+</span><span id="__span-31-35"><a id="__codelineno-31-35" name="__codelineno-31-35" href="#__codelineno-31-35"></a>    <span class="n">annotation_file</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">),</span>
+</span><span id="__span-31-36"><a id="__codelineno-31-36" name="__codelineno-31-36" href="#__codelineno-31-36"></a>    <span class="n">annotation_handler</span> <span class="o">=</span> <span class="s1">&#39;json&#39;</span><span class="p">,</span>
+</span><span id="__span-31-37"><a id="__codelineno-31-37" name="__codelineno-31-37" href="#__codelineno-31-37"></a><span class="p">)</span>
+</span><span id="__span-31-38"><a id="__codelineno-31-38" name="__codelineno-31-38" href="#__codelineno-31-38"></a>
+</span><span id="__span-31-39"><a id="__codelineno-31-39" name="__codelineno-31-39" href="#__codelineno-31-39"></a>
+</span><span id="__span-31-40"><a id="__codelineno-31-40" name="__codelineno-31-40" href="#__codelineno-31-40"></a><span class="c1"># run our pipeline</span>
+</span><span id="__span-31-41"><a id="__codelineno-31-41" name="__codelineno-31-41" href="#__codelineno-31-41"></a><span class="n">trials</span><span class="p">:</span> <span class="n">PhotometryData</span> <span class="o">=</span> <span class="n">pipeline2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span><span id="__span-31-42"><a id="__codelineno-31-42" name="__codelineno-31-42" href="#__codelineno-31-42"></a>    <span class="n">loader_kwargs</span> <span class="o">=</span> <span class="n">case2_loader_kwargs</span><span class="p">,</span>
+</span><span id="__span-31-43"><a id="__codelineno-31-43" name="__codelineno-31-43" href="#__codelineno-31-43"></a>    <span class="n">preprocess_kwargs</span> <span class="o">=</span> <span class="n">preprocess_kwargs</span><span class="p">,</span>
+</span><span id="__span-31-44"><a id="__codelineno-31-44" name="__codelineno-31-44" href="#__codelineno-31-44"></a>    <span class="n">trial_extraction_kwargs</span> <span class="o">=</span> <span class="n">trial_extraction_kwargs</span><span class="p">,</span>
+</span><span id="__span-31-45"><a id="__codelineno-31-45" name="__codelineno-31-45" href="#__codelineno-31-45"></a>    <span class="n">output_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-31-46"><a id="__codelineno-31-46" name="__codelineno-31-46" href="#__codelineno-31-46"></a>    <span class="n">log_file</span> <span class="o">=</span> <span class="s1">&#39;output/example_pipeline_case2.log&#39;</span><span class="p">,</span>
+</span><span id="__span-31-47"><a id="__codelineno-31-47" name="__codelineno-31-47" href="#__codelineno-31-47"></a>    <span class="n">passdown_metadata</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">,</span> <span class="s1">&#39;sex&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">]</span>
+</span><span id="__span-31-48"><a id="__codelineno-31-48" name="__codelineno-31-48" href="#__codelineno-31-48"></a><span class="p">)</span>
+</span><span id="__span-31-49"><a id="__codelineno-31-49" name="__codelineno-31-49" href="#__codelineno-31-49"></a>
+</span><span id="__span-31-50"><a id="__codelineno-31-50" name="__codelineno-31-50" href="#__codelineno-31-50"></a><span class="c1"># view output</span>
+</span><span id="__span-31-51"><a id="__codelineno-31-51" name="__codelineno-31-51" href="#__codelineno-31-51"></a><span class="nb">print</span><span class="p">(</span><span class="n">trials</span><span class="p">)</span>
+</span><span id="__span-31-52"><a id="__codelineno-31-52" name="__codelineno-31-52" href="#__codelineno-31-52"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 60 trials, 320 timepoints, and 11 observations.
+</code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>start_time</th>
+      <th>stop_time</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>source</th>
+      <th>subject</th>
+      <th>sex</th>
+      <th>age</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>15.50</td>
+      <td>31.45</td>
+      <td>-3.50</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case2/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>65.20</td>
+      <td>81.15</td>
+      <td>-2.70</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.25</td>
+      <td>data/pipeline/case2/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>113.00</td>
+      <td>128.95</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case2/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>167.50</td>
+      <td>183.45</td>
+      <td>-3.95</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case2/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>217.85</td>
+      <td>233.80</td>
+      <td>-3.80</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>data/pipeline/case2/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>We can also put in custom operations and an unique identifier builder function into the pipeline.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># set up identifier builder</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="c1"># it needs to be a function that takes in a PhotometryExperiment and returns a string</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_id</span><span class="p">(</span><span class="n">exp</span><span class="p">:</span> <span class="n">PhotometryExperiment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>    <span class="n">experiment_num</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>    <span class="nb">id</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>        <span class="sa">f</span><span class="s2">&quot;exp</span><span class="si">{</span><span class="n">experiment_num</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">exp</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>    <span class="p">)</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>    <span class="k">return</span> <span class="nb">id</span>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="c1"># a pre-signal processing operation</span>
+</span><span id="__span-32-11"><a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a><span class="c1">#   that will trim the first ten time points</span>
+</span><span id="__span-32-12"><a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">post_load_func</span><span class="p">(</span><span class="n">exp</span><span class="p">:</span> <span class="n">PhotometryExperiment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-32-13"><a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a>    <span class="n">exp</span><span class="o">.</span><span class="n">trim_times_by_index</span><span class="p">(</span><span class="n">start_idx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">stop_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-32-14"><a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a>
+</span><span id="__span-32-15"><a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a><span class="c1"># a post trial extraction operation</span>
+</span><span id="__span-32-16"><a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a><span class="c1">#   that will assign trial labels</span>
+</span><span id="__span-32-17"><a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">post_extraction_func</span><span class="p">(</span><span class="n">exp</span><span class="p">:</span> <span class="n">PhotometryExperiment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-32-18"><a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a>
+</span><span id="__span-32-19"><a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a>    <span class="n">df</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">trial_data</span><span class="o">.</span><span class="n">obs</span>
+</span><span id="__span-32-20"><a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a>
+</span><span id="__span-32-21"><a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a>    <span class="n">has_lever1</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;lever1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+</span><span id="__span-32-22"><a id="__codelineno-32-22" name="__codelineno-32-22" href="#__codelineno-32-22"></a>    <span class="n">has_lever2</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;lever2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+</span><span id="__span-32-23"><a id="__codelineno-32-23" name="__codelineno-32-23" href="#__codelineno-32-23"></a>    <span class="n">has_shock</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;shock&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span>
+</span><span id="__span-32-24"><a id="__codelineno-32-24" name="__codelineno-32-24" href="#__codelineno-32-24"></a>
+</span><span id="__span-32-25"><a id="__codelineno-32-25" name="__codelineno-32-25" href="#__codelineno-32-25"></a>    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span>
+</span><span id="__span-32-26"><a id="__codelineno-32-26" name="__codelineno-32-26" href="#__codelineno-32-26"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_lever2</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;type1&#39;</span>
+</span><span id="__span-32-27"><a id="__codelineno-32-27" name="__codelineno-32-27" href="#__codelineno-32-27"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_lever1</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">has_shock</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;type2&#39;</span>
+</span><span id="__span-32-28"><a id="__codelineno-32-28" name="__codelineno-32-28" href="#__codelineno-32-28"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">has_lever1</span> <span class="o">&amp;</span> <span class="n">has_shock</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;type3&#39;</span>
+</span><span id="__span-32-29"><a id="__codelineno-32-29" name="__codelineno-32-29" href="#__codelineno-32-29"></a>    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">has_lever1</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">has_lever2</span><span class="p">,</span> <span class="s1">&#39;trial_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NoResponse&#39;</span>
+</span><span id="__span-32-30"><a id="__codelineno-32-30" name="__codelineno-32-30" href="#__codelineno-32-30"></a>
+</span><span id="__span-32-31"><a id="__codelineno-32-31" name="__codelineno-32-31" href="#__codelineno-32-31"></a>    <span class="n">exp</span><span class="o">.</span><span class="n">trial_data</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">df</span>
+</span><span id="__span-32-32"><a id="__codelineno-32-32" name="__codelineno-32-32" href="#__codelineno-32-32"></a>
+</span><span id="__span-32-33"><a id="__codelineno-32-33" name="__codelineno-32-33" href="#__codelineno-32-33"></a><span class="c1"># run our pipeline</span>
+</span><span id="__span-32-34"><a id="__codelineno-32-34" name="__codelineno-32-34" href="#__codelineno-32-34"></a><span class="n">trials</span><span class="p">:</span> <span class="n">PhotometryData</span> <span class="o">=</span> <span class="n">pipeline1</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+</span><span id="__span-32-35"><a id="__codelineno-32-35" name="__codelineno-32-35" href="#__codelineno-32-35"></a>    <span class="n">loader_kwargs</span> <span class="o">=</span> <span class="n">case1_loader_kwargs</span><span class="p">,</span>
+</span><span id="__span-32-36"><a id="__codelineno-32-36" name="__codelineno-32-36" href="#__codelineno-32-36"></a>    <span class="n">preprocess_kwargs</span> <span class="o">=</span> <span class="n">preprocess_kwargs</span><span class="p">,</span>
+</span><span id="__span-32-37"><a id="__codelineno-32-37" name="__codelineno-32-37" href="#__codelineno-32-37"></a>    <span class="n">trial_extraction_kwargs</span> <span class="o">=</span> <span class="n">trial_extraction_kwargs</span><span class="p">,</span>
+</span><span id="__span-32-38"><a id="__codelineno-32-38" name="__codelineno-32-38" href="#__codelineno-32-38"></a>    <span class="n">output_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-32-39"><a id="__codelineno-32-39" name="__codelineno-32-39" href="#__codelineno-32-39"></a>    <span class="n">log_file</span> <span class="o">=</span> <span class="s1">&#39;output/example_pipeline_case3.log&#39;</span><span class="p">,</span>
+</span><span id="__span-32-40"><a id="__codelineno-32-40" name="__codelineno-32-40" href="#__codelineno-32-40"></a>    <span class="n">passdown_metadata</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;subject&#39;</span><span class="p">,</span> <span class="s1">&#39;sex&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">],</span>
+</span><span id="__span-32-41"><a id="__codelineno-32-41" name="__codelineno-32-41" href="#__codelineno-32-41"></a>
+</span><span id="__span-32-42"><a id="__codelineno-32-42" name="__codelineno-32-42" href="#__codelineno-32-42"></a>    <span class="c1"># pass in functions</span>
+</span><span id="__span-32-43"><a id="__codelineno-32-43" name="__codelineno-32-43" href="#__codelineno-32-43"></a>    <span class="n">id_builder</span><span class="o">=</span><span class="n">build_id</span><span class="p">,</span>
+</span><span id="__span-32-44"><a id="__codelineno-32-44" name="__codelineno-32-44" href="#__codelineno-32-44"></a>    <span class="n">post_load_operation</span><span class="o">=</span><span class="n">post_load_func</span><span class="p">,</span>
+</span><span id="__span-32-45"><a id="__codelineno-32-45" name="__codelineno-32-45" href="#__codelineno-32-45"></a>    <span class="n">post_trial_extraction_operation</span><span class="o">=</span><span class="n">post_extraction_func</span><span class="p">,</span>
+</span><span id="__span-32-46"><a id="__codelineno-32-46" name="__codelineno-32-46" href="#__codelineno-32-46"></a><span class="p">)</span>
+</span><span id="__span-32-47"><a id="__codelineno-32-47" name="__codelineno-32-47" href="#__codelineno-32-47"></a>
+</span><span id="__span-32-48"><a id="__codelineno-32-48" name="__codelineno-32-48" href="#__codelineno-32-48"></a><span class="c1"># view output</span>
+</span><span id="__span-32-49"><a id="__codelineno-32-49" name="__codelineno-32-49" href="#__codelineno-32-49"></a><span class="nb">print</span><span class="p">(</span><span class="n">trials</span><span class="p">)</span>
+</span><span id="__span-32-50"><a id="__codelineno-32-50" name="__codelineno-32-50" href="#__codelineno-32-50"></a><span class="n">trials</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 60 trials, 320 timepoints, and 13 observations.
+</code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>start_time</th>
+      <th>stop_time</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>trial_label</th>
+      <th>experiment_id</th>
+      <th>source</th>
+      <th>subject</th>
+      <th>sex</th>
+      <th>age</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>15.50</td>
+      <td>31.45</td>
+      <td>-3.50</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+      <td>exp1_animal_1</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>65.20</td>
+      <td>81.15</td>
+      <td>-2.70</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.25</td>
+      <td>type3</td>
+      <td>exp1_animal_1</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>113.00</td>
+      <td>128.95</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NoResponse</td>
+      <td>exp1_animal_1</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>167.50</td>
+      <td>183.45</td>
+      <td>-3.95</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+      <td>exp1_animal_1</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>217.85</td>
+      <td>233.80</td>
+      <td>-3.80</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>type2</td>
+      <td>exp1_animal_1</td>
+      <td>data/pipeline/case1/experiment_1/experiment_1.csv</td>
+      <td>animal_1</td>
+      <td>male</td>
+      <td>young</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Note the new column "experiment_id" and "trial_label", and the "Running custom operations..." lines in the pipeline log.</p>
+<h1 id="summary">Summary</h1>
+<p><code>PhoPro</code> provides a comprehensive toolkit for processing, handling, and analyzing fiber photometry data. More in depth tutorials are avaliable on loading data, processing experiments, handling trial-wise data, and simulating photometry data.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

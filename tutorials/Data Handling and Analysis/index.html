@@ -1,0 +1,3015 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for the PhoPro Python package">
+      
+      
+      
+        <link rel="canonical" href="https://ggolde.github.io/PhoPro/tutorials/Data%20Handling%20and%20Analysis/">
+      
+      
+        <link rel="prev" href="../Signal%20Processing/">
+      
+      
+        <link rel="next" href="../Batch%20Processing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Data Handling & Analysis - PhoPro</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-handling-and-analysis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PhoPro" class="md-header__button md-logo" aria-label="PhoPro" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PhoPro
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data Handling & Analysis
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PhoPro" class="md-nav__button md-logo" aria-label="PhoPro" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PhoPro
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Simulating%20Photometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulating Photometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Signal%20Processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signal Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Handling & Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Batch%20Processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batch Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhoPro
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PhoPro
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryExperiment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryExperiment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryData/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryData
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryLoader/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryLoader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/core/PhotometryPipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PhotometryPipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Simulation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/sim/SimulatedPhotometry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SimulatedPhotometry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/sim/layers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation Layers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Analysis
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/artifact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/peaks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Peaks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PhoPro/analysis/FMM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FMM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="data-handling-and-analysis">Data Handling and Analysis</h1>
+<p>This tutorial gives an in depth overview of the <code>PhotometryData</code> class. <code>PhotometryData</code> is the main container for trial-wise photometry signals after an experiment has been processed and split into windows.</p>
+<p><code>PhotometryData</code> is built around an <a href="https://anndata.readthedocs.io/">AnnData</a> object. You do not need to know the ins and outs of AnnData to use this package, but it helps to understand the layout:</p>
+<ul>
+<li>
+<p><code>X</code> (np.ndarray): contains the main signal matrix with shape <code>(n_trials, n_timepoints)</code>.</p>
+</li>
+<li>
+<p><code>obs</code> (pd.DataFrame): contains a table of metadata with shape <code>(n_trials, n_observations)</code>.</p>
+</li>
+<li>
+<p><code>var</code> (pd.DataFrame): contains one row of metadata for each timepoint. In this package, its main use is to hold the values of the timepoint in the column <code>t</code>.</p>
+</li>
+<li>
+<p><code>layers</code> (np.ndarray): can store extra signal matrices of the same shape of <code>X</code>, such as standard deviations after averaging.</p>
+</li>
+<li>
+<p><code>uns</code> (dict): stores unstructured metadata about the dataset, subject, processing choices, and file provenance.</p>
+</li>
+</ul>
+<h1 id="setup">Setup</h1>
+<p>First we need to import the packages used in this tutorial.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">plotnine</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span> <span class="c1"># type: ignore</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PhoPro</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhotometryData</span>
+</span></code></pre></div>
+<h1 id="1-loading-trial-wise-data">1. Loading Trial-wise Data</h1>
+<p>Most workflows create <code>PhotometryData</code> by calling <code>PhotometryExperiment.extract_trial_data()</code> after preprocessing an experiment. The result can then be savedas an <code>.h5ad</code> file. The <code>zarr</code> format is also supported, but the <code>.h5ad</code> is more straight-forward.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">data</span> <span class="o">=</span> <span class="n">PhotometryData</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s1">&#39;data/trials/example_trials.h5ad&#39;</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">data</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 20 trials, 1598 timepoints, and 5 observations.
+</code></pre></div>
+<p>The string representation gives a compact summary of how many trials, timepoints, and observation columns are available.</p>
+<p>The underlying trial matrix is available through <code>.X</code>, where rows are trials and columns are timepoints.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>(20, 1598)
+</code></pre></div>
+<p>The time axis is available through <code>.ts</code>. <code>PhotometryData</code> also estimates <code>.freq</code> and <code>.dt</code> from this time axis.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ts</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">:])</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">freq</span><span class="p">)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>[-8.        -7.9899901 -7.9799802 -7.9699703 -7.9599604]
+[7.9457707 7.9557806 7.9657905 7.9758004 7.9858103]
+94.07852623904556
+0.010629418210262826
+</code></pre></div>
+<h1 id="2-understanding-obs-var-uns-and-layers">2. Understanding <code>obs</code>, <code>var</code>, <code>uns</code>, and <code>layers</code></h1>
+<p>The <code>obs</code> dataframe is where trial-level metadata lives. In this example, each row is a trial and the columns contain event times relative to the window. A value of <code>NaN</code> in an event column represents that the event does not within that trial.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>The <code>var</code> dataframe is across the timepoint axis. With the <code>t</code> containing the value of the time points.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">data</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>t</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-8.00000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-7.98999</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-7.97998</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-7.96997</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-7.95996</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>The <code>uns</code> dictionary stores metadata that applies to the whole dataset. If the trial data came from <code>PhotometryExperiment.extract_trial_data()</code>, <code>uns</code> is automatically populated with the experiment's <code>metadata</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">data</span><span class="o">.</span><span class="n">uns</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>{&#39;age&#39;: &#39;young&#39;,
+ &#39;correction_method&#39;: &#39;dF/F&#39;,
+ &#39;invalid_windows&#39;: None,
+ &#39;reference_fit&#39;: {&#39;coeffs&#39;: array([-0.00458822,  1.24991004]),
+  &#39;r2_val&#39;: 0.9990778344806817,
+  &#39;type&#39;: &#39;isosbestic&#39;},
+ &#39;sex&#39;: &#39;male&#39;,
+ &#39;source&#39;: &#39;data/experiments/example_experiment.csv&#39;,
+ &#39;subject&#39;: &#39;animal_1&#39;}
+</code></pre></div>
+<p>Layers store additional matrices with the same shape as <code>X</code>. This example starts without extra layers, but later we will create layers by collapsing trials. Layers can be easily accessed with the <code>get_layers</code> method.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>[]
+</code></pre></div>
+<h1 id="3-constructing-photometrydata-from-arrays">3. Constructing <code>PhotometryData</code> From Arrays</h1>
+<p><code>PhotometryData</code> objects can also be built directly from arrays. This is useful when importing data from another package, writing tests, or creating small examples.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">time_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">301</span><span class="p">)</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">obs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="s1">&#39;trial_num&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="s1">&#39;condition&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="s1">&#39;cue&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">})</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="n">signal</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">time_points</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="n">signal</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">time_points</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.25</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="n">signal</span><span class="p">[</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;condition&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)]</span> <span class="o">*=</span> <span class="mf">1.4</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="n">synthetic</span> <span class="o">=</span> <span class="n">PhotometryData</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="n">obs</span><span class="o">=</span><span class="n">obs</span><span class="p">,</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>    <span class="n">data</span><span class="o">=</span><span class="n">signal</span><span class="p">,</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="n">time_points</span><span class="o">=</span><span class="n">time_points</span><span class="p">,</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="s1">&#39;synthetic example&#39;</span><span class="p">},</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="p">)</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="n">synthetic</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 6 trials, 301 timepoints, and 3 observations.
+</code></pre></div>
+<h1 id="4-filtering-and-adding-metadata">4. Filtering and Adding Metadata</h1>
+<p><code>filter_rows</code> subsets trials and returns a new object by default. With <code>inplace=True</code>, the object will be modified in place and <code>None</code> will be returned. Often you will construct a trial selection from the values in <code>obs</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">lever_trials</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">filter_rows</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;lever1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">())</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">lever_trials</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 9 trials, 1598 timepoints, and 5 observations.
+</code></pre></div>
+<p><code>mutate_obs</code> creates a copy and adds or replaces observation columns. Values can be arrays, scalars, or functions that receive the copied <code>PhotometryData</code> object.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">annotated</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">has_lever</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;lever1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">(),</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">has_shock</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;shock&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">(),</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">trial_epoch</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;early&#39;</span><span class="p">,</span> <span class="s1">&#39;late&#39;</span><span class="p">),</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">)</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">annotated</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>has_lever</th>
+      <th>has_shock</th>
+      <th>trial_epoch</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>True</td>
+      <td>False</td>
+      <td>early</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+      <td>True</td>
+      <td>True</td>
+      <td>early</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>False</td>
+      <td>early</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>True</td>
+      <td>False</td>
+      <td>early</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>True</td>
+      <td>False</td>
+      <td>early</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>You can modify the <code>obs</code> table directly, or use <code>add_obs_columns</code> and <code>add_metadata</code> to modify the object directly. The latter are useful for adding information from dictionaries, such as annotation files.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">with_extra</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">with_extra</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;animal_1&#39;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">with_extra</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>subject</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+      <td>animal_1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">with_extra</span><span class="o">.</span><span class="n">add_obs_columns</span><span class="p">({</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="s1">&#39;session&#39;</span><span class="p">:</span> <span class="s1">&#39;example_session&#39;</span><span class="p">,</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="s1">&#39;cohort&#39;</span><span class="p">:</span> <span class="s1">&#39;tutorial&#39;</span><span class="p">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">})</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">with_extra</span><span class="o">.</span><span class="n">add_metadata</span><span class="p">({</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="s1">&#39;tutorial_note&#39;</span><span class="p">:</span> <span class="s1">&#39;added during Handling Data tutorial&#39;</span><span class="p">,</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="p">})</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="n">with_extra</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="s1">&#39;cohort&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>session</th>
+      <th>cohort</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>example_session</td>
+      <td>tutorial</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>example_session</td>
+      <td>tutorial</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>example_session</td>
+      <td>tutorial</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>example_session</td>
+      <td>tutorial</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>example_session</td>
+      <td>tutorial</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Columns can be removed with <code>drop_obs_columns</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">with_extra</span><span class="o">.</span><span class="n">drop_obs_columns</span><span class="p">([</span><span class="s1">&#39;tutorial_note&#39;</span><span class="p">,</span> <span class="s1">&#39;cohort&#39;</span><span class="p">])</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">with_extra</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>subject</th>
+      <th>session</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+      <td>example_session</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+      <td>animal_1</td>
+      <td>example_session</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+      <td>example_session</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+      <td>example_session</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>animal_1</td>
+      <td>example_session</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h1 id="5-plotting-trials">5. Plotting Trials</h1>
+<p><code>plot_trials</code> converts trial data to a long dataframe and passes it to the <code>utils.graphing</code> helper module. It returns a <code>ggplot</code> object, so you can add plotnine layers, labels, and themes.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">annotated</span><span class="o">.</span><span class="n">plot_trials</span><span class="p">(</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">label_with</span><span class="o">=</span><span class="s1">&#39;has_shock&#39;</span><span class="p">,</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">group_on</span><span class="o">=</span><span class="s1">&#39;has_shock&#39;</span><span class="p">,</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">downsample</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Data%20Handling%20and%20Analysis_files/Data%20Handling%20and%20Analysis_31_0.png" /></p>
+<p>Use <code>sel</code> to plot a subset of trials. <code>label_with</code> controls legend labels and <code>group_on</code> controls line grouping.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">p</span> <span class="o">=</span> <span class="n">annotated</span><span class="o">.</span><span class="n">plot_trials</span><span class="p">(</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">sel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">label_with</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">,</span> <span class="s1">&#39;has_shock&#39;</span><span class="p">],</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">group_on</span><span class="o">=</span><span class="s1">&#39;trial_num&#39;</span><span class="p">,</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">downsample</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="p">)</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="n">p</span> <span class="o">+</span> <span class="n">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;First six trials&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Data%20Handling%20and%20Analysis_files/Data%20Handling%20and%20Analysis_33_0.png" /></p>
+<h1 id="6-downsampling">6. Downsampling</h1>
+<p>Downsampling is helpful for plotting, exporting, and reducing memory use. <code>downsample</code> returns a new <code>PhotometryData</code> object with fewer timepoints.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">small</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">factor</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">small</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">small</span><span class="o">.</span><span class="n">ts</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>(20, 1598)
+(20, 159)
+[-7.95495545 -7.85485645 -7.75475745 -7.65465845 -7.55455945]
+</code></pre></div>
+<p>Two methods are supported. <code>method='mean'</code> downsamples using mean pooling while <code>method='resample'</code> uses <code>scipy.signal.resample_ploy</code> to downsample and accepts options such as <code>window</code> and <code>padtype</code>. <code>'resample'</code> is generally more rigorious, but <code>'mean'</code> is simpler and faster.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">resampled</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">factor</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;resample&#39;</span><span class="p">,</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;kaiser&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="p">)</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="n">resampled</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 20 trials, 200 timepoints, and 5 observations.
+</code></pre></div>
+<h1 id="7-averaging-trials">7. Averaging Trials</h1>
+<p><code>collapse</code> summarizes trials by group. The primary aggregation (mean by default) becomes the new <code>X</code> matrix, and any additional metrics become layers. Passed <code>data_cols</code> undergo the same aggregation (including additional metrics) and are passed down to the new object.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">collapsed</span> <span class="o">=</span> <span class="n">annotated</span><span class="o">.</span><span class="n">collapse</span><span class="p">(</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="n">group_on</span><span class="o">=</span><span class="s1">&#39;has_shock&#39;</span><span class="p">,</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">method</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">,</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">metrics</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">,</span> <span class="s1">&#39;sem&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">])},</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">data_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">],</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="n">count_col</span><span class="o">=</span><span class="s1">&#39;n&#39;</span><span class="p">,</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="p">)</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">collapsed</span><span class="o">.</span><span class="n">obs</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>has_shock</th>
+      <th>n</th>
+      <th>trial_cue</th>
+      <th>trial_cue_std</th>
+      <th>trial_cue_sem</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>False</td>
+      <td>17</td>
+      <td>-2.254706</td>
+      <td>1.541745</td>
+      <td>0.373928</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>True</td>
+      <td>3</td>
+      <td>-2.680000</td>
+      <td>0.225536</td>
+      <td>0.130213</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>The collapsed object now has one row per aggregated group and the same time axis as the original data.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">collapsed</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">collapsed</span><span class="o">.</span><span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>(2, 1598)
+[&#39;std&#39;, &#39;sem&#39;]
+</code></pre></div>
+<p>Because the extra metrics are stored as layers, they can be used as error ribbons in <code>plot_trials</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">collapsed</span><span class="o">.</span><span class="n">plot_trials</span><span class="p">(</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    <span class="n">label_with</span><span class="o">=</span><span class="s1">&#39;has_shock&#39;</span><span class="p">,</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">group_on</span><span class="o">=</span><span class="s1">&#39;has_shock&#39;</span><span class="p">,</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">err_layer</span><span class="o">=</span><span class="s1">&#39;std&#39;</span><span class="p">,</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<p><img alt="png" src="../Data%20Handling%20and%20Analysis_files/Data%20Handling%20and%20Analysis_43_0.png" /></p>
+<p>If <code>group_on=None</code> (default), all trials are collapsed into one average trace.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">grand_average</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">collapse</span><span class="p">(</span><span class="n">group_on</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">})</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">grand_average</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 1 trials, 1598 timepoints, and 1 observations.
+</code></pre></div>
+<h1 id="8-re-windowing-around-events">8. Re-windowing Around Events</h1>
+<p><code>window</code> creates a new <code>PhotometryData</code> object by slicing or interpolating each trial around a center time. Centers can be a scalar, an array, or the name of an <code>obs</code> column.</p>
+<p>A scalar center is broadcast to all trials. This example keeps the interval from 1 second before time 0 to 3 seconds after time 0.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">post_cue</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    <span class="n">centers</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="p">)</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">post_cue</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">post_cue</span><span class="o">.</span><span class="n">ts</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">post_cue</span><span class="o">.</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">:])</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>(20, 376)
+[-0.99916531 -0.98853589 -0.97790648 -0.96727706 -0.95664764]
+[2.94434884 2.95497826 2.96560768 2.9762371  2.98686652]
+</code></pre></div>
+<p>When <code>event_cols</code> are provided, those event times are re-centered relative to each window center. For example, after centering on <code>shock</code>, the shock column is zero for trials that contain shocks.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">shock_trials</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">filter_rows</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;shock&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">())</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">shock_centered</span> <span class="o">=</span> <span class="n">shock_trials</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>    <span class="n">centers</span><span class="o">=</span><span class="s1">&#39;shock&#39;</span><span class="p">,</span>
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>    <span class="n">event_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">],</span>
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="p">)</span>
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="n">shock_centered</span><span class="o">.</span><span class="n">obs</span><span class="p">[[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">,</span> <span class="s1">&#39;trial_cue&#39;</span><span class="p">,</span> <span class="s1">&#39;lever1&#39;</span><span class="p">,</span> <span class="s1">&#39;lever2&#39;</span><span class="p">,</span> <span class="s1">&#39;shock&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2</td>
+      <td>-3.933891</td>
+      <td>-1.221208</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>8</td>
+      <td>-3.573534</td>
+      <td>-1.181168</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20</td>
+      <td>-4.404356</td>
+      <td>-1.461445</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>The default <code>strategy='nearest'</code> rounds windows to sampled timepoints. Use <code>strategy='interp'</code> to interpolate every trial onto an exact centered time grid.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">nearest_window</span> <span class="o">=</span> <span class="n">shock_trials</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>    <span class="n">centers</span><span class="o">=</span><span class="s1">&#39;shock&#39;</span><span class="p">,</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    <span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="p">)</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="n">interp_window</span> <span class="o">=</span> <span class="n">shock_trials</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">centers</span><span class="o">=</span><span class="s1">&#39;shock&#39;</span><span class="p">,</span>
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    <span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;interp&#39;</span><span class="p">,</span>
+</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="p">)</span>
+</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>
+</span><span id="__span-24-13"><a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a><span class="nb">print</span><span class="p">(</span><span class="n">nearest_window</span><span class="o">.</span><span class="n">ts</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</span><span id="__span-24-14"><a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a><span class="nb">print</span><span class="p">(</span><span class="n">interp_window</span><span class="o">.</span><span class="n">ts</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>[-0.99916531 -0.98853589 -0.97790648 -0.96727706 -0.95664764]
+[-1.         -0.98937058 -0.97874116 -0.96811175 -0.95748233]
+</code></pre></div>
+<p>If you have windows that extend outside the available time range, they will be default raise an error (<code>invalid_window_policy='error'</code>). Set <code>invalid_window_policy='drop'</code> to remove those trials instead.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">valid_only</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>    <span class="n">centers</span><span class="o">=</span><span class="s1">&#39;shock&#39;</span><span class="p">,</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    <span class="n">event_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;shock&#39;</span><span class="p">],</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    <span class="n">invalid_window_policy</span><span class="o">=</span><span class="s1">&#39;drop&#39;</span><span class="p">,</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="p">)</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="n">valid_only</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 20 trials, 753 timepoints, and 5 observations.
+</code></pre></div>
+<h1 id="9-signal-features">9. Signal Features</h1>
+<p><code>PhotometryData</code> includes a few analysis function for analyzing signals. <code>difference</code> calculates discrete differences along the time axis.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">first_difference</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="n">second_difference</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">first_difference</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">second_difference</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>(20, 1598)
+(20, 1598)
+</code></pre></div>
+<p><code>area_under_curve</code> integrates each trial over time. By default it uses the whole trace. But, you can also pass the same arguements as the <code>window</code> function to integrate over a specified window. A transformation can also be passed when you want a specific feature, such as positive area only.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">full_auc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">area_under_curve</span><span class="p">()</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">response_auc</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">area_under_curve</span><span class="p">(</span>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="n">centers</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>    <span class="n">transformation</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="p">)</span>
+</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>
+</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">full_auc</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">response_auc</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>[ 0.12073882 -0.02983236  0.02391584  0.09828795  0.1060965 ]
+[0.0851429  0.09229777 0.02921103 0.09070887 0.09992221]
+</code></pre></div>
+<p>These per-trial values are best held in <code>obs</code> for trial-alignment, statistical analysis, and plotting.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">features</span> <span class="o">=</span> <span class="n">annotated</span><span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>    <span class="n">response_auc</span><span class="o">=</span><span class="n">response_auc</span><span class="p">,</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>    <span class="n">peak_value</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">X</span><span class="p">[:,</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">ts</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">ts</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="p">)</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="n">features</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>trial_cue</th>
+      <th>lever1</th>
+      <th>lever2</th>
+      <th>shock</th>
+      <th>has_lever</th>
+      <th>has_shock</th>
+      <th>trial_epoch</th>
+      <th>response_auc</th>
+      <th>peak_value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-3.52</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>True</td>
+      <td>False</td>
+      <td>early</td>
+      <td>0.085143</td>
+      <td>0.078496</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-2.71</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>1.22</td>
+      <td>True</td>
+      <td>True</td>
+      <td>early</td>
+      <td>0.092298</td>
+      <td>0.080037</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>False</td>
+      <td>early</td>
+      <td>0.029211</td>
+      <td>0.038073</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>-3.94</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>True</td>
+      <td>False</td>
+      <td>early</td>
+      <td>0.090709</td>
+      <td>0.085493</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>-3.79</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>True</td>
+      <td>False</td>
+      <td>early</td>
+      <td>0.099922</td>
+      <td>0.092526</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h1 id="10-peak-detection">10. Peak Detection</h1>
+<p>For event-like signals, <code>PhotometryData</code> can detect peaks using static or rolling thresholds (with more peak detection methods in the works). The static detector estimates one threshold per trial, while the rolling detector estimates a threshold that changes over time. All peak detection methods return a <code>PeakResult</code> object with an underlying pandas DataFrame <code>df</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">static_peaks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">detect_peaks_static_threshold</span><span class="p">(</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>    <span class="n">center_method</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">,</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    <span class="n">scale_method</span><span class="o">=</span><span class="s1">&#39;mad&#39;</span><span class="p">,</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    <span class="n">test_magnitude</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="n">min_distance_sec</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;positive&#39;</span><span class="p">,</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="p">)</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="n">static_peaks</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>    trial_idx direction  start_idx  stop_idx  start_time  stop_time  \
+0           0  positive        457       496   -3.425476  -3.035090   
+1           0  positive        829       971    0.298207   1.719613   
+2           1  positive        538       565   -2.614674  -2.344406   
+3           1  positive        828       968    0.288197   1.689583   
+4           2  positive        808       845    0.087999   0.458365   
+5           3  positive        413       444   -3.865911  -3.555604   
+6           3  positive        828       959    0.288197   1.599494   
+7           4  positive        429       468   -3.705753  -3.315367   
+8           4  positive        811       961    0.118029   1.619514   
+9           5  positive        800       862    0.007920   0.628534   
+10          6  positive        459       482   -3.405456  -3.175228   
+11          6  positive        834       927    0.348257   1.279177   
+12          7  positive        579       586   -2.204268  -2.134199   
+13          7  positive        845       928    0.458365   1.289187   
+14          8  positive        519       532   -2.804862  -2.674733   
+15          8  positive        850       939    0.508415   1.399296   
+16          9  positive        606       629   -1.934001  -1.703773   
+17          9  positive        852       964    0.528435   1.649544   
+18         10  positive        587       610   -2.124189  -1.893961   
+19         10  positive        842       943    0.428336   1.439336   
+20         11  positive        822       842    0.228138   0.428336   
+21         12  positive        475       496   -3.245298  -3.035090   
+22         12  positive        835       958    0.358266   1.589484   
+23         13  positive        801       851    0.017930   0.518425   
+24         14  positive        462       486   -3.375426  -3.135189   
+25         14  positive        829       947    0.298207   1.479375   
+26         15  positive        419       443   -3.805852  -3.565614   
+27         15  positive        830       968    0.308217   1.689583   
+28         16  positive        842       934    0.428336   1.349247   
+29         17  positive        534       554   -2.654713  -2.454515   
+30         17  positive        844       938    0.448356   1.389286   
+31         18  positive        814       835    0.148059   0.358266   
+32         18  positive       1165      1170    3.661533   3.711583   
+33         19  positive        846       930    0.468375   1.309207
+
+    peak_baseline  peak_idx  peak_time  peak_value    height  prominence  \
+0        0.002853       472  -3.275327    0.031528  0.028675    0.012319   
+1        0.002853       874   0.748653    0.078496  0.075642    0.059553   
+2       -0.002691       548  -2.514575    0.032898  0.035589    0.010267   
+3       -0.002691       868   0.688593    0.080037  0.082727    0.057021   
+4        0.001090       823   0.238148    0.038073  0.036983    0.017613   
+5        0.001132       427  -3.725773    0.042679  0.041547    0.019555   
+6        0.001132       879   0.798702    0.085493  0.084362    0.061700   
+7        0.000807       447  -3.525575    0.032762  0.031954    0.015484   
+8        0.000807       869   0.698603    0.092526  0.091719    0.075306   
+9        0.001130       822   0.228138    0.051094  0.049963    0.034170   
+10       0.002188       470  -3.295347    0.046756  0.044568    0.016039   
+11       0.002188       883   0.838742    0.066248  0.064060    0.037436   
+12      -0.000551       582  -2.174238    0.042425  0.042976    0.001526   
+13      -0.000551       880   0.808712    0.073714  0.074265    0.032445   
+14       0.000891       524  -2.754812    0.029438  0.028547    0.001890   
+15       0.000891       864   0.648554    0.054395  0.053504    0.024619   
+16       0.002851       617  -1.823892    0.039867  0.037016    0.010210   
+17       0.002851       903   1.038940    0.067964  0.065113    0.039152   
+18       0.002979       599  -2.004070    0.047454  0.044476    0.013117   
+19       0.002979       886   0.868771    0.091915  0.088936    0.059158   
+20      -0.001399       832   0.328237    0.034185  0.035584    0.007257   
+21       0.000255       483  -3.165218    0.037539  0.037284    0.007183   
+22       0.000255       879   0.798702    0.087560  0.087306    0.057141   
+23       0.001309       825   0.258167    0.048643  0.047335    0.022339   
+24       0.001195       474  -3.255307    0.045625  0.044431    0.017138   
+25       0.001195       873   0.738643    0.068820  0.067625    0.039886   
+26       0.003035       430  -3.695743    0.051367  0.048332    0.018218   
+27       0.003035       876   0.768672    0.091255  0.088220    0.059404   
+28       0.000873       869   0.698603    0.088774  0.087902    0.053669   
+29      -0.001562       543  -2.564624    0.052014  0.053576    0.013218   
+30      -0.001562       893   0.938841    0.069969  0.071531    0.033465   
+31       0.000325       825   0.258167    0.040077  0.039752    0.011519   
+32       0.000325      1168   3.691563    0.028695  0.028370    0.000878   
+33      -0.001925       865   0.658563    0.073393  0.075318    0.029174
+
+    duration     width      area  
+0   0.390386  0.390386  0.009525  
+1   1.421406  0.930921  0.068036  
+2   0.270267  0.270267  0.008408  
+3   1.401386  1.081069  0.081566  
+4   0.370366  0.370366  0.011134  
+5   0.310307  0.310307  0.010621  
+6   1.311297  0.930921  0.075315  
+7   0.390386  0.390386  0.010172  
+8   1.501485  0.940931  0.084956  
+9   0.620614  0.380376  0.020048  
+10  0.230228  0.230228  0.008808  
+11  0.930921  0.840832  0.044782  
+12  0.070069  0.070069  0.002974  
+13  0.830822  0.830822  0.050607  
+14  0.130129  0.130129  0.003612  
+15  0.890881  0.860851  0.035873  
+16  0.230228  0.230228  0.007701  
+17  1.121109  0.660653  0.047047  
+18  0.230228  0.230228  0.009146  
+19  1.011000  0.890881  0.067008  
+20  0.200198  0.200198  0.006603  
+21  0.210208  0.210208  0.007202  
+22  1.231218  0.970960  0.075023  
+23  0.500495  0.500495  0.019596  
+24  0.240238  0.240238  0.009170  
+25  1.181168  0.780772  0.054442  
+26  0.240238  0.240238  0.010001  
+27  1.381366  0.850841  0.079467  
+28  0.920911  0.770762  0.057605  
+29  0.200198  0.200198  0.009733  
+30  0.940931  0.670663  0.045401  
+31  0.210208  0.210208  0.007459  
+32  0.050050  0.050050  0.001401  
+33  0.840832  0.840832  0.053288
+</code></pre></div>
+<p>Use a baseline window when the detection threshold should be estimated from a specific period instead of the whole trial.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">baseline</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">window</span><span class="p">(</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>    <span class="n">centers</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>    <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>    <span class="n">invalid_window_policy</span><span class="o">=</span><span class="s1">&#39;drop&#39;</span><span class="p">,</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="p">)</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="n">baseline_peaks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">detect_peaks_static_threshold</span><span class="p">(</span>
+</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>    <span class="n">baselines</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">X</span><span class="p">,</span>
+</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>    <span class="n">test_magnitude</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>    <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;positive&#39;</span><span class="p">,</span>
+</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a><span class="p">)</span>
+</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a>
+</span><span id="__span-30-13"><a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a><span class="n">baseline_peaks</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>    trial_idx direction  start_idx  stop_idx  start_time  stop_time  \
+0           0  positive        456       497   -3.435486  -3.025080   
+1           0  positive        829       973    0.298207   1.739633   
+2           1  positive        239       247   -5.607634  -5.527555   
+3           1  positive        533       585   -2.664723  -2.144209   
+4           1  positive        821      1003    0.218128   2.039930   
+5           2  positive        808       846    0.087999   0.468375   
+6           3  positive        408       452   -3.915961  -3.475525   
+7           3  positive        789       803   -0.102189   0.037950   
+8           3  positive        821       986    0.218128   1.869761   
+9           3  positive       1479      1490    6.804642   6.914751   
+10          4  positive        427       472   -3.725773  -3.275327   
+11          4  positive        805       966    0.057970   1.669563   
+12          5  positive        799       865   -0.002090   0.658563   
+13          6  positive        463       477   -3.365416  -3.225278   
+14          6  positive        840       915    0.408316   1.159059   
+15          7  positive        574       593   -2.254317  -2.064129   
+16          7  positive        841       934    0.418326   1.349247   
+17          8  positive        518       536   -2.814872  -2.634694   
+18          8  positive        849       943    0.498405   1.439336   
+19          9  positive        602       634   -1.974040  -1.653723   
+20          9  positive        728       735   -0.712793  -0.642723   
+21          9  positive        844       977    0.448356   1.779672   
+22         10  positive        589       609   -2.104169  -1.903971   
+23         10  positive        844       941    0.448356   1.419316   
+24         11  positive        818       846    0.188098   0.468375   
+25         12  positive        478       489   -3.215268  -3.105159   
+26         12  positive        839       952    0.398306   1.529425   
+27         13  positive        801       852    0.017930   0.528435   
+28         14  positive        462       486   -3.375426  -3.135189   
+29         14  positive        829       947    0.298207   1.479375   
+30         15  positive        419       444   -3.805852  -3.555604   
+31         15  positive        830       969    0.308217   1.699593   
+32         16  positive        841       937    0.418326   1.379276   
+33         17  positive        534       553   -2.654713  -2.464525   
+34         17  positive        847       908    0.478385   1.088989   
+35         17  positive        929       936    1.299197   1.369266   
+36         18  positive        280       291   -5.197228  -5.087119   
+37         18  positive        810       839    0.108019   0.398306   
+38         18  positive       1160      1175    3.611484   3.761632   
+39         18  positive       1243      1248    4.442306   4.492355   
+40         19  positive        526       531   -2.734793  -2.684743   
+41         19  positive        843       938    0.438346   1.389286
+
+    peak_baseline  peak_idx  peak_time  peak_value    height  prominence  \
+0        0.002422       472  -3.275327    0.031528  0.029106    0.013885   
+1        0.002422       874   0.748653    0.078496  0.076074    0.059662   
+2       -0.003018       243  -5.567594    0.011618  0.014636    0.000958   
+3       -0.003018       548  -2.514575    0.032898  0.035916    0.020697   
+4       -0.003018       868   0.688593    0.080037  0.083055    0.069015   
+5        0.001511       823   0.238148    0.038073  0.036561    0.017613   
+6       -0.003220       427  -3.725773    0.042679  0.045899    0.031474   
+7       -0.003220       797  -0.022110    0.012386  0.015606    0.001507   
+8       -0.003220       879   0.798702    0.085493  0.088714    0.074343   
+9       -0.003220      1485   6.864701    0.012639  0.015859    0.001637   
+10       0.000571       447  -3.525575    0.032762  0.032190    0.018829   
+11       0.000571       869   0.698603    0.092526  0.091955    0.078758   
+12      -0.000468       822   0.228138    0.051094  0.051562    0.035899   
+13       0.010505       470  -3.295347    0.046756  0.036251    0.007186   
+14       0.010505       883   0.838742    0.066248  0.055743    0.026632   
+15       0.004601       582  -2.174238    0.042425  0.037824    0.009443   
+16       0.004601       880   0.808712    0.073714  0.069113    0.040179   
+17      -0.000649       524  -2.754812    0.029438  0.030087    0.002847   
+18      -0.000649       864   0.648554    0.054395  0.055044    0.027617   
+19       0.001901       617  -1.823892    0.039867  0.037966    0.018152   
+20       0.001901       731  -0.682763    0.022477  0.020577    0.001284   
+21       0.001901       903   1.038940    0.067964  0.066064    0.047164   
+22       0.008112       599  -2.004070    0.047454  0.039343    0.010165   
+23       0.008112       886   0.868771    0.091915  0.083803    0.053265   
+24      -0.001501       832   0.328237    0.034185  0.035686    0.012878   
+25       0.001569       483  -3.165218    0.037539  0.035970    0.002726   
+26       0.001569       879   0.798702    0.087560  0.085991    0.052044   
+27      -0.000502       825   0.258167    0.048643  0.049145    0.023044   
+28       0.000499       474  -3.255307    0.045625  0.045126    0.017138   
+29       0.000499       873   0.738643    0.068820  0.068321    0.039886   
+30       0.002480       430  -3.695743    0.051367  0.048887    0.019106   
+31       0.002480       876   0.768672    0.091255  0.088775    0.059404   
+32      -0.000760       869   0.698603    0.088774  0.089534    0.056120   
+33       0.005749       543  -2.564624    0.052014  0.046266    0.012397   
+34       0.005749       893   0.938841    0.069969  0.064220    0.030713   
+35       0.005749       933   1.339237    0.040313  0.034564    0.001339   
+36      -0.000205       285  -5.147178    0.026206  0.026411    0.005067   
+37      -0.000205       825   0.258167    0.040077  0.040282    0.019417   
+38      -0.000205      1168   3.691563    0.028695  0.028899    0.008074   
+39      -0.000205      1245   4.462326    0.020230  0.020435    0.000645   
+40       0.000648       528  -2.714773    0.033822  0.033174    0.000619   
+41       0.000648       865   0.658563    0.073393  0.072745    0.038484
+
+    duration     width      area  
+0   0.410406  0.410406  0.010010  
+1   1.441426  0.940931  0.068966  
+2   0.080079  0.080079  0.001145  
+3   0.520515  0.480475  0.013374  
+4   1.821802  1.091079  0.089696  
+5   0.380376  0.370366  0.011155  
+6   0.440436  0.370366  0.014600  
+7   0.140139  0.140139  0.002106  
+8   1.651634  1.101089  0.087290  
+9   0.110109  0.110109  0.001679  
+10  0.450445  0.400396  0.011158  
+11  1.611594  0.940931  0.086931  
+12  0.660653  0.410406  0.021677  
+13  0.140139  0.140139  0.004717  
+14  0.750743  0.670663  0.032732  
+15  0.190188  0.190188  0.006519  
+16  0.930921  0.830822  0.049590  
+17  0.180178  0.180178  0.005180  
+18  0.940931  0.920911  0.038622  
+19  0.320317  0.320317  0.010034  
+20  0.070069  0.070069  0.001409  
+21  1.331317  0.660653  0.052764  
+22  0.200198  0.200198  0.007145  
+23  0.970960  0.850841  0.060742  
+24  0.280277  0.280277  0.008669  
+25  0.110109  0.110109  0.003851  
+26  1.131119  0.950940  0.070274  
+27  0.510505  0.510505  0.020765  
+28  0.240238  0.240238  0.009337  
+29  1.181168  0.800792  0.055264  
+30  0.250248  0.250248  0.010431  
+31  1.391376  0.860851  0.080522  
+32  0.960950  0.800792  0.060482  
+33  0.190188  0.190188  0.007941  
+34  0.610604  0.570564  0.029027  
+35  0.070069  0.070069  0.002380  
+36  0.110109  0.110109  0.002665  
+37  0.290287  0.290287  0.009509  
+38  0.150149  0.150149  0.003884  
+39  0.050050  0.050050  0.001010  
+40  0.050050  0.050050  0.001648  
+41  0.950940  0.910901  0.055226
+</code></pre></div>
+<p>The rolling detector is useful when the noise level changes over the trial. However, it only performs well when your window width is substantially larger than the duration of the expected transients.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">rolling_peaks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">detect_peaks_rolling_threshold</span><span class="p">(</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>    <span class="n">window_width_sec</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>    <span class="n">center_method</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">,</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>    <span class="n">scale_method</span><span class="o">=</span><span class="s1">&#39;mad&#39;</span><span class="p">,</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>    <span class="n">test_magnitude</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>    <span class="n">min_distance_sec</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>    <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;positive&#39;</span><span class="p">,</span>
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="p">)</span>
+</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>
+</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="n">rolling_peaks</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>    trial_idx direction  start_idx  stop_idx  start_time  stop_time  \
+0           0  positive        457       497   -3.425476  -3.025080   
+1           1  positive        538       567   -2.614674  -2.324387   
+2           2  positive        158       169   -6.418436  -6.308327   
+3           2  positive        827       840    0.278187   0.408316   
+4           3  positive        411       444   -3.885931  -3.555604   
+5           4  positive        193       204   -6.068089  -5.957980   
+6           4  positive        431       464   -3.685733  -3.355406   
+7           5  positive        820       833    0.208118   0.338247   
+8           6  positive        460       478   -3.395446  -3.215268   
+9           8  positive        184       201   -6.158178  -5.988010   
+10          9  positive        607       626   -1.923991  -1.733803   
+11         10  positive        594       605   -2.054119  -1.944011   
+12         12  positive        327       330   -4.726763  -4.696733   
+13         14  positive        460       487   -3.395446  -3.125179   
+14         15  positive        153       161   -6.468485  -6.388406   
+15         15  positive        425       439   -3.745793  -3.605654   
+16         16  positive        553       557   -2.464525  -2.424486   
+17         17  positive        253       279   -5.467495  -5.207238   
+18         17  positive        543       551   -2.564624  -2.484545
+
+    peak_baseline  peak_idx  peak_time  peak_value    height  prominence  \
+0        0.002524       472  -3.275327    0.031528  0.029004    0.012216   
+1       -0.001403       548  -2.514575    0.032898  0.034301    0.010267   
+2       -0.002923       164  -6.358376    0.006540  0.009462    0.001558   
+3        0.004672       827   0.278187    0.037020  0.032348    0.000000   
+4       -0.000045       427  -3.725773    0.042679  0.042724    0.018645   
+5       -0.000417       198  -6.018040    0.007107  0.007524    0.000933   
+6        0.002853       447  -3.525575    0.032762  0.029909    0.010272   
+7        0.010203       822   0.228138    0.051094  0.040891    0.000615   
+8        0.012353       470  -3.295347    0.046756  0.034403    0.009874   
+9       -0.005286       192  -6.078099    0.009854  0.015140    0.003939   
+10       0.002195       617  -1.823892    0.039867  0.037672    0.006399   
+11       0.008380       599  -2.004070    0.047454  0.039074    0.003034   
+12      -0.004060       327  -4.726763    0.014726  0.018786    0.000000   
+13       0.001306       474  -3.255307    0.045625  0.044319    0.019097   
+14       0.001802       158  -6.418436    0.017239  0.015437    0.001045   
+15       0.008943       431  -3.685733    0.051169  0.042226    0.004274   
+16      -0.001307       554  -2.454515    0.029864  0.031171    0.000005   
+17      -0.002539       253  -5.467495    0.016700  0.019239    0.000000   
+18       0.008727       544  -2.554614    0.051992  0.043265    0.000227
+
+    duration     width      area  
+0   0.400396  0.400396  0.009812  
+1   0.290287  0.290287  0.008558  
+2   0.110109  0.110109  0.000978  
+3   0.130129  0.130129  0.003515  
+4   0.330327  0.320317  0.011479  
+5   0.110109  0.110109  0.000792  
+6   0.330327  0.330327  0.008443  
+7   0.130129  0.130129  0.004959  
+8   0.180178  0.170168  0.005425  
+9   0.170168  0.170168  0.002331  
+10  0.190188  0.190188  0.006665  
+11  0.110109  0.110109  0.004172  
+12  0.030030  0.030030  0.000553  
+13  0.270267  0.270267  0.009917  
+14  0.080079  0.080079  0.001187  
+15  0.140139  0.140139  0.005575  
+16  0.040040  0.040040  0.001233  
+17  0.260257  0.260257  0.003806  
+18  0.080079  0.080079  0.003305
+</code></pre></div>
+<h1 id="11-statistical-helpers">11. Statistical Helpers</h1>
+<p>The ANOVA methods are thin wrappers around <a href="https://pingouin-stats.org/">pingouin</a>. They use columns in <code>obs</code> as inputs, so the usual pattern is to compute trial-level features first and then run statistics on those feature columns.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">stats_data</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>    <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;has_shock&#39;</span><span class="p">],</span> <span class="s1">&#39;shock&#39;</span><span class="p">,</span> <span class="s1">&#39;no_shock&#39;</span><span class="p">),</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="p">)</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="n">stats_data</span><span class="o">.</span><span class="n">ANOVA</span><span class="p">(</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>    <span class="n">dependent_var</span><span class="o">=</span><span class="s1">&#39;response_auc&#39;</span><span class="p">,</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>    <span class="n">between</span><span class="o">=</span><span class="s1">&#39;condition&#39;</span><span class="p">,</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Source</th>
+      <th>SS</th>
+      <th>DF</th>
+      <th>MS</th>
+      <th>F</th>
+      <th>p_unc</th>
+      <th>np2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>condition</td>
+      <td>0.000890</td>
+      <td>1</td>
+      <td>0.000890</td>
+      <td>1.203699</td>
+      <td>0.287045</td>
+      <td>0.062681</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Within</td>
+      <td>0.013304</td>
+      <td>18</td>
+      <td>0.000739</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>For repeated-measures and mixed-design ANOVA, <code>obs</code> needs subject and within-subject factor columns. The example below creates a small demonstration dataset by assigning tutorial factors and a tutorial-specific response column.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">stats_demo</span> <span class="o">=</span> <span class="n">stats_data</span><span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>    <span class="n">subject</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="s1">&#39;subject_&#39;</span> <span class="o">+</span> <span class="p">((</span><span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>    <span class="n">period</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;early&#39;</span><span class="p">,</span> <span class="s1">&#39;late&#39;</span><span class="p">),</span>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>    <span class="n">treatment</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(((</span><span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;control&#39;</span><span class="p">,</span> <span class="s1">&#39;treatment&#39;</span><span class="p">),</span>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>    <span class="n">demo_response</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="p">(</span>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>        <span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;response_auc&#39;</span><span class="p">]</span>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>        <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(((</span><span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">)</span>
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>    <span class="p">),</span>
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a><span class="p">)</span>
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>
+</span><span id="__span-33-12"><a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a><span class="n">stats_demo</span><span class="o">.</span><span class="n">ANOVA_rm</span><span class="p">(</span>
+</span><span id="__span-33-13"><a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a>    <span class="n">dependent_var</span><span class="o">=</span><span class="s1">&#39;demo_response&#39;</span><span class="p">,</span>
+</span><span id="__span-33-14"><a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a>    <span class="n">within</span><span class="o">=</span><span class="s1">&#39;period&#39;</span><span class="p">,</span>
+</span><span id="__span-33-15"><a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a>    <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;subject&#39;</span><span class="p">,</span>
+</span><span id="__span-33-16"><a id="__codelineno-33-16" name="__codelineno-33-16" href="#__codelineno-33-16"></a><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Source</th>
+      <th>SS</th>
+      <th>DF</th>
+      <th>MS</th>
+      <th>F</th>
+      <th>p_unc</th>
+      <th>ng2</th>
+      <th>eps</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>period</td>
+      <td>0.010878</td>
+      <td>1</td>
+      <td>0.010878</td>
+      <td>9.251173</td>
+      <td>0.013982</td>
+      <td>0.386566</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Error</td>
+      <td>0.010583</td>
+      <td>9</td>
+      <td>0.001176</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>ANOVA_mixed</code> is available for one between-subject factor and one within-subject factor.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">stats_demo</span><span class="o">.</span><span class="n">ANOVA_mixed</span><span class="p">(</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>    <span class="n">dependent_var</span><span class="o">=</span><span class="s1">&#39;demo_response&#39;</span><span class="p">,</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>    <span class="n">between</span><span class="o">=</span><span class="s1">&#39;treatment&#39;</span><span class="p">,</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>    <span class="n">within</span><span class="o">=</span><span class="s1">&#39;period&#39;</span><span class="p">,</span>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>    <span class="n">subject</span><span class="o">=</span><span class="s1">&#39;subject&#39;</span><span class="p">,</span>
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="p">)</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Source</th>
+      <th>SS</th>
+      <th>DF1</th>
+      <th>DF2</th>
+      <th>MS</th>
+      <th>F</th>
+      <th>p_unc</th>
+      <th>np2</th>
+      <th>eps</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>treatment</td>
+      <td>0.003230</td>
+      <td>1</td>
+      <td>8</td>
+      <td>0.003230</td>
+      <td>7.490630</td>
+      <td>0.025571</td>
+      <td>0.483559</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>period</td>
+      <td>0.010878</td>
+      <td>1</td>
+      <td>8</td>
+      <td>0.010878</td>
+      <td>8.815984</td>
+      <td>0.017894</td>
+      <td>0.524262</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Interaction</td>
+      <td>0.000712</td>
+      <td>1</td>
+      <td>8</td>
+      <td>0.000712</td>
+      <td>0.576626</td>
+      <td>0.469420</td>
+      <td>0.067232</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h1 id="12-exporting-to-dataframes">12. Exporting to DataFrames</h1>
+<p><code>trials_to_long_df</code> produces one row per trial and timepoint. This format is ideal for plotting and tidy data workflows.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="n">long_df</span> <span class="o">=</span> <span class="n">annotated</span><span class="o">.</span><span class="n">trials_to_long_df</span><span class="p">(</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>    <span class="n">obs_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">,</span> <span class="s1">&#39;has_shock&#39;</span><span class="p">],</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>    <span class="n">downsample</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="p">)</span>
+</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="n">long_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_idx</th>
+      <th>time_idx</th>
+      <th>signal</th>
+      <th>trial_num</th>
+      <th>has_shock</th>
+      <th>time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0.000958</td>
+      <td>1</td>
+      <td>False</td>
+      <td>-7.954955</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>-0.000714</td>
+      <td>1</td>
+      <td>False</td>
+      <td>-7.854856</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>2</td>
+      <td>0.000874</td>
+      <td>1</td>
+      <td>False</td>
+      <td>-7.754757</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>3</td>
+      <td>0.000226</td>
+      <td>1</td>
+      <td>False</td>
+      <td>-7.654658</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>0.000012</td>
+      <td>1</td>
+      <td>False</td>
+      <td>-7.554559</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>When a layer is present, you can export that layer instead of <code>X</code>. You can also include an error layer as an additional column.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="n">collapsed_long</span> <span class="o">=</span> <span class="n">collapsed</span><span class="o">.</span><span class="n">trials_to_long_df</span><span class="p">(</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>    <span class="n">err_layer</span><span class="o">=</span><span class="s1">&#39;sem&#39;</span><span class="p">,</span>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>    <span class="n">obs_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;has_shock&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">],</span>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="p">)</span>
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>
+</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="n">collapsed_long</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_idx</th>
+      <th>time_idx</th>
+      <th>signal</th>
+      <th>has_shock</th>
+      <th>n</th>
+      <th>time</th>
+      <th>sem</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>-0.002649</td>
+      <td>False</td>
+      <td>17</td>
+      <td>-8.00000</td>
+      <td>0.001954</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>-0.002766</td>
+      <td>False</td>
+      <td>17</td>
+      <td>-7.98999</td>
+      <td>0.001908</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>2</td>
+      <td>-0.002877</td>
+      <td>False</td>
+      <td>17</td>
+      <td>-7.97998</td>
+      <td>0.001854</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>3</td>
+      <td>-0.002982</td>
+      <td>False</td>
+      <td>17</td>
+      <td>-7.96997</td>
+      <td>0.001794</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>-0.003078</td>
+      <td>False</td>
+      <td>17</td>
+      <td>-7.95996</td>
+      <td>0.001734</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>trials_to_wide_df</code> produces one row per trial and one column per timepoint. This can be useful for external statistics packages or for the <code>PhoPro.analysis.FMM</code> helpers.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="n">wide_df</span> <span class="o">=</span> <span class="n">annotated</span><span class="o">.</span><span class="n">trials_to_wide_df</span><span class="p">(</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>    <span class="n">obs_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">,</span> <span class="s1">&#39;has_shock&#39;</span><span class="p">],</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>    <span class="n">signal_prefix</span><span class="o">=</span><span class="s1">&#39;dff&#39;</span><span class="p">,</span>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>    <span class="n">downsample</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="p">)</span>
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="n">wide_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>trial_num</th>
+      <th>has_shock</th>
+      <th>dff.1</th>
+      <th>dff.2</th>
+      <th>dff.3</th>
+      <th>dff.4</th>
+      <th>dff.5</th>
+      <th>dff.6</th>
+      <th>dff.7</th>
+      <th>dff.8</th>
+      <th>...</th>
+      <th>dff.70</th>
+      <th>dff.71</th>
+      <th>dff.72</th>
+      <th>dff.73</th>
+      <th>dff.74</th>
+      <th>dff.75</th>
+      <th>dff.76</th>
+      <th>dff.77</th>
+      <th>dff.78</th>
+      <th>dff.79</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>False</td>
+      <td>0.000122</td>
+      <td>0.000550</td>
+      <td>0.001511</td>
+      <td>0.002090</td>
+      <td>-0.002785</td>
+      <td>-0.002417</td>
+      <td>-0.003028</td>
+      <td>-0.002797</td>
+      <td>...</td>
+      <td>0.008449</td>
+      <td>0.009303</td>
+      <td>0.008537</td>
+      <td>0.012981</td>
+      <td>0.004595</td>
+      <td>0.002771</td>
+      <td>0.003901</td>
+      <td>0.010544</td>
+      <td>-0.002842</td>
+      <td>-0.000103</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>True</td>
+      <td>-0.001540</td>
+      <td>0.000675</td>
+      <td>-0.006064</td>
+      <td>-0.002676</td>
+      <td>-0.001244</td>
+      <td>0.002081</td>
+      <td>-0.006566</td>
+      <td>-0.003232</td>
+      <td>...</td>
+      <td>-0.008474</td>
+      <td>-0.010621</td>
+      <td>-0.008778</td>
+      <td>-0.000318</td>
+      <td>-0.001788</td>
+      <td>-0.001703</td>
+      <td>-0.006076</td>
+      <td>-0.005013</td>
+      <td>-0.009409</td>
+      <td>-0.005980</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>False</td>
+      <td>-0.006419</td>
+      <td>-0.002769</td>
+      <td>-0.002080</td>
+      <td>-0.004799</td>
+      <td>-0.003436</td>
+      <td>-0.001712</td>
+      <td>0.000485</td>
+      <td>0.000087</td>
+      <td>...</td>
+      <td>-0.003205</td>
+      <td>-0.006146</td>
+      <td>-0.006072</td>
+      <td>-0.003308</td>
+      <td>-0.007286</td>
+      <td>-0.008591</td>
+      <td>-0.003664</td>
+      <td>0.001997</td>
+      <td>-0.001604</td>
+      <td>0.000505</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>False</td>
+      <td>-0.005536</td>
+      <td>-0.000126</td>
+      <td>-0.001551</td>
+      <td>0.001365</td>
+      <td>0.003954</td>
+      <td>0.003295</td>
+      <td>-0.000110</td>
+      <td>-0.002144</td>
+      <td>...</td>
+      <td>-0.003180</td>
+      <td>-0.009099</td>
+      <td>-0.002978</td>
+      <td>-0.002149</td>
+      <td>0.003198</td>
+      <td>0.010021</td>
+      <td>0.001886</td>
+      <td>0.004216</td>
+      <td>0.006138</td>
+      <td>0.005789</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>False</td>
+      <td>-0.001293</td>
+      <td>-0.000546</td>
+      <td>-0.006427</td>
+      <td>-0.005763</td>
+      <td>-0.002369</td>
+      <td>-0.001339</td>
+      <td>-0.000481</td>
+      <td>-0.002861</td>
+      <td>...</td>
+      <td>0.001017</td>
+      <td>0.003679</td>
+      <td>0.004279</td>
+      <td>0.004079</td>
+      <td>0.001271</td>
+      <td>0.003883</td>
+      <td>0.007437</td>
+      <td>-0.002461</td>
+      <td>-0.003207</td>
+      <td>-0.000067</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 81 columns</p>
+</div>
+
+<h1 id="13-combining-datasets-and-saving-results">13. Combining Datasets and Saving Results</h1>
+<p><code>combine_obj</code> concatenates datasets along the trial axis. This is useful after processing several sessions or subjects into separate <code>PhotometryData</code> objects.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">early</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">filter_rows</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="s1">&#39;early&#39;</span><span class="p">)</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="n">late</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">filter_rows</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;trial_num&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="s1">&#39;late&#39;</span><span class="p">)</span>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="n">recombined</span> <span class="o">=</span> <span class="n">early</span><span class="o">.</span><span class="n">combine_obj</span><span class="p">(</span><span class="n">late</span><span class="p">)</span>
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="n">recombined</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 20 trials, 1598 timepoints, and 6 observations.
+</code></pre></div>
+<p>The class supports both <code>.h5ad</code> and zarr storage through <code>write_h5ad</code>, <code>read_h5ad</code>, <code>write_zarr</code>, and <code>read_zarr</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="c1"># Write to the tutorial output directory.</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="n">recombined</span><span class="o">.</span><span class="n">write_h5ad</span><span class="p">(</span><span class="s1">&#39;output/recombined_trials.h5ad&#39;</span><span class="p">)</span>
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="n">loaded_again</span> <span class="o">=</span> <span class="n">PhotometryData</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s1">&#39;output/recombined_trials.h5ad&#39;</span><span class="p">)</span>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="n">loaded_again</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Photometry dataset with 20 trials, 1598 timepoints, and 6 observations.
+</code></pre></div>
+<p>For large workflows, <code>append_on_disk_h5ad</code> appends a dataset to an existing <code>.h5ad</code> file without keeping every dataset in memory at the same time. If the target file does not exist yet, it simply writes the current object.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="c1"># This is a pattern for bulk workflows. Running it repeatedly appends data.</span>
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="c1"># append_path = &#39;output/all_sessions.h5ad&#39;</span>
+</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="c1"># early.append_on_disk_h5ad(append_path)</span>
+</span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="c1"># late.append_on_disk_h5ad(append_path)</span>
+</span></code></pre></div>
+<h1 id="14-method-chaining-with-pipe">14. Method Chaining With <code>pipe</code></h1>
+<p><code>pipe</code> lets you insert custom functions into a chain of <code>PhotometryData</code> operations, much like the <code>pipe</code> function in pandas. The function receives the object as its first argument and returns a <code>PhotometryData</code> object. Method chaining helps keep your code readable and neat, and with <code>pipe</code> and <code>mutate_obs</code> almost all manipulations of <code>PhotometryData</code> are achieveble within method chains.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">add_response_features</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">PhotometryData</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhotometryData</span><span class="p">:</span>
+</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>    <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span>
+</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>        <span class="n">response_auc</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">area_under_curve</span><span class="p">(</span><span class="n">centers</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)),</span>
+</span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>        <span class="n">response_peak</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">X</span><span class="p">[:,</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">ts</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">ts</span> <span class="o">&lt;=</span> <span class="n">stop</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+</span><span id="__span-41-5"><a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a>    <span class="p">)</span>
+</span><span id="__span-41-6"><a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a>
+</span><span id="__span-41-7"><a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="n">summary</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-41-8"><a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a>    <span class="n">data</span>
+</span><span id="__span-41-9"><a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a>    <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">add_response_features</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-41-10"><a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a>    <span class="o">.</span><span class="n">mutate_obs</span><span class="p">(</span><span class="n">has_shock</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s1">&#39;shock&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">())</span>
+</span><span id="__span-41-11"><a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a>    <span class="o">.</span><span class="n">collapse</span><span class="p">(</span><span class="n">group_on</span><span class="o">=</span><span class="s1">&#39;has_shock&#39;</span><span class="p">,</span> <span class="n">data_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;response_auc&#39;</span><span class="p">,</span> <span class="s1">&#39;response_peak&#39;</span><span class="p">])</span>
+</span><span id="__span-41-12"><a id="__codelineno-41-12" name="__codelineno-41-12" href="#__codelineno-41-12"></a><span class="p">)</span>
+</span><span id="__span-41-13"><a id="__codelineno-41-13" name="__codelineno-41-13" href="#__codelineno-41-13"></a>
+</span><span id="__span-41-14"><a id="__codelineno-41-14" name="__codelineno-41-14" href="#__codelineno-41-14"></a><span class="n">summary</span><span class="o">.</span><span class="n">obs</span>
+</span></code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>has_shock</th>
+      <th>n</th>
+      <th>response_auc</th>
+      <th>response_peak</th>
+      <th>response_auc_std</th>
+      <th>response_peak_std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>False</td>
+      <td>17</td>
+      <td>0.064167</td>
+      <td>0.067970</td>
+      <td>0.028524</td>
+      <td>0.019729</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>True</td>
+      <td>3</td>
+      <td>0.081732</td>
+      <td>0.075715</td>
+      <td>0.006220</td>
+      <td>0.003059</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h1 id="summary">Summary</h1>
+<p><code>PhotometryData</code> is designed to keep trial-wise signals and trial metadata synchronized.</p>
+<h1 id="ai-use-disclaimer">AI Use Disclaimer</h1>
+<p>Generative AI was used to assist in the creation of this tutorial. I plan to replace it in the future with a more polished version.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

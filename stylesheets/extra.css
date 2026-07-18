@@ -1,0 +1,122 @@
+/* -----------------------------------------
+   mkdocstrings object spacing/separators
+   ----------------------------------------- */
+
+/* Add subtle separators between documented functions/methods */
+.doc-object.doc-function,
+.doc-object.doc-method {
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  padding-top: 1.15rem;
+  margin-top: 1.4rem;
+}
+
+/* Do not put a separator before the first child item */
+.doc-children > .doc-object:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Give each function body a little breathing room */
+.doc-object.doc-function .doc-contents,
+.doc-object.doc-method .doc-contents {
+  padding-bottom: 0.8rem;
+}
+
+
+/* -----------------------------------------
+   Function/method headings: cleaner SciPy-ish style
+   ----------------------------------------- */
+
+.doc-object.doc-function > .doc-heading,
+.doc-object.doc-method > .doc-heading {
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-family: var(--md-code-font-family);
+
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-top: 1.25rem;
+  margin-bottom: 0.35rem;
+
+  color: var(--md-default-fg-color);
+}
+
+/* Keep function names prominent */
+.doc-object.doc-function .doc-function-name,
+.doc-object.doc-method .doc-function-name {
+  font-weight: 700;
+}
+
+/* Optional: subtle underline below the function name */
+.doc-object.doc-function > .doc-heading,
+.doc-object.doc-method > .doc-heading {
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  padding-bottom: 0.25rem;
+}
+
+/* Signature block below heading when separate_signature: true */
+.doc-object.doc-function > .highlight,
+.doc-object.doc-method > .highlight {
+  margin-top: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+/* Keep signature readable but not boxed heavily */
+.doc-object.doc-function > .highlight pre,
+.doc-object.doc-method > .highlight pre {
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  border-left: 2px solid var(--md-default-fg-color--lightest);
+}
+
+
+/* -----------------------------------------
+   Separate function signatures
+   ----------------------------------------- */
+
+/*
+   When separate_signature: true is enabled, signatures are rendered
+   as code blocks immediately below the heading.
+*/
+.doc-object.doc-function > .highlight,
+.doc-object.doc-method > .highlight {
+  margin-top: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+/* Make signatures look like compact API call blocks */
+.doc-object.doc-function > .highlight pre,
+.doc-object.doc-method > .highlight pre {
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.2rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background-color: var(--md-code-bg-color);
+}
+
+
+/* -----------------------------------------
+   Numpy-style docstring sections
+   ----------------------------------------- */
+
+/* Section titles like Parameters, Returns, Notes */
+.doc-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.35rem;
+  color: var(--md-default-fg-color);
+}
+
+/* Slightly tighten parameter lists */
+.doc-section-item {
+  margin-bottom: 0.35rem;
+}
+
+/* Optional: make parameter names stand out */
+.doc-section-item p:first-child code {
+  font-weight: 600;
+}
