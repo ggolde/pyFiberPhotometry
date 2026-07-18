@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from scipy import ndimage as ndi
 
+from ..types import PeakCenterMethod, PeakDirection, PeakScaleMethod
+
 #######################
 #region --- UTILITY ---
 #######################
@@ -693,7 +695,7 @@ class PeakDetector(ABC):
             min_distance_sec: float | None = None,
             min_duration_sec: float | None = None,
             max_duration_sec: float | None = None,
-            direction: Literal['positive', 'negative', 'both'] = 'both',
+            direction: PeakDirection = 'both',
             detailed: bool = False,
             ) -> PeakResult:
         """Detect peaks in trial-by-time signals.
@@ -714,8 +716,10 @@ class PeakDetector(ABC):
             Minimum peak duration, in seconds.
         max_duration_sec : float or None, default=None
             Maximum peak duration, in seconds.
-        direction : {'positive', 'negative', 'both'}, default='both'
-            Peak direction to detect.
+        direction : PeakDirection, default='both'
+            Direction of peaks to detect: ``'positive'`` detects peaks above
+            baseline, ``'negative'`` detects peaks below baseline, and
+            ``'both'`` detects both directions.
         detailed : bool, default=False
             If ``True``, include extra peak metrics.
 
@@ -736,18 +740,22 @@ class ThresholdDetector(PeakDetector):
 
     def __init__(
             self,
-            center_method: Literal['median', 'mean', 'zeros'] | Callable = 'median',
-            scale_method: Literal['mad', 'std', 'ones'] | Callable = 'mad',
+            center_method: PeakCenterMethod = 'median',
+            scale_method: PeakScaleMethod = 'mad',
             test_magnitude: float = 3.0,
             ) -> None:
         """Initialize a threshold detector.
 
         Parameters
         ----------
-        center_method : {'median', 'mean', 'zeros'} or Callable, default='median'
-            Method used to estimate baseline center.
-        scale_method : {'mad', 'std', 'ones'} or Callable, default='mad'
-            Method used to estimate baseline scale.
+        center_method : PeakCenterMethod, default='median'
+            Center estimate: ``'median'`` uses ``np.nanmedian``, ``'mean'``
+            uses ``np.nanmean``, and ``'zeros'`` uses a zero-valued baseline.
+            A custom callable accepts an array and keyword argument ``axis``.
+        scale_method : PeakScaleMethod, default='mad'
+            Scale estimate: ``'mad'`` uses median absolute deviation,
+            ``'std'`` uses ``np.nanstd``, and ``'ones'`` uses a one-valued
+            scale. A custom callable accepts an array and keyword ``axis``.
         test_magnitude : float, default=3.0
             Scale multiplier used to set the detection threshold.
         """
@@ -755,7 +763,7 @@ class ThresholdDetector(PeakDetector):
         self.center_func = self._resolve_center_method(center_method)
         self.scale_func = self._resolve_scale_method(scale_method)
 
-    def _resolve_center_method(self, center_method: Literal['median', 'mean', 'zeros'] | Callable) -> Callable:
+    def _resolve_center_method(self, center_method: PeakCenterMethod) -> Callable:
         """Resolve a center method name or callable."""
         center_func: Callable
         match center_method:
@@ -771,7 +779,7 @@ class ThresholdDetector(PeakDetector):
                 raise ValueError(f'Center method ({center_method}) is not recognized')
         return center_func
 
-    def _resolve_scale_method(self, scale_method: Literal['mad', 'std', 'ones'] | Callable) -> Callable:
+    def _resolve_scale_method(self, scale_method: PeakScaleMethod) -> Callable:
         """Resolve a scale method name or callable."""
         scale_func: Callable
         match scale_method:
@@ -807,7 +815,7 @@ class ThresholdDetector(PeakDetector):
             min_distance_sec: float | None = None,
             min_duration_sec: float | None = None,
             max_duration_sec: float | None = None,
-            direction: Literal['positive', 'negative', 'both'] = 'both',
+            direction: PeakDirection = 'both',
             detailed: bool = False,
             ) -> PeakResult:
         """Detect positive and/or negative peaks from threshold arrays."""
@@ -883,18 +891,22 @@ class StaticThresholdDetector(ThresholdDetector):
 
     def __init__(
             self,
-            center_method: Literal['median', 'mean', 'zeros'] | Callable = 'median',
-            scale_method: Literal['mad', 'std', 'ones'] | Callable = 'mad',
+            center_method: PeakCenterMethod = 'median',
+            scale_method: PeakScaleMethod = 'mad',
             test_magnitude: float = 3.0,
             ) -> None:
         """Initialize a static threshold detector.
 
         Parameters
         ----------
-        center_method : {'median', 'mean', 'zeros'} or Callable, default='median'
-            Method used to estimate each trial's baseline center.
-        scale_method : {'mad', 'std', 'ones'} or Callable, default='mad'
-            Method used to estimate each trial's baseline scale.
+        center_method : PeakCenterMethod, default='median'
+            Center estimate: ``'median'`` uses ``np.nanmedian``, ``'mean'``
+            uses ``np.nanmean``, and ``'zeros'`` uses a zero-valued baseline.
+            A custom callable accepts an array and keyword argument ``axis``.
+        scale_method : PeakScaleMethod, default='mad'
+            Scale estimate: ``'mad'`` uses median absolute deviation,
+            ``'std'`` uses ``np.nanstd``, and ``'ones'`` uses a one-valued
+            scale. A custom callable accepts an array and keyword ``axis``.
         test_magnitude : float, default=3.0
             Scale multiplier used to set the detection threshold.
         """
@@ -917,7 +929,7 @@ class StaticThresholdDetector(ThresholdDetector):
             min_distance_sec: float | None = None,
             min_duration_sec: float | None = None,
             max_duration_sec: float | None = None,
-            direction: Literal['positive', 'negative', 'both'] = 'both',
+            direction: PeakDirection = 'both',
             detailed: bool = False,
             ) -> PeakResult:
         """Detect peaks using static baseline-derived thresholds.
@@ -939,8 +951,10 @@ class StaticThresholdDetector(ThresholdDetector):
             Minimum peak duration, in seconds.
         max_duration_sec : float or None, default=None
             Maximum peak duration, in seconds.
-        direction : {'positive', 'negative', 'both'}, default='both'
-            Peak direction to detect.
+        direction : PeakDirection, default='both'
+            Direction of peaks to detect: ``'positive'`` detects peaks above
+            baseline, ``'negative'`` detects peaks below baseline, and
+            ``'both'`` detects both directions.
         detailed : bool, default=False
             If ``True``, include extra peak metrics.
 
@@ -982,8 +996,8 @@ class RollingThresholdDetector(ThresholdDetector):
     def __init__(
             self,
             window_width_sec: float = 5.0,
-            center_method: Literal['median', 'mean', 'zeros'] | Callable = 'median',
-            scale_method: Literal['mad', 'std', 'ones'] | Callable = 'mad',
+            center_method: PeakCenterMethod = 'median',
+            scale_method: PeakScaleMethod = 'mad',
             test_magnitude: float = 3.0,
             ) -> None:
         """Initialize a rolling threshold detector.
@@ -992,10 +1006,14 @@ class RollingThresholdDetector(ThresholdDetector):
         ----------
         window_width_sec : float, default=5.0
             Rolling window width, in seconds.
-        center_method : {'median', 'mean', 'zeros'} or Callable, default='median'
-            Method used to estimate rolling center.
-        scale_method : {'mad', 'std', 'ones'} or Callable, default='mad'
-            Method used to estimate rolling scale.
+        center_method : PeakCenterMethod, default='median'
+            Center estimate: ``'median'`` uses ``np.nanmedian``, ``'mean'``
+            uses ``np.nanmean``, and ``'zeros'`` uses a zero-valued baseline.
+            A custom callable accepts an array and keyword argument ``axis``.
+        scale_method : PeakScaleMethod, default='mad'
+            Scale estimate: ``'mad'`` uses median absolute deviation,
+            ``'std'`` uses ``np.nanstd``, and ``'ones'`` uses a one-valued
+            scale. A custom callable accepts an array and keyword ``axis``.
         test_magnitude : float, default=3.0
             Scale multiplier used to set the detection threshold.
         """
@@ -1032,7 +1050,7 @@ class RollingThresholdDetector(ThresholdDetector):
             min_distance_sec: float | None = None,
             min_duration_sec: float | None = None,
             max_duration_sec: float | None = None,
-            direction: Literal['positive', 'negative', 'both'] = 'both',
+            direction: PeakDirection = 'both',
             detailed: bool = False,
             ) -> PeakResult:
         """Detect peaks using rolling signal-derived thresholds.
@@ -1053,8 +1071,10 @@ class RollingThresholdDetector(ThresholdDetector):
             Minimum peak duration, in seconds.
         max_duration_sec : float or None, default=None
             Maximum peak duration, in seconds.
-        direction : {'positive', 'negative', 'both'}, default='both'
-            Peak direction to detect.
+        direction : PeakDirection, default='both'
+            Direction of peaks to detect: ``'positive'`` detects peaks above
+            baseline, ``'negative'`` detects peaks below baseline, and
+            ``'both'`` detects both directions.
         detailed : bool, default=False
             If ``True``, include extra peak metrics.
 

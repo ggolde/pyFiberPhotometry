@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-cd /Users/ggolde/home/dev/PhoPro/
+dir="$(dirname "$0")"
+parentdir="$(dirname "$dir")"
+cd $parentdir
 
 jupyter nbconvert \
   --to markdown \

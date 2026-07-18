@@ -1,9 +1,9 @@
-from typing import Literal
-
 import numpy as np
 
 from numpy.lib.array_utils import normalize_axis_index
 from scipy.signal import resample_poly
+
+from ..types import DownsampleMethods
 
 ##########################
 #region --- DOWNSAMPLE ---
@@ -13,7 +13,7 @@ def downsample_signal(
         arr: np.ndarray,
         factor: int | None,
         axis: int = -1,
-        method: Literal['mean', 'resample'] = 'resample',
+        method: DownsampleMethods = 'resample',
         upsample: int = 1, 
         window = ('kaiser', 5),
         padtype: str = 'line',
@@ -46,7 +46,7 @@ def downsample_signal(
 def downsample_time(
         time: np.ndarray,
         factor: int | None,
-        method: Literal['mean', 'resample'] = 'resample',
+        method: DownsampleMethods = 'resample',
         upsample: int = 1, 
         **kwargs
         ) -> np.ndarray:

@@ -17,6 +17,14 @@ from ..analysis.peaks import PeakResult, RollingThresholdDetector, StaticThresho
 from ..utils import graphing, window
 from ..utils.io import clean_axis_dtype
 from ..utils.operations import downsample_signal, downsample_time
+from ..types import (
+    DownsampleMethods,
+    InvalidWindowPolicy,
+    PeakCenterMethod,
+    PeakDirection,
+    PeakScaleMethod,
+    WindowMethod,
+)
 
 ad.settings.allow_write_nullable_strings = True
 
@@ -413,7 +421,7 @@ class PhotometryData:
     def downsample(
             self,
             factor: int | None,
-            method: Literal['mean', 'resample'] = 'mean',
+            method: DownsampleMethods = 'mean',
             upsample: int = 1,
             window: str | tuple | np.ndarray = ('kaiser', 5),
             padtype: str = 'line',
@@ -426,8 +434,12 @@ class PhotometryData:
         factor : int or None
             Downsampling factor applied along the time axis. ``None``, ``0``,
             and ``1`` return ``self``.
-        method : {'mean', 'resample'}, default='mean'
-            Downsampling method passed to the signal and time helpers.
+        method : DownsampleMethods, default='mean'
+            Method for time-series downsampling.
+
+            - ``'resample'`` uses ``scipy.signal.resample_poly`` to perform
+              polyphase filtering.
+            - ``'mean'`` downsamples using mean pooling.
         upsample : int, default=1
             Upsampling factor used by the resampling method.
         window : str, tuple, or np.ndarray, default=('kaiser', 5)
@@ -598,8 +610,8 @@ class PhotometryData:
             centers: np.ndarray | float | str,
             bounds: tuple[float, float],
             event_cols: list[str] | None = None,
-            strategy: Literal['interp', 'nearest'] = 'nearest',
-            invalid_window_policy: Literal['drop', 'error'] = 'error',
+            strategy: WindowMethod = 'nearest',
+            invalid_window_policy: InvalidWindowPolicy = 'error',
             verbose: bool = False,
             ) -> Self:
         """Return a new `PhotometryData` object with windowed time series.
@@ -615,11 +627,18 @@ class PhotometryData:
         event_cols : list[str] or None, default=None
             Observation columns containing event times to recenter relative to
             ``centers`` in the output object.
-        strategy : {'interp', 'nearest'}, default='nearest'
-            Windowing strategy. ``'nearest'`` rounds to sampled time points;
-            ``'interp'`` interpolates signals onto an exact centered grid.
-        invalid_window_policy : {'drop', 'error'}, default='error'
-            Policy for windows that extend outside the available time range.
+        strategy : WindowMethod, default='nearest'
+            Method used to window time series.
+
+            - ``'nearest'`` snaps events to the nearest sampled time point and
+              slices windows to sampled bounds.
+            - ``'interp'`` centers windows exactly on events and interpolates
+              the signal onto the resulting time grid.
+        invalid_window_policy : InvalidWindowPolicy, default='error'
+            How to handle windows extending outside the available time series.
+
+            - ``'drop'`` drops invalid windows without raising an error.
+            - ``'error'`` raises a ``ValueError`` when a window is invalid.
         verbose : bool, default=False
             If ``True``, print indexes dropped by ``invalid_window_policy='drop'``.
 
@@ -773,24 +792,36 @@ class PhotometryData:
 
     def detect_peaks_static_threshold(
             self,
-            center_method: Literal['median', 'mean', 'zeros'] | Callable = 'median',
-            scale_method: Literal['mad', 'std', 'ones'] | Callable = 'mad',
+            center_method: PeakCenterMethod = 'median',
+            scale_method: PeakScaleMethod = 'mad',
             test_magnitude: float = 3.0,
             baselines: Self | np.ndarray | None = None,
             min_distance_sec: float | None = None,
             min_duration_sec: float | None = None,
             max_duration_sec: float | None = None,
-            direction: Literal['positive', 'negative', 'both'] = 'both',
+            direction: PeakDirection = 'both',
             detailed: bool = False,
             ) -> PeakResult:
         """Detect peaks using a static per-trial threshold.
 
         Parameters
         ----------
-        center_method : {'median', 'mean', 'zeros'} or Callable, default='median'
-            Method used by the detector to estimate baseline center.
-        scale_method : {'mad', 'std', 'ones'} or Callable, default='mad'
-            Method used by the detector to estimate baseline scale.
+        center_method : PeakCenterMethod, default='median'
+            Method used to estimate the baseline center.
+
+            - ``'median'`` uses ``np.nanmedian``.
+            - ``'mean'`` uses ``np.nanmean``.
+            - ``'zeros'`` uses a zero-valued baseline.
+            - A custom callable accepts an array and keyword argument
+              ``axis=1`` and returns one center per trial.
+        scale_method : PeakScaleMethod, default='mad'
+            Method used to estimate the baseline scale.
+
+            - ``'mad'`` uses the median absolute deviation.
+            - ``'std'`` uses ``np.nanstd``.
+            - ``'ones'`` uses a one-valued scale.
+            - A custom callable accepts an array and keyword argument
+              ``axis=1`` and returns one scale per trial.
         test_magnitude : float, default=3.0
             Threshold multiplier applied to the scale estimate.
         baselines : PhotometryData, np.ndarray, or None, default=None
@@ -802,8 +833,10 @@ class PhotometryData:
             Minimum peak duration in seconds.
         max_duration_sec : float or None, default=None
             Maximum peak duration in seconds.
-        direction : {'positive', 'negative', 'both'}, default='both'
-            Peak direction to detect.
+        direction : PeakDirection, default='both'
+            Direction of peaks to detect: ``'positive'`` detects peaks above
+            baseline, ``'negative'`` detects peaks below baseline, and
+            ``'both'`` detects both directions.
         detailed : bool, default=False
             Whether to return detailed detector output.
 
@@ -859,13 +892,13 @@ class PhotometryData:
     def detect_peaks_rolling_threshold(
             self,
             window_width_sec: float = 5.0,
-            center_method: Literal['median', 'mean', 'zeros'] | Callable = 'median',
-            scale_method: Literal['mad', 'std', 'ones'] | Callable = 'mad',
+            center_method: PeakCenterMethod = 'median',
+            scale_method: PeakScaleMethod = 'mad',
             test_magnitude: float = 3.0,
             min_distance_sec: float | None = None,
             min_duration_sec: float | None = None,
             max_duration_sec: float | None = None,
-            direction: Literal['positive', 'negative', 'both'] = 'both',
+            direction: PeakDirection = 'both',
             detailed: bool = False,
             ) -> PeakResult:
         """Detect peaks using a rolling threshold.
@@ -874,10 +907,22 @@ class PhotometryData:
         ----------
         window_width_sec : float, default=5.0
             Width of the rolling threshold window in seconds.
-        center_method : {'median', 'mean', 'zeros'} or Callable, default='median'
-            Method used by the detector to estimate rolling center.
-        scale_method : {'mad', 'std', 'ones'} or Callable, default='mad'
-            Method used by the detector to estimate rolling scale.
+        center_method : PeakCenterMethod, default='median'
+            Method used to estimate the rolling center.
+
+            - ``'median'`` uses ``np.nanmedian``.
+            - ``'mean'`` uses ``np.nanmean``.
+            - ``'zeros'`` uses a zero-valued baseline.
+            - A custom callable accepts an array and keyword argument
+              ``axis=1`` and returns the center estimate.
+        scale_method : PeakScaleMethod, default='mad'
+            Method used to estimate the rolling scale.
+
+            - ``'mad'`` uses the median absolute deviation.
+            - ``'std'`` uses ``np.nanstd``.
+            - ``'ones'`` uses a one-valued scale.
+            - A custom callable accepts an array and keyword argument
+              ``axis=1`` and returns the scale estimate.
         test_magnitude : float, default=3.0
             Threshold multiplier applied to the rolling scale estimate.
         min_distance_sec : float or None, default=None
@@ -886,8 +931,10 @@ class PhotometryData:
             Minimum peak duration in seconds.
         max_duration_sec : float or None, default=None
             Maximum peak duration in seconds.
-        direction : {'positive', 'negative', 'both'}, default='both'
-            Peak direction to detect.
+        direction : PeakDirection, default='both'
+            Direction of peaks to detect: ``'positive'`` detects peaks above
+            baseline, ``'negative'`` detects peaks below baseline, and
+            ``'both'`` detects both directions.
         detailed : bool, default=False
             Whether to return detailed detector output.
 

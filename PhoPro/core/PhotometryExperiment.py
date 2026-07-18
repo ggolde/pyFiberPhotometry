@@ -1,4 +1,4 @@
-"""Continuous-recording photometry experiment processing."""
+"""Photometry experiment processing."""
 
 from __future__ import annotations
 from collections.abc import Sequence
@@ -21,24 +21,16 @@ from ..utils import graphing, operations, reference_fitting, window
 from ..utils.window import WindowResult
 from ..analysis.artifact import ArtifactResult, ArtifactDetector, ArtifactCorrector
 
-##########################
-#region --- DATA TYPES ---
-##########################
-
-IsoFitMethod: TypeAlias = (
-    Literal[
-        'OLS', 
-        'IRLS',  
-        'detrend_retrend',
-        'detrend_fit_retrend',
-    ]
-    | Callable[
-        [np.ndarray, np.ndarray],
-        np.ndarray,
-    ]
+from ..types import (
+    ChannelMode,
+    IsoFitMethod,
+    CorrectionMethod,
+    ExpNormMethod,
+    TrialNormMethod,
+    WindowMethod,
+    InvalidWindowPolicy,
+    EventSelectionLogic
 )
-
-#endregion
 
 class PhotometryExperiment:
     """Handle processing and trial extraction for continuous photometry data."""
@@ -256,7 +248,6 @@ class PhotometryExperiment:
             file: str,
             downsample: int | None = None,
             export_events: bool = True,
-            include_filtered_traces: bool = False,
             format: Literal['wide', 'long'] = 'wide',
             ) -> None:
         """Write continuous traces to CSV.
@@ -269,8 +260,6 @@ class PhotometryExperiment:
             Downsampling factor applied before export.
         export_events : bool, default=True
             Whether to include event indicator columns in wide format.
-        include_filtered_traces : bool, default=False
-            Whether to include filtered traces when present.
         format : {'wide', 'long'}, default='wide'
             Output dataframe layout.
 
@@ -401,18 +390,22 @@ class PhotometryExperiment:
     ##############################
     #region --- PREPROCESS API ---
     ##############################
+
+    #TODO: make a detrend: bool arguement instead of having seperate detrend fit_using methods
+
     def preprocess_signal(
             self,
             cutoff_frequency: float | None = 3.0,
             order: int = 4,
-            signal_normalization: Literal['zscore', 'nullZ', 'none'] | Callable = 'none',
-            correction_method: Literal['dF/F', 'dF', 'dB/B', 'dB', 'none'] | Callable = 'dF/F',
+            signal_normalization: ExpNormMethod = 'none',
+            correction_method: CorrectionMethod = 'dF/F',
             fit_using: IsoFitMethod = 'IRLS',
+            detrend: bool = False,
             add_intercept: bool = True,
             maxiter: int = 1000,
             c: float | None = 3,
             window_dur_sec: float = 5.0,
-            channel_mode: Literal['auto', 'dual', 'single'] = 'auto',
+            channel_mode: ChannelMode = 'auto',
             artifact_detector: ArtifactDetector | None = None,
             artifact_corrector: ArtifactCorrector | None = None,
             ) -> None:
@@ -425,45 +418,61 @@ class PhotometryExperiment:
             is performed.
         order : int, default=4
             Butterworth filter order.
-        signal_normalization : {'zscore', 'nullZ', 'none'} or Callable, default='none'
-            Whole-signal normalization method. A callable must accept
-            ``signal`` and return a one-dimensional array.
-        correction_method : {'dF/F', 'dF', 'dB/B', 'dB', 'none'} or Callable, default='dF/F'
-            Reference correction method. ``'dF/F'`` and ``'dB/B'`` compute
-            ``(signal - fitted_reference) / fitted_reference``; ``'dF'`` and
-            ``'dB'`` compute ``signal - fitted_reference``. Custom callables
-            must accept ``signal`` and ``fitted_reference`` and return a
-            one-dimensional array.
-        fit_using : {'OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept' 'PB_fit'} or Callable, default='IRLS'
-            Method used to fit the isosbestic trace to the signal in
-            dual-channel experiments. Custom callables must accept ``signal``
-            and ``isosbestic`` and return ``(fitted_reference, params)``.
+        signal_normalization : ExpNormMethod, default='none'
+            The method used for whole-experiment normalization.
 
-            - ``OLS``: ordinary least squares (simplest and fastest)
-            - ``IRLS``: iteratively re-weighted least squares (recommended default)
-            - ``detrend_retrend``: map the photobleaching curve from the isosbestic to the
-                experimental signal (recommended when the bleaching dyanmics
-                between the experimental and isosbestic are drastically different)
-            - ``detrend_fit_retrend``: same as ``detrend_retrend``, but the detrended
-                isosbestic is fit to the detrended experimental signal using IRLS before
-                retrending.
+            - ``zscore``: the traditional Z-score
+            - ``nullZ``: division by the signals standard deviation without centering
+            - ``none``: no whole-experiment normalization
+        correction_method : CorrectionMethod, default='dF/F'
+            How to use the fitted reference signal (the isosbestic for dual-channel and 
+            the fit photobleaching curve for single-channel) to correct the experimental signal.
 
+            For dual-channel experiments:
+            - ``dF/F``: ``(experiment - fit isosbestic) / fit isosbestic`` 
+            (corrects for photobleaching attenuation)
+            - ``dF``: ``(experiment - fit isosbestic)``,
+            (does NOT correct for photobleaching attenuation on its own)
+
+            For single-channel experiments:
+            - ``dB/B``: ``(experiment - fit photobleaching) / fit photobleaching``,
+            (corrects for photobleaching attenuation)
+            - ``dB``: ``(experiment - fit photobleaching)``,
+            (does NOT correct for photobleaching attenuation on its own)
+
+            For both:
+            - A custom function that accepts ``(signal: np.ndarray, fitted reference: np.ndarray)``
+            positionally and returns the corrected signal as a ``np.ndarray``
+            - ``none``: no transformation based on the fitted reference signal is performed,
+            used mainly for debugging.
+        fit_using : IsoFitMethod, default='IRLS'
+            The method used to fit the isosbestic to experimnetal signal in dual-channel processing.
+
+            - ``OLS``: ordinary least squares
+            - ``IRLS``: iteratively reweighted least squares (recommended default)
+            - A custom function that accepts ``(signal: np.ndarray, isosbestic: np.ndarray)`` 
+            positionally and returns the fitted isosbestic signal as a ``np.ndarray``
+        detrend : bool, default=True
+            Whether to detrend the experimental and isosbestic signals before fitting.
+            Only applies to dual-channel workflows.
         add_intercept : bool, default=True
-            Whether to include an intercept in the isosbestic fitting, if applicable to
-            ``fit_using`` selection. Any ``fit_using`` method that uses OLS or IRLS
-            will be effected by this parameter.
+            Whether to include an intercept in the isosbestic fitting.
         maxiter : int, default=1000
-            Maximum iterations for IRLS fitting. Effects only ``fit_using == IRLS 
-            or detrend_fit_retrend``.
+            Maximum iterations for IRLS fitting. Effects only ``fit_using = IRLS``.
         c : float or None, default=None
-            IRLS tuning constant. Effects only ``fit_using == IRLS 
-            or detrend_fit_retrend``.
+            IRLS tuning constant. Effects only ``fit_using = IRLS``.
         window_dur_sec : float, default=5
             Sliding-window duration for photobleaching strided median
             downsampling in seconds. Relevant to ``correction_method == dB or dB/B``
             and ``fit_using == detrend_retrend or detrend_fit_retrend``.
-        channel_mode : {'auto', 'dual', 'single'}, default='auto'
-            Optional channel mode overwrite.
+        channel_mode : ChannelMode, default='auto'
+            Workflow used to preprocess the signal.
+
+            - ``'auto'`` detects the channel mode from the presence or absence
+              of an isosbestic signal.
+            - ``'dual'`` uses isosbestic fitting and correction.
+            - ``'single'`` uses photobleaching detrending on the experimental
+              signal.
         artifact_detector : ArtifactDetector or None, default=None
             Optional detector used to identify artifacts.
         artifact_corrector : ArtifactCorrector or None, default=None
@@ -514,6 +523,17 @@ class PhotometryExperiment:
             filt_sig = filt_sig[:min_len]
             filt_iso = filt_iso[:min_len]
 
+            # optionally detrend signals
+            if detrend:
+                filt_sig, _, _ = self.detrend_signal(
+                    signal=filt_sig, 
+                    window_dur_sec=window_dur_sec,
+                )
+                filt_iso, _, _ = self.detrend_signal(
+                    signal=filt_iso, 
+                    window_dur_sec=window_dur_sec,
+                )
+
             # fit isosbestic to signal
             fitted_ref, r2_val, coeffs = self.fit_isosbestic_to_signal(
                 filt_sig,
@@ -522,7 +542,6 @@ class PhotometryExperiment:
                 maxiter=maxiter,
                 fit_using=fit_using,
                 c=c,
-                window_dur_sec=window_dur_sec,
             )
             reference_type = 'isosbestic'
 
@@ -605,12 +624,12 @@ class PhotometryExperiment:
             center_on: str | Sequence[str] | None = None,
             baseline_bounds: tuple[float, float] | None = None,
             event_tolerences: dict[str, tuple[float, float] | None] = {},
-            trial_normalization: Literal['zscore', 'zero', 'mad', 'amp', 'none'] | Callable = 'none',
+            trial_normalization: TrialNormMethod = 'none',
             check_overlap: bool = True,
             all_events: bool = True,
-            window_alignment: Literal['nearest', 'interp'] = 'nearest',
-            invalid_window_policy: Literal['drop', 'error'] = 'drop',
-            event_conflict_logic: Literal['first', 'last', 'all', 'mean'] = 'first',
+            window_alignment: WindowMethod = 'nearest',
+            invalid_window_policy: InvalidWindowPolicy = 'drop',
+            event_conflict_logic: EventSelectionLogic = 'first',
             ) -> None:
         """Build trial-wise windows, normalize, and store trial data.
 
@@ -632,27 +651,46 @@ class PhotometryExperiment:
         event_tolerences : dict[str, tuple[float, float] or None], default={}
             Event annotation windows relative to ``align_to`` timestamps.
             ``None`` values are replaced with ``trial_bounds``.
-        trial_normalization : {'zscore', 'zero', 'mad', 'amp', 'none'} or Callable, default='none'
-            Trial-wise normalization method. Custom callables must accept
-            ``trial_signals`` and ``baseline_signals`` and return a
-            two-dimensional array with the same shape as ``trial_signals``.
+        trial_normalization : TrialNormMethod, default='none'
+            The method used for trial-wise normalization based on a specified baseline region.
+
+            - ``zscore``: the traditional Z-score using the standard deviation and mean
+            of the baseline region
+            - ``zero``: centers trials by the mean of the baseline
+            - ``mad``: robust Z-score using the median absolute deviation and median
+            of the baseline region
+            - ``amp``: scales the trials by their absolute maximum
+            - ``none``: no trial-wise normalization
+            - A custom function that accepts ``(signal: np.ndarray, baselines: np.ndarray)``
+            and returns the normalized signals as a 2D ``np.ndarray`` of the same shape of 
+            ``signal``
         check_overlap : bool, default=True
             If ``True``, raise when more than one ``center_on`` event is found
             for the same trial.
         all_events : bool, default=True
             If ``True``, passdown all events even if they are not 
             present in ``event_tolerences``.
-        window_alignment : {'nearest', 'interp'}, default='nearest'
-            Window construction strategy. ``'nearest'`` rounds centers to
-            sampled time points; ``'interp'`` interpolates signals onto an
-            exact event-centered grid.
-        invalid_window_policy : {'drop', 'error'}, default='drop'
-            Policy for trial or baseline windows extending outside the signal
-            range.
-        event_conflict_logic : {'first', 'last', 'all' 'mean'}, default='first'
-            Rule used when multiple timestamps for the same event label fall inside
-            a trial annotation window. If 'all', the first occurrence keeps the base
-            event label and later occurrences are stored as '<label>_occurrence_#n'.
+        window_alignment : WindowMethod, default='nearest'
+            The method used to window time-series.
+
+            - ``nearest``: snaps events to the nearest sampled timepoint and slices
+            windows based to the nearest time point fitting within the window
+            - ``interp``: exactly center windows to events and use liner interpolation to
+            interpolate the signal at the exact time grid built around the center
+        invalid_window_policy : InvalidWindowPolicy, default='drop'
+            How to handle windows with bounds that extend outside of the time-series
+            being windowed.
+
+            -``drop``: drops the invalid windows without raising an error
+            -``error``: raises a ``ValueError`` if there are invalid windows
+        event_conflict_logic : EventSelectionLogic, default='first'
+            Rule used to select timestamp(s) if multiple timestamps for the same 
+            event label fall inside a trial annotation window. 
+
+            -``first``: only selects the first occurence of the event
+            -``last``: only selects the last occurence of the event
+            -``all``: keep all occurrences, but relabels them, with the first occurrence mantaining the base label and subsequent ones being relabeled as ``f'{base_label}_occurrence_{n}'`` 
+            -``mean``: uses the average timestamp of the multiple occurences
 
         Raises
         ------
@@ -664,6 +702,7 @@ class PhotometryExperiment:
         # validate inputs
         if baseline_bounds is None:
             calc_baselines = False
+            #TODO: clean this
             if trial_normalization in ['zscore', 'zero', 'mad', 'amp']:
                 raise ValueError(
                     f'Baseline bounds have to be specified for normalization method {trial_normalization}'
@@ -814,11 +853,10 @@ class PhotometryExperiment:
             self,
             signal: np.ndarray,
             isosbestic: np.ndarray,
-            fit_using: Literal['OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept', 'PB_fit'] | Callable = 'IRLS',
+            fit_using: IsoFitMethod = 'IRLS',
             add_intercept: bool = True,
             maxiter: int = 1000,
             c: float | None = None,
-            window_dur_sec: float = 5,
             ) -> tuple[np.ndarray, float, Any]:
         """Fit the isosbestic channel to the signal.
 
@@ -828,9 +866,14 @@ class PhotometryExperiment:
             Filtered signal trace.
         isosbestic : np.ndarray
             Filtered isosbestic trace.
-        fit_using : {'OLS', 'IRLS', 'IRLS_no_intercept', 'OLS_no_intercept', 'PB_fit'} or Callable, default='IRLS'
-            Fitting method. Custom callables must return
-            ``(fitted_isosbestic: np.ndarray, params: list[float])``.
+        fit_using : IsoFitMethod, default='IRLS'
+            Method used to fit the isosbestic to the experimental signal.
+
+            - ``'OLS'`` uses ordinary least squares.
+            - ``'IRLS'`` uses iteratively reweighted least squares.
+            - A custom callable accepts ``signal`` and ``isosbestic`` arrays
+              positionally and returns the fitted isosbestic signal and fit
+              parameters.
         maxiter : int, default=1000
             Maximum iterations for IRLS fitting.
         c : float or None, default=None
@@ -864,19 +907,6 @@ class PhotometryExperiment:
             case 'IRLS':
                 fitted_iso, params = reference_fitting.IRLS_fit(
                     signal, isosbestic, maxiter=maxiter, c=c, add_intercept=add_intercept
-                )
-            case 'detrend_retrend':
-                window = int(self.frequency * window_dur_sec)
-                fitted_iso, params = reference_fitting.detrend_retrend(
-                    signal, isosbestic, self.time, window,
-                )
-            case 'detrend_fit_retrend':
-                window = int(self.frequency * window_dur_sec)
-                fitted_iso, params = reference_fitting.detrend_fit_retrend(
-                    signal, isosbestic, self.time, window,
-                    maxiter=maxiter,
-                    c=c,
-                    add_intercept=add_intercept,
                 )
             case _:
                 raise ValueError(f'{fit_using} fitting method not recognized!')
@@ -927,11 +957,24 @@ class PhotometryExperiment:
             raise ValueError(f'Fitted photobleaching curve produced NaNs.')
 
         return fitted_curve, r2_val, params
+    
+    def detrend_signal(
+            self,
+            signal: np.ndarray,
+            window_dur_sec: float = 5,
+            ) -> tuple[np.ndarray, float, list[float]]:
+        bleaching, r2_val, params = self.fit_photobleaching_curve(
+            signal=signal,
+            window_dur_sec=window_dur_sec,
+        )
+
+        detrended = (signal - bleaching) / np.maximum(bleaching, np.finfo(np.float32).eps)
+        return detrended, r2_val, params
 
     # --- hidden signal preprocess helpers ---
     def _apply_correction_method(
             self,
-            correction_method: Literal['dF/F', 'dF', 'dB/B', 'dB', 'none'] | Callable,
+            correction_method: CorrectionMethod,
             signal: np.ndarray,
             fitted_ref: np.ndarray,
             ) -> np.ndarray:
@@ -952,7 +995,7 @@ class PhotometryExperiment:
 
     def _apply_signal_normalization(
             self,
-            signal_normalization: Literal['zscore', 'nullZ', 'none'] | Callable,
+            signal_normalization: ExpNormMethod,
             signal : np.ndarray,
             ) -> np.ndarray:
         """Apply the configured whole-signal normalization method."""
@@ -1009,7 +1052,7 @@ class PhotometryExperiment:
     ##################################
     def _apply_trial_normalization(
             self,
-            trial_normalization: Literal['zscore', 'zero', 'mad', 'amp', 'none'] | Callable,
+            trial_normalization: TrialNormMethod,
             trial_windows: WindowResult,
             baseline_windows: WindowResult | None,
             ) -> np.ndarray:
@@ -1048,7 +1091,7 @@ class PhotometryExperiment:
             label: str,
             timestamps: np.ndarray,
             time_intervals: np.ndarray,
-            logic: Literal['first', 'last', 'all', 'mean'] = 'first',
+            logic: EventSelectionLogic = 'first',
             ) -> dict[str, np.ndarray]:
         """Find timestamps within each time interval using customizable logic."""
         timestamps = np.sort(timestamps)
@@ -1248,7 +1291,7 @@ class PhotometryExperiment:
             centers: np.ndarray,
             events: dict[str, np.ndarray],
             tolorences: dict[str, np.ndarray],
-            logic: Literal['first', 'last', 'all', 'mean'] = 'first',
+            logic: EventSelectionLogic = 'first',
             ) -> dict[str, np.ndarray]:
         """Annotate intervals around centers with event timestamps."""
         out = {align_label: centers.copy()}
@@ -1292,7 +1335,7 @@ class PhotometryExperiment:
             events: dict[str, np.ndarray],
             centers: np.ndarray,
             bounds: tuple[float, float],
-            strategy: Literal['nearest', 'interp'] = 'nearest',
+            strategy: WindowMethod = 'nearest',
             ) -> WindowResult:
         """Create one-dimensional windows using the requested strategy."""
         # execute windowing
@@ -1308,7 +1351,7 @@ class PhotometryExperiment:
             self,
             trial_windows: WindowResult,
             baseline_windows: WindowResult | None,
-            policy: Literal['drop', 'error'] = 'drop'
+            policy: InvalidWindowPolicy = 'drop'
             ) -> np.ndarray:
         """Apply invalid-window policy to trial and baseline windows."""
         # find valid trials

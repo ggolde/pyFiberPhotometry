@@ -10,7 +10,7 @@ from PhoPro.utils.equations import neg_bi_exponential_5
 # --- preprocessing ---
 
 def test_preprocess_signal_outputs(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     assert np.issubdtype(experiment.signal.dtype, np.floating)
     assert experiment.signal.shape == experiment.time.shape
@@ -26,6 +26,7 @@ def test_preprocess_signal_outputs(experiment):
 
 def test_preprocess_recovers_signal_reasonably(experiment, sim):
     experiment.preprocess_signal(
+        detrend=False,
         correction_method="dF/F",
         signal_normalization="nullZ",
         fit_using="IRLS",
@@ -39,15 +40,39 @@ def test_preprocess_recovers_signal_reasonably(experiment, sim):
     assert corr > 0.35
 
 
+def test_preprocess_detrends_both_dual_channel_signals(experiment, monkeypatch):
+    calls = []
+
+    def detrend_signal(signal, window_dur_sec):
+        calls.append((signal.copy(), window_dur_sec))
+        return signal - 1.0, 1.0, []
+
+    monkeypatch.setattr(experiment, "detrend_signal", detrend_signal)
+
+    experiment.preprocess_signal(
+        cutoff_frequency=None,
+        correction_method="none",
+        detrend=True,
+        window_dur_sec=2.5,
+    )
+
+    assert len(calls) == 2
+    assert np.array_equal(calls[0][0], experiment.raw_signal)
+    assert np.array_equal(calls[1][0], experiment.raw_isosbestic)
+    assert calls[0][1] == calls[1][1] == 2.5
+    assert np.array_equal(experiment.filt_sig, experiment.raw_signal - 1.0)
+    assert np.array_equal(experiment.filt_iso, experiment.raw_isosbestic - 1.0)
+
+
 def test_preprocess_rejects_channel_incompatible_correction_methods(
     experiment,
     single_channel_experiment,
 ):
     with pytest.raises(ValueError, match="single channel"):
-        experiment.preprocess_signal(correction_method="dB/B")
+        experiment.preprocess_signal(correction_method="dB/B", detrend=False)
 
     with pytest.raises(ValueError, match="dual channel"):
-        single_channel_experiment.preprocess_signal(correction_method="dF/F")
+        single_channel_experiment.preprocess_signal(correction_method="dF/F", detrend=False)
 
 
 def test_fit_photobleaching_curve_recovers_smooth_bleaching_trend(experiment):
@@ -72,6 +97,7 @@ def test_preprocess_single_channel_processing(single_channel_experiment):
     exp = single_channel_experiment
 
     exp.preprocess_signal(
+        detrend=False,
         correction_method="dB/B",
         signal_normalization="none",
         cutoff_frequency=3.0,
@@ -94,7 +120,7 @@ def test_preprocess_requires_detector_when_corrector_is_given(experiment):
             return signal
 
     with pytest.raises(ValueError, match="artifact_detector"):
-        experiment.preprocess_signal(artifact_corrector=Corrector())
+        experiment.preprocess_signal(artifact_corrector=Corrector(), detrend=False)
 
 
 def test_preprocess_accepts_callable_correction_and_normalization(experiment):
@@ -105,6 +131,7 @@ def test_preprocess_accepts_callable_correction_and_normalization(experiment):
         return signal / np.nanstd(signal)
 
     experiment.preprocess_signal(
+        detrend=False,
         correction_method=correction,
         signal_normalization=normalize,
     )
@@ -138,6 +165,7 @@ def test_preprocess_delegates_artifact_detector_and_corrector(experiment):
 
     detector = Detector()
     experiment.preprocess_signal(
+        detrend=False,
         artifact_detector=detector,
         artifact_corrector=Corrector(),
     )
@@ -235,7 +263,7 @@ def test_extract_trial_data_creates_trial_and_baseline_objects(experiment, sim):
 
 
 def test_extract_trial_data_center_on_none_uses_alignment_event(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.extract_trial_data(
         align_to="event",
@@ -250,7 +278,7 @@ def test_extract_trial_data_center_on_none_uses_alignment_event(experiment):
 
 
 def test_extract_trial_data_single_center_on_does_not_overlap(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.extract_trial_data(
         align_to="event",
@@ -268,7 +296,7 @@ def test_extract_trial_data_single_center_on_does_not_overlap(experiment):
 # --- trial extraction: alignment inputs ---
 
 def test_extract_trial_data_accepts_eventless_alignment_timestamps(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     centers = [10.0, 20.0, 30.0]
     experiment.extract_trial_data(
@@ -287,7 +315,7 @@ def test_extract_trial_data_accepts_eventless_alignment_timestamps(experiment):
 
 
 def test_extract_trial_data_accepts_scalar_integer_alignment_timestamp(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.extract_trial_data(
         align_to=20,
@@ -302,7 +330,7 @@ def test_extract_trial_data_accepts_scalar_integer_alignment_timestamp(experimen
 
 
 def test_extract_trial_data_accepts_multiple_alignment_event_labels(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.events["align_a"] = np.asarray([10.0, 20.0])
     experiment.events["align_b"] = np.asarray([10.0, 15.0])
@@ -330,7 +358,7 @@ def test_extract_trial_data_accepts_multiple_alignment_event_labels(experiment):
 # --- trial extraction: validation and errors ---
 
 def test_extract_trial_data_overlap_check_raises(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.events["choice_left"] = experiment.events["event"] + 0.3
     experiment.events["choice_right"] = experiment.events["event"] + 0.4
@@ -346,7 +374,7 @@ def test_extract_trial_data_overlap_check_raises(experiment):
 
 
 def test_extract_trial_data_reports_missing_alignment_labels(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     with pytest.raises(KeyError, match="missing"):
         experiment.extract_trial_data(
@@ -356,7 +384,7 @@ def test_extract_trial_data_reports_missing_alignment_labels(experiment):
 
 
 def test_extract_trial_data_reports_missing_center_on_labels(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     with pytest.raises(KeyError, match="missing_center"):
         experiment.extract_trial_data(
@@ -368,7 +396,7 @@ def test_extract_trial_data_reports_missing_center_on_labels(experiment):
 
 @pytest.mark.parametrize("align_to", [[], "empty_event"])
 def test_extract_trial_data_rejects_empty_alignments(experiment, align_to):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
     experiment.events["empty_event"] = np.asarray([], dtype=float)
 
     with pytest.raises(ValueError, match="align_to|timestamp|event label"):
@@ -383,7 +411,7 @@ def test_extract_trial_data_requires_baseline_for_baseline_normalizations(
     experiment,
     trial_normalization,
 ):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     with pytest.raises(ValueError, match="Baseline bounds"):
         experiment.extract_trial_data(
@@ -395,7 +423,7 @@ def test_extract_trial_data_requires_baseline_for_baseline_normalizations(
 
 
 def test_extract_trial_data_none_tolerances_default_to_trial_bounds(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.extract_trial_data(
         align_to="event",
@@ -413,7 +441,7 @@ def test_extract_trial_data_none_tolerances_default_to_trial_bounds(experiment):
 # --- trial extraction: invalid windows ---
 
 def test_extract_trial_data_drop_invalid_windows_keeps_align_event_aligned(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.events["align_a"] = np.asarray([0.5, 30.0])
     experiment.events["align_b"] = np.asarray([40.0, experiment.time[-1] - 0.25])
@@ -432,7 +460,7 @@ def test_extract_trial_data_drop_invalid_windows_keeps_align_event_aligned(exper
 
 
 def test_extract_trial_data_invalid_window_policy_error_raises(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     with pytest.raises(ValueError, match="Invalid trial windows"):
         experiment.extract_trial_data(
@@ -443,7 +471,7 @@ def test_extract_trial_data_invalid_window_policy_error_raises(experiment):
 
 
 def test_extract_trial_data_all_invalid_windows_raises(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     with pytest.raises(ValueError, match="No trials remain"):
         experiment.extract_trial_data(
@@ -456,7 +484,7 @@ def test_extract_trial_data_all_invalid_windows_raises(experiment):
 # --- trial extraction: normalization ---
 
 def test_extract_trial_data_custom_normalization_receives_baseline(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
     calls = {}
 
     def normalize(trial_signals, baseline_signals):
@@ -477,7 +505,7 @@ def test_extract_trial_data_custom_normalization_receives_baseline(experiment):
 
 
 def test_extract_trial_data_interp_alignment_has_shared_timebase(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     experiment.extract_trial_data(
         align_to=[10.25, 20.5, 30.75],
@@ -571,7 +599,7 @@ def test_annotate_intervals_all_adds_repeated_event_columns(experiment):
 
 
 def test_extract_trial_data_all_event_conflict_adds_repeated_event_columns(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
     experiment.events["repeat_event"] = np.sort(np.concatenate([
         experiment.events["event"] + 0.2,
         experiment.events["event"] + 0.4,
@@ -624,7 +652,7 @@ def test_create_windows_rejects_unknown_strategy(experiment):
 # --- export, trimming, and plotting ---
 
 def test_to_wide_dataframe_includes_named_traces_and_event_columns(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     df = experiment.to_wide_dataframe(export_events=True)
 
@@ -644,7 +672,7 @@ def test_to_wide_dataframe_includes_named_traces_and_event_columns(experiment):
 
 
 def test_to_long_dataframe_includes_filtered_sources(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
 
     df = experiment.to_long_dataframe()
 
@@ -660,7 +688,7 @@ def test_to_long_dataframe_includes_filtered_sources(experiment):
 
 
 def test_write_csv_writes_wide_and_long_tables(experiment, tmp_path):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
     wide_path = tmp_path / "wide.csv"
     long_path = tmp_path / "long.csv"
 
@@ -695,7 +723,7 @@ def test_load_csv_classmethod_constructs_experiment_from_csv(tmp_path):
 
 
 def test_trim_times_by_index_filters_all_timeseries_and_events(experiment):
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
     experiment.events["edge"] = np.asarray([experiment.time[0], experiment.time[10], experiment.time[-1]])
 
     experiment.trim_times_by_index(start_idx=5, stop_idx=15)
@@ -735,6 +763,6 @@ def test_plot_dashboard_returns_plot_object_and_requires_preprocessed_signal(exp
     with pytest.raises(ValueError, match="preprocess_signal"):
         experiment.plot_dashboard(raw=False)
 
-    experiment.preprocess_signal()
+    experiment.preprocess_signal(detrend=False)
     processed_plot = experiment.plot_dashboard(raw=False, downsample=None)
     assert processed_plot is not None

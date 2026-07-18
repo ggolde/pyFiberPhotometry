@@ -55,7 +55,7 @@ This package is developed and used internally at the [Bizon-Setlow Lab](https://
 If you use this package in your work, and want to support the package, use the citation below (a proper publication is hopefully on the horizon):
 
 * Golde G. *PhoPro: a comprehensive toolkit for the processing, analysis, and simulation of fiber photometry data*.
-GitHub repository. Version 0.6.0. Available at: https://github.com/ggolde/PhoPro.
+GitHub repository. Version 0.6.1. Available at: https://github.com/ggolde/PhoPro.
 
 Additionally, if you used the ``analysis.FMM`` module, please review the [recommended reference(s)](https://github.com/gloewing/photometry_FLMM/blob/main/README.md#references) for the ``fast-fmm-rpy2`` package.
 

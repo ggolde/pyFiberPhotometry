@@ -37,6 +37,7 @@ def simulate_data() -> SimulatedPhotometry:
 class DummyExperiment(PhotometryExperiment):
     def run_pipeline(self) -> None:
         self.preprocess_signal(
+            detrend=False,
             cutoff_frequency=3.0,
             order=4,
             correction_method="dF/F",
