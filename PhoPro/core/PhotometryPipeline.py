@@ -246,6 +246,20 @@ class PhotometryPipeline:
 
         self._validate_static_kwargs(preprocess_kwargs, trial_extraction_kwargs, dashboard_kwargs)
 
+    def _kwargs_with_defaults(
+            self,
+            func: Callable,
+            kwargs: dict[str, Any],
+            ) -> dict[str, Any]:
+        """Overlay supplied keyword arguments on a callable's defaults."""
+        defaults = {
+            name: param.default
+            for name, param in inspect.signature(func).parameters.items()
+            if name not in {'self', 'cls'}
+            and param.default is not inspect.Parameter.empty
+        }
+        return defaults | kwargs
+
     def _validate_output_dir(self, output_dir: Path | None) -> None:
         """Validate or create the output directory."""
         if output_dir is None:
@@ -380,6 +394,7 @@ class PhotometryPipeline:
             output_dir: str | Path | None = None,
             log_file: str | None = None,
             trial_output_file: str | None = 'trials.h5ad',
+            params_file: str | None = 'pipeline_params.json',
 
             # pipeline params
             low_memory_mode: bool = False,
@@ -426,6 +441,11 @@ class PhotometryPipeline:
         trial_output_file : str or None, default='trials.h5ad'
             Name of the accumulated trial-data file written under
             ``output_dir``.
+        params_file : str or None, default='pipeline_params.json'
+            JSON file used to save the effective preprocessing and trial
+            extraction parameters. Relative paths are written under
+            ``output_dir`` when one is provided. If ``None``, parameters are
+            not saved.
         low_memory_mode : bool, default=False
             If ``True``, accumulate trial data directly on disk.
         passdown_metadata : list[str] or None, default=['source']
@@ -468,7 +488,11 @@ class PhotometryPipeline:
         # --- coerce inputs ---
         if output_dir is not None:
             output_dir = Path(output_dir)
-            trial_output_path = os.path.join(output_dir, trial_output_file)
+            trial_output_path = (
+                None
+                if trial_output_file is None
+                else os.path.join(output_dir, trial_output_file)
+            )
         else:
             trial_output_path = None
 
@@ -478,6 +502,24 @@ class PhotometryPipeline:
         self._validate_low_memory_mode(low_memory_mode, trial_output_path)
         self._validate_static_kwargs(preprocess_kwargs, trial_extraction_kwargs, dashboard_kwargs)
         dashboard_dir = self._validate_save_dashboard(save_dashboards, output_dir)
+
+        # --- save effective processing parameters ---
+        if params_file is not None:
+            params_path = Path(params_file)
+            if output_dir is not None and not params_path.is_absolute():
+                params_path = output_dir / params_path
+            params = {
+                'preprocess_signal': self._kwargs_with_defaults(
+                    self.experiment_cls.preprocess_signal,
+                    preprocess_kwargs,
+                ),
+                'extract_trial_data': self._kwargs_with_defaults(
+                    self.experiment_cls.extract_trial_data,
+                    trial_extraction_kwargs,
+                ),
+            }
+            with params_path.open('w') as f:
+                json.dump(params, f, indent=4)
 
         # --- construct jobs ---
         logger.info('Discovering inputs...')
@@ -705,7 +747,7 @@ class MultiPipeline:
 
             # I/O
             output_dir: str | Path,
-            preprocess_param_file: str = 'preprocess_params.json',
+            params_file: str | None = 'pipeline_params.json',
             log_file: str = 'pipeline.log',
             trial_output_file: str = 'trials.h5ad',
 
@@ -739,9 +781,10 @@ class MultiPipeline:
             Keyword arguments passed to trial extraction.
         output_dir : str | Path
             Parent directory for all preprocessing sub-runs.
-        preprocess_param_file : str, optional
-            File name used to save each sub-run preprocessing parameters, by
-            default ``"preprocess_params.json"``.
+        params_file : str or None, optional
+            File name used to save each sub-run's effective preprocessing and
+            trial-extraction parameters, by default ``"pipeline_params.json"``.
+            If ``None``, parameters are not saved.
         log_file : str, optional
             File name used for each sub-run pipeline log, by default
             ``"pipeline.log"``.
@@ -785,12 +828,6 @@ class MultiPipeline:
                 sub_output_dir.mkdir(exist_ok=True)
 
             sub_log_file = sub_output_dir / log_file
-            sub_param_file = sub_output_dir / preprocess_param_file
-
-            # save params
-            with open(sub_param_file, 'w') as f:
-                json.dump(preprocess_kwargs, f)
-
             # run pipeline
             self.pipeline.run(
                 loader_kwargs=loader_kwargs,
@@ -799,6 +836,7 @@ class MultiPipeline:
                 output_dir=sub_output_dir,
                 log_file=sub_log_file,
                 trial_output_file=trial_output_file,
+                params_file=params_file,
                 passdown_metadata=passdown_metadata,
                 low_memory_mode=low_memory_mode,
                 id_builder=id_builder,

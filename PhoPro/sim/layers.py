@@ -92,8 +92,8 @@ class PhotobleachingLayer:
             raise ValueError(f'tau1 must be positive, is {self.tau1}')
         if self.tau2 <= 0:
             raise ValueError(f'tau1 must be positive, is {self.tau2}')
-        if self.B_floor <= 0:
-            raise ValueError(f'B_floor must be positive, is {self.B_floor}')
+        if self.B_floor < 0:
+            raise ValueError(f'B_floor must be >= 0, is {self.B_floor}')
         if self.alpha1 + self.alpha2 <= 0:
             raise ValueError(f'alpha1 + alpha2 must be positive, is {self.alpha1 + self.alpha2}')
         

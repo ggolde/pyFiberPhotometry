@@ -131,8 +131,8 @@ class SimulatedPhotometry:
             event_buffer_sec: float | None = 10.0,
 
             bleaching_params_exp: dict[str, float] = {'alpha1':50, 'alpha2':20, 'tau1':300, 'tau2':10000, 'B_floor':10},
-            bleaching_params_iso: dict[str, float] | None = None,
-            iso_bleach_scale: float | None = 0.8,
+            bleaching_params_iso: dict[str, float] | None = {'alpha1':40, 'alpha2':16, 'tau1':300, 'tau2':10000, 'B_floor':10},
+            iso_bleach_scale: float | None = None,
             iso_bleach_offset: float | None = None,
 
             mult_noise_magnitude_exp: float | None = 1e-3,

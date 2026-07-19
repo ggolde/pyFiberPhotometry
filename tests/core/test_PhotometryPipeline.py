@@ -1,3 +1,6 @@
+import inspect
+import json
+
 import numpy as np
 import pytest
 
@@ -71,6 +74,19 @@ def test_pipeline_validates_resolved_loader_kwargs(dummy_pipeline):
     with pytest.raises(TypeError, match='Unexpected kwargs'):
         dummy_pipeline._validate_loader_kwargs(jobs[0]['loader_kwargs'])
 
+def test_pipeline_parameter_kwargs_include_function_defaults(dummy_pipeline):
+    supplied = {'order': 8}
+
+    effective = dummy_pipeline._kwargs_with_defaults(
+        dummy_pipeline.experiment_cls.preprocess_signal,
+        supplied,
+    )
+
+    signature = inspect.signature(dummy_pipeline.experiment_cls.preprocess_signal)
+    assert effective['order'] == 8
+    assert effective['cutoff_frequency'] == signature.parameters['cutoff_frequency'].default
+    assert effective['maxiter'] == signature.parameters['maxiter'].default
+
 # --- workflow tests ---
 def test_pipeline_full_run(dummy_pipeline):
 
@@ -123,6 +139,7 @@ def test_pipeline_full_run(dummy_pipeline):
         post_load_operation=post_load_operation,
         post_preprocess_operation=post_preprocess_operation,
         post_trial_extraction_operation=post_extraction_operation,
+        params_file=None,
     )
 
     # validate
@@ -135,3 +152,26 @@ def test_pipeline_full_run(dummy_pipeline):
     assert (data.obs['post_extraction_operation'] == 'success').all()
     assert (data.obs['act_directly_on_trials'] == 'success').all()
     assert (int(data.obs['experiment_id'].nunique()) == len(inputs))
+
+def test_pipeline_saves_effective_parameters(dummy_pipeline, tmp_path):
+    params_file = 'custom_params.json'
+    dummy_pipeline.run(
+        loader_kwargs={},
+        preprocess_kwargs={'order': 8},
+        trial_extraction_kwargs={
+            'align_to': 'event',
+            'center_on': ['choice_left'],
+            'trial_bounds': (-2.0, 4.0),
+        },
+        output_dir=tmp_path,
+        trial_output_file=None,
+        params_file=params_file,
+    )
+
+    with (tmp_path / params_file).open() as f:
+        params = json.load(f)
+
+    assert params['preprocess_signal']['order'] == 8
+    assert params['preprocess_signal']['cutoff_frequency'] == 3.0
+    assert params['extract_trial_data']['align_to'] == 'event'
+    assert 'trial_bounds' in params['extract_trial_data']
