@@ -1,10 +1,12 @@
 import inspect
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from PhoPro.core.PhotometryExperiment import PhotometryExperiment
+from PhoPro.core.PhotometryPipeline import MultiPipeline
 
 # --- component tests ---
 def test_pipeline_identifies_correct_input_data(dummy_pipeline):
@@ -175,3 +177,56 @@ def test_pipeline_saves_effective_parameters(dummy_pipeline, tmp_path):
     assert params['preprocess_signal']['cutoff_frequency'] == 3.0
     assert params['extract_trial_data']['align_to'] == 'event'
     assert 'trial_bounds' in params['extract_trial_data']
+
+
+def test_pipeline_log_file_is_overwritten_on_rerun(dummy_pipeline, tmp_path):
+    log_path = tmp_path / 'pipeline.log'
+    kwargs = {
+        'loader_kwargs': {},
+        'preprocess_kwargs': {},
+        'trial_extraction_kwargs': {
+            'align_to': 'event',
+            'center_on': ['choice_left'],
+            'trial_bounds': (-2.0, 4.0),
+        },
+        'log_file': str(log_path),
+        'params_file': None,
+    }
+
+    dummy_pipeline.run(**kwargs)
+    with log_path.open('a') as f:
+        f.write('SENTINEL FROM FIRST RUN\n')
+
+    dummy_pipeline.run(**kwargs)
+
+    assert 'SENTINEL FROM FIRST RUN' not in log_path.read_text()
+    assert 'Beginning pipeline' in log_path.read_text()
+
+
+def test_multi_pipeline_separates_master_and_sub_run_logs(tmp_path):
+    class Result:
+        n_trials = 2
+        n_times = 3
+
+    class RecordingPipeline:
+        def run(self, *, logger, output_dir, **kwargs):
+            logger.info('child-only detail for %s', Path(output_dir).name)
+            return Result()
+
+    pipeline = MultiPipeline(RecordingPipeline())
+    pipeline.run(
+        all_preprocess_kwargs={'first': {}, 'second': {}},
+        loader_kwargs={},
+        trial_extraction_kwargs={},
+        output_dir=tmp_path,
+        params_file=None,
+    )
+
+    master_text = (tmp_path / 'multi_pipeline.log').read_text()
+    first_text = (tmp_path / 'first' / 'pipeline.log').read_text()
+    second_text = (tmp_path / 'second' / 'pipeline.log').read_text()
+
+    assert 'Finished running pipeline' in master_text
+    assert 'child-only detail' not in master_text
+    assert 'child-only detail for first' in first_text
+    assert 'child-only detail for second' in second_text

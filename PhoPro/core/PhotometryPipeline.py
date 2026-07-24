@@ -21,6 +21,27 @@ LoaderKwargsInput = LoaderKwargs | LoaderKwargsResolver
 
 MultiPreprocessKwargsInput = dict[str, dict[str, Any]]
 
+
+def _build_file_logger(name: str, path: str | Path) -> tuple[logging.Logger, logging.Handler]:
+    """Create an isolated logger which overwrites its output file."""
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    handler = logging.FileHandler(path, mode='w')
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s | %(levelname)s | %(message)s'
+    ))
+    logger.addHandler(handler)
+    return logger, handler
+
+
+def _close_file_logger(logger: logging.Logger, handler: logging.Handler) -> None:
+    """Detach and close a file handler owned by one pipeline run."""
+    logger.removeHandler(handler)
+    handler.close()
+
+
 #############################
 #region --- BASE PIPELINE ---
 #############################
@@ -411,6 +432,7 @@ class PhotometryPipeline:
             post_load_operation: Callable[[type[PhotometryExperiment]], None] | None = None,
             post_preprocess_operation: Callable[[type[PhotometryExperiment]], None] | None = None,
             post_trial_extraction_operation: Callable[[type[PhotometryExperiment]], None] | None = None,
+            logger: logging.Logger | logging.LoggerAdapter | None = None,
             ) -> type[PhotometryData]:
         """Run the batch processing pipeline over all discovered inputs.
 
@@ -464,6 +486,9 @@ class PhotometryPipeline:
             Optional callable run immediately after preprocessing.
         post_trial_extraction_operation : Callable[[type[PhotometryExperiment]], None] or None, default=None
             Optional callable run immediately after trial extraction.
+        logger : logging.Logger, logging.LoggerAdapter, or None, default=None
+            Logger used for this run. When omitted and ``log_file`` is supplied,
+            an isolated file logger is created and the file is overwritten.
 
         Returns
         -------
@@ -480,9 +505,14 @@ class PhotometryPipeline:
         """
 
         # --- set up logger ---
-        logger = logging.getLogger(__name__)
-        if log_file is not None:
-            logging.basicConfig(filename=log_file, filemode='w', level=logging.INFO, force=True)
+        owned_logger_handler = None
+        if logger is None and log_file is not None:
+            logger, owned_logger_handler = _build_file_logger(
+                f'{__name__}.pipeline.{id(self)}.{id(log_file)}',
+                log_file,
+            )
+        elif logger is None:
+            logger = logging.getLogger(__name__)
         logger.info('Beginning pipeline')
 
         # --- coerce inputs ---
@@ -630,6 +660,9 @@ class PhotometryPipeline:
             f'Processing pipeline complete with {n_errors} errors '
             f'and {n_processed} successes out of {n_jobs} jobs.'
         )
+
+        if owned_logger_handler is not None:
+            _close_file_logger(logger, owned_logger_handler)
 
         return trial_data
 
@@ -825,59 +858,72 @@ class MultiPipeline:
             output_dir.mkdir(exist_ok=True)
 
         # --- set up logger ---
-        master_log_file = output_dir / master_log_file
-        logger = logging.getLogger(__name__)
-        if master_log_file is not None:
-            logging.basicConfig(filename=master_log_file, filemode='w', level=logging.INFO, force=True)
-        logger.info(
+        master_log_path = output_dir / master_log_file
+        master_logger, master_handler = _build_file_logger(
+            f'{__name__}.multi.{id(self)}',
+            master_log_path,
+        )
+        master_logger.info(
             f'Beginning multi-pipeline accross {len(all_preprocess_kwargs)} preprocessing parameter sets...\n'
         )
 
         # loop through preprocess params
         n_errors = 0
         for i, (sub_run_name, preprocess_kwargs) in enumerate(all_preprocess_kwargs.items()):
-            logger.info(
+            master_logger.info(
                 f'Running pipeline {sub_run_name} ({i+1}/{len(all_preprocess_kwargs)})...'
             )
 
             # set up subfolder names
             try:
-                logger.info(f'Setting up subfolders...')
+                master_logger.info(f'Setting up subfolders...')
                 sub_output_dir = output_dir / sub_run_name
                 if not sub_output_dir.exists():
                     sub_output_dir.mkdir(exist_ok=True)
 
-                sub_log_file = sub_output_dir / sub_log_file
+                child_log_path = sub_output_dir / sub_log_file
+                child_logger, child_handler = _build_file_logger(
+                    f'{__name__}.multi.{id(self)}.{i}',
+                    child_log_path,
+                )
 
                 # run pipeline
-                logger.info(f'Executing pipeline...')
-                trials: PhotometryData = self.pipeline.run(
-                    loader_kwargs=loader_kwargs,
-                    preprocess_kwargs=preprocess_kwargs,
-                    trial_extraction_kwargs=trial_extraction_kwargs,
-                    output_dir=sub_output_dir,
-                    log_file=sub_log_file,
-                    trial_output_file=trial_output_file,
-                    params_file=params_file,
-                    passdown_metadata=passdown_metadata,
-                    low_memory_mode=low_memory_mode,
-                    id_builder=id_builder,
-                    post_load_operation=post_load_operation,
-                    post_preprocess_operation=post_preprocess_operation,
-                    post_trial_extraction_operation=post_trial_extraction_operation,
-                    save_dashboards=save_dashboards,
-                    dashboard_kwargs=dashboard_kwargs,
-                )
-                logger.info(
+                master_logger.info(f'Executing pipeline...')
+                try:
+                    trials: PhotometryData = self.pipeline.run(
+                        loader_kwargs=loader_kwargs,
+                        preprocess_kwargs=preprocess_kwargs,
+                        trial_extraction_kwargs=trial_extraction_kwargs,
+                        output_dir=sub_output_dir,
+                        log_file=None,
+                        trial_output_file=trial_output_file,
+                        params_file=params_file,
+                        passdown_metadata=passdown_metadata,
+                        low_memory_mode=low_memory_mode,
+                        id_builder=id_builder,
+                        post_load_operation=post_load_operation,
+                        post_preprocess_operation=post_preprocess_operation,
+                        post_trial_extraction_operation=post_trial_extraction_operation,
+                        save_dashboards=save_dashboards,
+                        dashboard_kwargs=dashboard_kwargs,
+                        logger=child_logger,
+                    )
+                finally:
+                    _close_file_logger(child_logger, child_handler)
+                master_logger.info(
                     f'Finished running pipeline, resulting in PhotometryData of: \n'
                     f'{trials.n_trials} trials x {trials.n_times} timepoints.'
                 )
 
             # handle errors
             except Exception as e:
-                logger.error(f'Error running pipeline {sub_run_name}: \n\t {e}\n', exc_info=True)
+                master_logger.exception(f'Error running pipeline {sub_run_name}: \n\t {e}\n')
                 n_errors += 1
 
         # end multi pipeline
-        logger.info(f'Multi-pipeline run complete with {n_errors} out of {len(all_preprocess_kwargs)} pipelines.')
+        master_logger.info(
+            f'Multi-pipeline run complete with {n_errors} out of '
+            f'{len(all_preprocess_kwargs)} pipelines.'
+        )
+        _close_file_logger(master_logger, master_handler)
 #endregion
