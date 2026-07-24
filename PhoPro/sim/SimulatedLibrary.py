@@ -42,17 +42,27 @@ def _callable_to_import_path(func: Callable) -> str:
     return f'{module}.{qualname}'
 
 def _import_callable(path: str) -> Callable:
-    module_name, _, qualname = path.rpartition('.')
-    if module_name == '':
-        raise ValueError(f'Cannot import callable from unqualified path: {path}')
+    parts = path.split('.')
 
-    obj: Any = importlib.import_module(module_name)
-    for attr in qualname.split('.'):
-        obj = getattr(obj, attr)
+    for split_at in range(len(parts), 0, -1):
+        module_name = '.'.join(parts[:split_at])
 
-    if not callable(obj):
-        raise TypeError(f'Imported object is not callable: {path}')
-    return obj
+        try:
+            obj: Any = importlib.import_module(module_name)
+        except ModuleNotFoundError as exc:
+            if exc.name != module_name:
+                raise
+            continue
+
+        for attr in parts[split_at:]:
+            obj = getattr(obj, attr)
+
+        if not callable(obj):
+            raise TypeError(f'Imported object is not callable: {path}')
+
+        return obj
+
+    raise ImportError(f'Could not import callable: {path}')
 
 def _stringify_callables(value: Any) -> Any:
     if inspect.isfunction(value) or inspect.ismethod(value):

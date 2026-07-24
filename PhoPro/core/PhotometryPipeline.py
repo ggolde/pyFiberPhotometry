@@ -747,8 +747,9 @@ class MultiPipeline:
 
             # I/O
             output_dir: str | Path,
+            master_log_file: str = 'multi_pipeline.log',
             params_file: str | None = 'pipeline_params.json',
-            log_file: str = 'pipeline.log',
+            sub_log_file: str = 'pipeline.log',
             trial_output_file: str = 'trials.h5ad',
 
             # pipeline params
@@ -781,11 +782,14 @@ class MultiPipeline:
             Keyword arguments passed to trial extraction.
         output_dir : str | Path
             Parent directory for all preprocessing sub-runs.
+        master_log_file : str, optional
+            File name for the meta-log showing the success of each individual
+            pipeline.
         params_file : str or None, optional
             File name used to save each sub-run's effective preprocessing and
             trial-extraction parameters, by default ``"pipeline_params.json"``.
             If ``None``, parameters are not saved.
-        log_file : str, optional
+        sub_log_file : str, optional
             File name used for each sub-run pipeline log, by default
             ``"pipeline.log"``.
         trial_output_file : str, optional
@@ -820,31 +824,60 @@ class MultiPipeline:
         if not output_dir.exists():
             output_dir.mkdir(exist_ok=True)
 
-        # loop through preprocess params
-        for sub_run_name, preprocess_kwargs in all_preprocess_kwargs.items():
-            # set up subfolder names
-            sub_output_dir = output_dir / sub_run_name
-            if not sub_output_dir.exists():
-                sub_output_dir.mkdir(exist_ok=True)
+        # --- set up logger ---
+        master_log_file = output_dir / master_log_file
+        logger = logging.getLogger(__name__)
+        if master_log_file is not None:
+            logging.basicConfig(filename=master_log_file, filemode='w', level=logging.INFO, force=True)
+        logger.info(
+            f'Beginning multi-pipeline accross {len(all_preprocess_kwargs)} preprocessing parameter sets...\n'
+        )
 
-            sub_log_file = sub_output_dir / log_file
-            # run pipeline
-            self.pipeline.run(
-                loader_kwargs=loader_kwargs,
-                preprocess_kwargs=preprocess_kwargs,
-                trial_extraction_kwargs=trial_extraction_kwargs,
-                output_dir=sub_output_dir,
-                log_file=sub_log_file,
-                trial_output_file=trial_output_file,
-                params_file=params_file,
-                passdown_metadata=passdown_metadata,
-                low_memory_mode=low_memory_mode,
-                id_builder=id_builder,
-                post_load_operation=post_load_operation,
-                post_preprocess_operation=post_preprocess_operation,
-                post_trial_extraction_operation=post_trial_extraction_operation,
-                save_dashboards=save_dashboards,
-                dashboard_kwargs=dashboard_kwargs,
+        # loop through preprocess params
+        n_errors = 0
+        for i, (sub_run_name, preprocess_kwargs) in enumerate(all_preprocess_kwargs.items()):
+            logger.info(
+                f'Running pipeline {sub_run_name} ({i+1}/{len(all_preprocess_kwargs)})...'
             )
 
+            # set up subfolder names
+            try:
+                logger.info(f'Setting up subfolders...')
+                sub_output_dir = output_dir / sub_run_name
+                if not sub_output_dir.exists():
+                    sub_output_dir.mkdir(exist_ok=True)
+
+                sub_log_file = sub_output_dir / sub_log_file
+
+                # run pipeline
+                logger.info(f'Executing pipeline...')
+                trials: PhotometryData = self.pipeline.run(
+                    loader_kwargs=loader_kwargs,
+                    preprocess_kwargs=preprocess_kwargs,
+                    trial_extraction_kwargs=trial_extraction_kwargs,
+                    output_dir=sub_output_dir,
+                    log_file=sub_log_file,
+                    trial_output_file=trial_output_file,
+                    params_file=params_file,
+                    passdown_metadata=passdown_metadata,
+                    low_memory_mode=low_memory_mode,
+                    id_builder=id_builder,
+                    post_load_operation=post_load_operation,
+                    post_preprocess_operation=post_preprocess_operation,
+                    post_trial_extraction_operation=post_trial_extraction_operation,
+                    save_dashboards=save_dashboards,
+                    dashboard_kwargs=dashboard_kwargs,
+                )
+                logger.info(
+                    f'Finished running pipeline, resulting in PhotometryData of: \n'
+                    f'{trials.n_trials} trials x {trials.n_times} timepoints.'
+                )
+
+            # handle errors
+            except Exception as e:
+                logger.error(f'Error running pipeline {sub_run_name}: \n\t {e}\n', exc_info=True)
+                n_errors += 1
+
+        # end multi pipeline
+        logger.info(f'Multi-pipeline run complete with {n_errors} out of {len(all_preprocess_kwargs)} pipelines.')
 #endregion

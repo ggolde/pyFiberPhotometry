@@ -459,7 +459,7 @@ class PhotometryExperiment:
             Whether to include an intercept in the isosbestic fitting.
         maxiter : int, default=1000
             Maximum iterations for IRLS fitting. Effects only ``fit_using = IRLS``.
-        c : float or None, default=None
+        c : float or None, default=3
             IRLS tuning constant. Effects only ``fit_using = IRLS``.
         window_dur_sec : float, default=5
             Sliding-window duration for photobleaching strided median
@@ -1677,7 +1677,7 @@ class PhotometryExperiment:
         long_df = self.to_long_dataframe(downsample=downsample)
 
         if raw:
-            p = graphing.plot_experiment_traces(
+            p: ggplot = graphing.plot_experiment_traces(
                 df=long_df,
                 only_traces=['raw_signal', 'raw_isosbestic'],
                 title=title,
