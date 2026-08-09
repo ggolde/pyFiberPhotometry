@@ -786,6 +786,7 @@ class MultiPipeline:
             trial_output_file: str = 'trials.h5ad',
 
             # pipeline params
+            skip_existing: bool = False,
             low_memory_mode: bool = False,
 
             # inheritance
@@ -828,6 +829,8 @@ class MultiPipeline:
         trial_output_file : str, optional
             File name used for each sub-run trial output, by default
             ``"trials.h5ad"``.
+        skip_existing : bool, optional
+            Whether to skip running the pipeline for parameter sets that already exsist
         low_memory_mode : bool, optional
             Whether to run the wrapped pipeline in low-memory mode, by default
             False.
@@ -874,13 +877,23 @@ class MultiPipeline:
                 f'Running pipeline {sub_run_name} ({i+1}/{len(all_preprocess_kwargs)})...'
             )
 
-            # set up subfolder names
+            # catch errors for individual pipelines
             try:
+                # set up subfolder names
                 master_logger.info(f'Setting up subfolders...')
                 sub_output_dir = output_dir / sub_run_name
                 if not sub_output_dir.exists():
                     sub_output_dir.mkdir(exist_ok=True)
 
+                # skip if processed file already exsists
+                trial_output_fpath = sub_output_dir / trial_output_file
+                if skip_existing and trial_output_fpath.exists():
+                    master_logger.info(
+                        f'Processed file {trial_output_fpath} already exsits! Skipping parameter set.'
+                        )
+                    continue
+                
+                # set up child log
                 child_log_path = sub_output_dir / sub_log_file
                 child_logger, child_handler = _build_file_logger(
                     f'{__name__}.multi.{id(self)}.{i}',
@@ -912,7 +925,7 @@ class MultiPipeline:
                     _close_file_logger(child_logger, child_handler)
                 master_logger.info(
                     f'Finished running pipeline, resulting in PhotometryData of: \n'
-                    f'{trials.n_trials} trials x {trials.n_times} timepoints.'
+                    f'\t{trials.n_trials} trials x {trials.n_times} timepoints.\n'
                 )
 
             # handle errors
@@ -922,7 +935,7 @@ class MultiPipeline:
 
         # end multi pipeline
         master_logger.info(
-            f'Multi-pipeline run complete with {n_errors} out of '
+            f'Multi-pipeline run complete with {n_errors} errors out of '
             f'{len(all_preprocess_kwargs)} pipelines.'
         )
         _close_file_logger(master_logger, master_handler)

@@ -112,7 +112,7 @@ ExpNormMethod: TypeAlias = (
 The method used for whole-experiment normalization.
 
 - ``zscore``: the traditional Z-score
-- ``nullZ``: division by the signals standard deviation without centering
+- ``nullZ``: division by the signals root-mean-square deviation from zero without centering
 - ``none``: no whole-experiment normalization
 '''
 

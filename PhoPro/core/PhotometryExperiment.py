@@ -422,7 +422,7 @@ class PhotometryExperiment:
             The method used for whole-experiment normalization.
 
             - ``zscore``: the traditional Z-score
-            - ``nullZ``: division by the signals standard deviation without centering
+            - ``nullZ``: division by the signals root-mean-square deviation from zero without centering
             - ``none``: no whole-experiment normalization
         correction_method : CorrectionMethod, default='dF/F'
             How to use the fitted reference signal (the isosbestic for dual-channel and 
@@ -499,7 +499,7 @@ class PhotometryExperiment:
             raise ValueError(f'Correction methods {", ".join(single_channel_methods)} are for single channel experiments.')
 
         if artifact_corrector is not None and artifact_detector is None:
-            raise ValueError(f'artifact_detector not specified but artifact_corrector is.')
+            raise ValueError(f'An artifact_corrector cannot be passed with also passing an artifact_detector is.')
 
         # apply lowpass butterworth filter
         filt_sig = self.low_frequency_pass_butter(
@@ -1006,7 +1006,7 @@ class PhotometryExperiment:
             case 'zscore':
                 out = (signal - np.mean(signal)) / np.std(signal)
             case 'nullZ':
-                out = signal / np.std(signal)
+                out = signal / np.sqrt(np.mean(signal**2))
             case 'none':
                 out = signal
             case _:
