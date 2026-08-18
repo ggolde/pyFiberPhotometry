@@ -304,7 +304,7 @@ class SimulatedLibrary:
     def from_permutations(
             cls,
             contanst_kwargs: dict[str, Any],
-            to_permute_kwargs: dict[str, list[Any]],
+            to_permute_kwargs: dict[str, list[Any]] | None = None,
             across_kwargs: dict[str, dict[str, Any]] | None = None,
             replicates: int = 1,
             seed: int | None = None,
@@ -316,9 +316,10 @@ class SimulatedLibrary:
         contanst_kwargs : dict[str, Any]
             Keyword arguments passed unchanged to
             ``SimulatedPhotometry.from_parameters()`` for every simulation.
-        to_permute_kwargs : dict[str, list[Any]]
+        to_permute_kwargs : dict[str, list[Any]] or None, default=None
             Keyword arguments whose values are fully crossed to create
             parameter permutations. Each value must be a list of candidates.
+            If ``None``, one constants-only permutation is generated.
         across_kwargs : dict[str, dict[str, Any]] | None or None, default=None
             Labeled dictionary of keyword arguments to iterate through making a new combination
             for each element in the list.
@@ -523,9 +524,9 @@ class ParamPermutationGenerator:
     contanst_kwargs : dict[str, Any]
         Keyword arguments passed unchanged to
         ``SimulatedPhotometry.from_parameters()`` for every simulation.
-    to_permute_kwargs : dict[str, list[Any]]
+    to_permute_kwargs : dict[str, list[Any]] or None, default=None
         Keyword arguments whose values are fully crossed to create parameter
-        permutations.
+        permutations. ``None`` produces one constants-only permutation.
     across_kwargs : dict[str, dict[str, Any]] | None or None, default=None
         Labeled dictionary of keyword arguments to iterate through making a new combination
         for each element in the list.
@@ -540,9 +541,9 @@ class ParamPermutationGenerator:
         Keyword arguments reused for every generated sample.
     to_permute : dict[str, list[Any]]
         Keyword arguments crossed to create unique parameter permutations.
-    across : list[dict[str, Any]]
-        List of keyword arguements to iterate through to make combinations
-        within each permutation.
+    across : dict[str, dict[str, Any]] or None
+        Labeled keyword-argument groups combined with each permutation.
+        ``None`` represents one implicit empty across condition.
     replicates : int
         Number of generated samples per permutation.
     seed : int or None
@@ -561,7 +562,7 @@ class ParamPermutationGenerator:
         # assign attrs
         self.constants = contanst_kwargs
         self.to_permute = {} if to_permute_kwargs is None else to_permute_kwargs
-        self.across = {} if across_kwargs is None else across_kwargs
+        self.across = across_kwargs
         self.has_across = across_kwargs is not None
         self.replicates = replicates
         self.seed = seed
@@ -571,13 +572,20 @@ class ParamPermutationGenerator:
 
     # --- VALIDATE ---
     def _validate_across_and_permutation_kwargs(self) -> None:
-        for label, across_kwargs in self.across.items():
+        for _, across_kwargs in self._iter_across():
             key_overlap = set(across_kwargs.keys()) & set(self.to_permute.keys())
             if len(key_overlap) != 0:
                 raise ValueError(
                     f'Keys cannot be shared between to_permute_kwargs and across_kwargs. '
                     f'Keys {", ".join(list(key_overlap))} are shared.'
                 )
+
+    def _iter_across(self):
+        """Yield one empty condition when no across groups are configured."""
+        if self.across is None:
+            yield None, {}
+        else:
+            yield from self.across.items()
 
     # --- PERMUTAION ---
     def _permutation_generator(self):
@@ -595,8 +603,9 @@ class ParamPermutationGenerator:
         """
         # generate permutations
         permutations = [p for p in self._permutation_generator()]
+        across_items = list(self._iter_across())
         self.n_permutations = len(permutations)
-        self.n_across = len(self.across)
+        self.n_across = len(across_items)
         self.n_samples = self.n_permutations * self.n_across * self.replicates
 
         # set up unique seeds
@@ -610,7 +619,7 @@ class ParamPermutationGenerator:
         params = {}
 
         for perm_id, perm in enumerate(permutations):
-            for across_id, (across_label, across) in enumerate(self.across.items()):
+            for across_id, (across_label, across) in enumerate(across_items):
                 combo = self.constants | perm | across
 
                 for rep_id in range(self.replicates):

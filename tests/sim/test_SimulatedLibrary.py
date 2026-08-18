@@ -29,7 +29,6 @@ def test_simulated_library_round_trips_samplers_and_callables(tmp_path):
             'max_event_duration_sec': 5.0,
         },
         to_permute_kwargs={'n_events': [3]},
-        across_kwargs={'default': {}},
         seed=17,
     )
     params_file = tmp_path / 'params.json'
@@ -46,9 +45,27 @@ def test_simulated_library_round_trips_samplers_and_callables(tmp_path):
     assert params['event_kernel'] is gamma_kernel
     assert params['event_amplitude'] == amplitude_sampler
     assert params['event_kernel_params']['tau_sec'] == tau_sampler
+    assert params['CONDITION_ID'] is None
 
     data = SimulatedParamLoader(json=str(params_file), key='0').extract_data()
     assert data['raw_signal'].shape == data['time'].shape
     assert data['raw_isosbestic'].shape == data['time'].shape
     assert data['events']['trial_cue'].size == 3
     assert np.isfinite(data['raw_signal']).all()
+
+
+def test_simulated_library_supports_no_across_or_permutation_dimensions():
+    library = SimulatedLibrary.from_permutations(
+        contanst_kwargs={'frequency': 20.0},
+        to_permute_kwargs=None,
+        across_kwargs=None,
+        replicates=2,
+        seed=5,
+    )
+
+    assert library.n_samples == 2
+    assert {params['frequency'] for params in library.params.values()} == {20.0}
+    assert {params['ACROSS_ID'] for params in library.params.values()} == {0}
+    assert {params['PERM_ID'] for params in library.params.values()} == {0}
+    assert {params['CONDITION_ID'] for params in library.params.values()} == {None}
+    assert {params['REP_ID'] for params in library.params.values()} == {0, 1}
