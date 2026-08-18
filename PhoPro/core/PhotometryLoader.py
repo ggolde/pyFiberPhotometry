@@ -551,6 +551,21 @@ class CSVLoader(PhotometryLoader):
 ###########################
 
 class H5Loader(PhotometryLoader):
+    """Extract continuous photometry data from an HDF5-compatible file.
+
+    Supports .doric and .nwb file formats.
+
+    Dataset paths identify the time, signal, optional isosbestic, and event
+    arrays within the file. This supports generic HDF5 containers, including
+    Doric files, provided the selected signal and time datasets are
+    one-dimensional and aligned.
+
+    Event datasets are read into a storage-independent mapping and decoded by
+    :class:`EventDecoder`. Binary and long events use the original, non-
+    downsampled time dataset so their timestamps remain tied to the raw event
+    samples.
+    """
+
     def __init__(
             self,
             file: str,
@@ -564,6 +579,53 @@ class H5Loader(PhotometryLoader):
             annotation_file: str | None = None,
             annotation_handler: Literal['json', 'yaml'] | AnnotationHandler = 'json',
             ) -> None:
+        """Initialize an HDF5 photometry loader.
+
+        Parameters
+        ----------
+        file : str
+            Path to an HDF5-compatible input file.
+        time_path : str
+            Internal HDF5 path to the one-dimensional sampling-time dataset.
+        signal_path : str
+            Internal HDF5 path to the primary photometry signal dataset.
+        isosbestic_path : str or None, default=None
+            Internal HDF5 path to the isosbestic signal dataset. If ``None``,
+            the loaded experiment is single-channel.
+        event_paths : dict[str, str] or None, default=None
+            Mapping from output event labels to internal HDF5 dataset paths.
+            For long encoding, exactly one entry should identify the dataset
+            containing event labels.
+        event_encoding : EventEncoding or None, default=None
+            Encoding shared by the configured event datasets.
+
+            - ``binary`` interprets each dataset as an event-presence mask
+              aligned to ``time_path``.
+            - ``timestamp`` interprets each dataset as event timestamps.
+            - ``long`` groups values from one event-label dataset using the
+              timestamps at ``time_path``.
+            - A custom callable receives the raw event mapping and original
+              time array and returns an event-label-to-timestamps mapping.
+
+            This argument is required when ``event_paths`` is non-empty.
+        downsample : int or None, default=None
+            Downsampling factor applied to signal, isosbestic, and output time
+            arrays. If ``None``, the arrays are returned at their original
+            sampling rate.
+        downsample_kwargs : dict, default={}
+            Additional keyword arguments passed to the signal and time
+            downsampling helpers.
+        annotation_file : str or None, default=None
+            Path to an optional annotation file whose contents are merged into
+            the loader metadata.
+        annotation_handler : {'json', 'yaml'} or AnnotationHandler, default='json'
+            Built-in annotation format or custom annotation reader.
+
+        Raises
+        ------
+        ValueError
+            If event datasets are configured without an event encoding.
+        """
 
         self.file = Path(file)
 
@@ -587,6 +649,24 @@ class H5Loader(PhotometryLoader):
         self.metadata = {'source' : str(self.file)}
 
     def extract_data(self) -> dict[str, Any]:
+        """Read and package the configured HDF5 datasets.
+
+        Returns
+        -------
+        dict[str, Any]
+            Keyword arguments for constructing a :class:`PhotometryExperiment`,
+            including the signal, optional isosbestic signal, time array,
+            decoded events, and metadata.
+
+        Raises
+        ------
+        ValueError
+            If the input file does not exist or event decoding receives
+            incompatible array dimensions.
+        KeyError
+            If a configured signal, time, isosbestic, or event dataset path is
+            absent from the file.
+        """
 
         if not self.file.exists():
             raise ValueError(f'File {self.file} does not exist.')

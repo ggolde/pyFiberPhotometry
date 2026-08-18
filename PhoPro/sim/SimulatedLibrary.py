@@ -15,6 +15,7 @@ import pandas as pd
 from pathlib import Path
 
 from . import SimulatedPhotometry
+from .layers import SamplerNormal, SamplerUniform
 from ..core.PhotometryLoader import PhotometryLoader
 
 #######################
@@ -64,20 +65,92 @@ def _import_callable(path: str) -> Callable:
 
     raise ImportError(f'Could not import callable: {path}')
 
-def _stringify_callables(value: Any) -> Any:
+_PARAM_TYPE_KEY = '__phopro_type__'
+_CALLABLE_TYPE = 'callable'
+_SAMPLER_TYPE = 'parameter_sampler'
+
+_SAMPLER_REGISTRY = {
+    'uniform': SamplerUniform,
+    'normal': SamplerNormal,
+}
+
+
+def _encode_param(value: Any) -> Any:
+    """Recursively encode non-JSON simulation parameters with type tags."""
+    if isinstance(value, SamplerUniform):
+        return {
+            _PARAM_TYPE_KEY: _SAMPLER_TYPE,
+            'name': 'uniform',
+            'kwargs': {
+                'low': value.low,
+                'high': value.high,
+            },
+        }
+    if isinstance(value, SamplerNormal):
+        return {
+            _PARAM_TYPE_KEY: _SAMPLER_TYPE,
+            'name': 'normal',
+            'kwargs': {
+                'mean': value.mean,
+                'std': value.std,
+            },
+        }
     if inspect.isfunction(value) or inspect.ismethod(value):
-        return _callable_to_import_path(value)
+        return {
+            _PARAM_TYPE_KEY: _CALLABLE_TYPE,
+            'path': _callable_to_import_path(value),
+        }
     if isinstance(value, dict):
-        return {k: _stringify_callables(v) for k, v in value.items()}
+        return {k: _encode_param(v) for k, v in value.items()}
     if isinstance(value, list):
-        return [_stringify_callables(v) for v in value]
+        return [_encode_param(v) for v in value]
     if isinstance(value, tuple):
-        return tuple(_stringify_callables(v) for v in value)
+        return tuple(_encode_param(v) for v in value)
     return value
 
+
+def _decode_param(value: Any) -> Any:
+    """Recursively reconstruct tagged simulation parameters."""
+    if isinstance(value, list):
+        return [_decode_param(v) for v in value]
+    if not isinstance(value, dict):
+        return value
+
+    param_type = value.get(_PARAM_TYPE_KEY)
+    if param_type == _CALLABLE_TYPE:
+        try:
+            path = value['path']
+        except KeyError as exc:
+            raise ValueError('Encoded callable is missing its import path.') from exc
+        return _import_callable(path)
+
+    if param_type == _SAMPLER_TYPE:
+        try:
+            name = value['name']
+            kwargs = value['kwargs']
+        except KeyError as exc:
+            raise ValueError('Encoded parameter sampler is incomplete.') from exc
+
+        try:
+            sampler_cls = _SAMPLER_REGISTRY[name]
+        except KeyError as exc:
+            raise ValueError(f'Unknown parameter sampler: {name!r}') from exc
+
+        if not isinstance(kwargs, dict):
+            raise TypeError('Encoded parameter sampler kwargs must be a dictionary.')
+        return sampler_cls(**_decode_param(kwargs))
+
+    if param_type is not None:
+        raise ValueError(f'Unknown encoded parameter type: {param_type!r}')
+
+    return {k: _decode_param(v) for k, v in value.items()}
+
+
 def safe_SimPho_from_params(params: dict) -> SimulatedPhotometry:
+    params = _decode_param(params)
     ACCEPTED_ARGS = _accepted_args_for_SimPho()
     params = {k : v for k, v in params.items() if k in ACCEPTED_ARGS}
+    # Support parameter files written before callables received explicit tags.
     if isinstance(params.get('event_kernel'), str):
         params['event_kernel'] = _import_callable(params['event_kernel'])
     return SimulatedPhotometry.from_parameters(**params)
@@ -126,7 +199,7 @@ class SimulatedLibrary:
             return normed_res
 
         out = (
-            pd.DataFrame(_stringify_callables(self.params)).T
+            pd.DataFrame(_encode_param(self.params)).T
             .reset_index(names='LIB_ID')
             .infer_objects()
         )
@@ -156,7 +229,7 @@ class SimulatedLibrary:
             Destination path for the JSON parameter table.
         """
         with open(fpath, 'w') as f:
-            json.dump(_stringify_callables(self.params), f, indent=4)
+            json.dump(_encode_param(self.params), f, indent=4)
 
     @classmethod
     def from_json(
@@ -176,7 +249,7 @@ class SimulatedLibrary:
             Library initialized from the saved parameter table.
         """
         with open(file, 'r') as f:
-            params = json.load(f)
+            params = _decode_param(json.load(f))
         return cls(params)
 
     # --- HELPERS ---
@@ -488,7 +561,7 @@ class ParamPermutationGenerator:
         # assign attrs
         self.constants = contanst_kwargs
         self.to_permute = {} if to_permute_kwargs is None else to_permute_kwargs
-        self.across = [{}] if across_kwargs is None else across_kwargs
+        self.across = {} if across_kwargs is None else across_kwargs
         self.has_across = across_kwargs is not None
         self.replicates = replicates
         self.seed = seed
