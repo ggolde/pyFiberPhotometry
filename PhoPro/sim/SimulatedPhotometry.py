@@ -12,7 +12,14 @@ from ..core.PhotometryExperiment import PhotometryExperiment
 from ..core.PhotometryData import PhotometryData
 from ..utils import operations, graphing, window
 
-from .kernels import(
+from ..types import (
+    TrialNormMethod,
+    WindowMethod,
+    InvalidWindowPolicy,
+    EventSelectionLogic,
+)
+
+from .kernels import (
     gamma_kernel,
     gaussian_kernel,
     exp_decay_kernel,
@@ -821,9 +828,14 @@ class SimulatedPhotometry:
             align_to: str | Sequence[str] | float | Sequence[float],
             trial_bounds: tuple[float, float],
             center_on: str | Sequence[str] | None = None,
-            window_alignment: Literal['nearest', 'interp'] = 'nearest',
-            invalid_window_policy: Literal['drop', 'error'] = 'drop',
-            event_conflict_logic: Literal['first', 'last', 'all', 'mean'] = 'first',
+            baseline_bounds: tuple[float, float] | None = None,
+            event_tolerences: dict[str, tuple[float, float] | None] = {},
+            trial_normalization: TrialNormMethod = 'none',
+            check_overlap: bool = False,
+            all_events: bool = True,
+            window_alignment: WindowMethod = 'nearest',
+            invalid_window_policy: InvalidWindowPolicy = 'drop',
+            event_conflict_logic: EventSelectionLogic = 'first',
             include_dynamic_noise: bool = True,
             ) -> PhotometryData:
         """Extract simulated neural trace into trial-wise `PhotometryData`.
@@ -832,21 +844,50 @@ class SimulatedPhotometry:
         ----------
         align_to : str, Sequence[str], float, or Sequence[float]
             Event label, event labels, timestamp, or timestamps used to define
-            candidate trials.
+            candidate trials. Multiple event labels are pooled by timestamp and
+            an ``align_event`` observation column is added.
         trial_bounds : tuple[float, float]
-            Window bounds relative to each selected center.
+            Window bounds relative to the selected trial center.
         center_on : str, Sequence[str], or None, default=None
-            Optional event labels used to recenter each trial.
-        window_alignment : {'nearest', 'interp'}, default='nearest'
-            Windowing strategy passed to
-            ``PhotometryExperiment.extract_trial_data``.
-        invalid_window_policy : {'drop', 'error'}, default='drop'
-            Policy for windows that extend outside the signal range.
-        event_conflict_logic : {'first', 'last', 'all', 'mean'}, default='first'
-            Rule used when multiple timestamps for the same event label fall 
-            inside a trial annotation window. If 'all', the first occurrence 
-            keeps the base event label and later occurrences are 
-            stored as '(label)_occurrence_n'.
+            Optional event labels used to recenter each trial. If no selected
+            ``center_on`` event is present in a trial, that trial remains
+            centered on its ``align_to`` timestamp.
+        baseline_bounds : tuple[float, float] or None, default=None
+            Baseline window bounds relative to the ``align_to`` timestamp.
+            Required for baseline-dependent trial normalizations.
+        event_tolerences : dict[str, tuple[float, float] or None], default={}
+            Event annotation windows relative to ``align_to`` timestamps.
+            ``None`` values are replaced with ``trial_bounds``.
+        trial_normalization : TrialNormMethod, default='none'
+            Does not effect extraction.
+            Only an argument to maintain compatibility with shared args.
+        check_overlap : bool, default=False
+            If ``True``, raise when more than one ``center_on`` event is found
+            for the same trial.
+        all_events : bool, default=True
+            If ``True``, passdown all events even if they are not 
+            present in ``event_tolerences``.
+        window_alignment : WindowMethod, default='nearest'
+            The method used to window time-series.
+
+            - ``nearest``: snaps events to the nearest sampled timepoint and slices
+            windows based to the nearest time point fitting within the window
+            - ``interp``: exactly center windows to events and use liner interpolation to
+            interpolate the signal at the exact time grid built around the center
+        invalid_window_policy : InvalidWindowPolicy, default='drop'
+            How to handle windows with bounds that extend outside of the time-series
+            being windowed.
+
+            -``drop``: drops the invalid windows without raising an error
+            -``error``: raises a ``ValueError`` if there are invalid windows
+        event_conflict_logic : EventSelectionLogic, default='first'
+            Rule used to select timestamp(s) if multiple timestamps for the same 
+            event label fall inside a trial annotation window. 
+
+            -``first``: only selects the first occurence of the event
+            -``last``: only selects the last occurence of the event
+            -``all``: keep all occurrences, but relabels them, with the first occurrence mantaining the base label and subsequent ones being relabeled as ``f'{base_label}_occurrence_{n}'`` 
+            -``mean``: uses the average timestamp of the multiple occurences
         include_dynamic_noise : bool, default=True
             Whether to include the dynamic noise layer in output or the
             raw event layer.
@@ -872,11 +913,14 @@ class SimulatedPhotometry:
             align_to=align_to,
             trial_bounds=trial_bounds,
             center_on=center_on,
-            baseline_bounds=None,
+            baseline_bounds=baseline_bounds,
+            event_tolerences=event_tolerences,
+            trial_normalization='none',
+            check_overlap=check_overlap,
             window_alignment=window_alignment,
             invalid_window_policy=invalid_window_policy,
             event_conflict_logic=event_conflict_logic,
-            all_events=True,
+            all_events=all_events,
         )
         return exp.trial_data
 
