@@ -324,7 +324,7 @@ class PhotometryExperiment:
         from .PhotometryLoader import TDTLoader
         loader = TDTLoader(
             data_folder=data_folder,
-            box=box,
+            parent_key=box,
             event_labels=event_labels,
             signal_label=signal_label,
             isosbestic_label=isosbestic_label,
@@ -390,8 +390,6 @@ class PhotometryExperiment:
     ##############################
     #region --- PREPROCESS API ---
     ##############################
-
-    #TODO: make a detrend: bool arguement instead of having seperate detrend fit_using methods
 
     def preprocess_signal(
             self,
@@ -491,6 +489,9 @@ class PhotometryExperiment:
 
         dual_channel_methods = ['dF/F', 'dF']
         single_channel_methods = ['dB/B', 'dB']
+
+        if channel_mode == 'dual' and (self.raw_isosbestic is None):
+            raise ValueError(f'A raw isosbestic signal must be present for dual-channel mode.')
 
         if channel_mode == 'single' and correction_method in dual_channel_methods:
             raise ValueError(f'Correction methods {", ".join(dual_channel_methods)} are for dual channel experiments.')
@@ -606,7 +607,9 @@ class PhotometryExperiment:
         self.signal = signal
         self.artifacts = artifacts
 
+        # TODO: clean up dF + detrend unit confusion
         if callable(correction_method): self.metadata['correction_method'] = correction_method.__name__
+        elif correction_method == 'dF' and detrend: self.metadata['correction_method'] = 'Detrended dF/F'
         else: self.metadata['correction_method'] = correction_method
 
         return

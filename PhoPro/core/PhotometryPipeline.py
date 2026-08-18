@@ -7,9 +7,13 @@ import inspect
 import logging
 import itertools
 import json
+import tempfile
 
 from pathlib import Path
 from typing import Any, Callable, Iterable, Literal
+
+from anndata.experimental import concat_on_disk
+import numpy as np
 
 from .PhotometryExperiment import PhotometryExperiment
 from .PhotometryData import PhotometryData
@@ -21,7 +25,9 @@ LoaderKwargsInput = LoaderKwargs | LoaderKwargsResolver
 
 MultiPreprocessKwargsInput = dict[str, dict[str, Any]]
 
-
+#######################
+#region --- HELPERS ---
+#######################
 def _build_file_logger(name: str, path: str | Path) -> tuple[logging.Logger, logging.Handler]:
     """Create an isolated logger which overwrites its output file."""
     logger = logging.getLogger(name)
@@ -40,6 +46,8 @@ def _close_file_logger(logger: logging.Logger, handler: logging.Handler) -> None
     """Detach and close a file handler owned by one pipeline run."""
     logger.removeHandler(handler)
     handler.close()
+
+#endregion
 
 
 #############################
@@ -331,25 +339,71 @@ class PhotometryPipeline:
         """Run trial extraction on one experiment."""
         exp.extract_trial_data(**trial_extraction_kwargs)
 
+    def _initialize_accumulation(
+            self,
+            trial_output_path: Path | None,
+            low_memory_mode: bool,
+            ) -> None:
+        """Initialize append-only result accumulation for one pipeline run."""
+        self.trial_data: type[PhotometryData] | None = None
+        self._trial_results: list[PhotometryData] = []
+        self._trial_shards: list[Path] = []
+        self._trial_time: np.ndarray | None = None
+        self._trial_shard_dir: tempfile.TemporaryDirectory | None = None
+
+        if low_memory_mode:
+            if trial_output_path is None:  # guarded by validation
+                raise ValueError('Using low memory mode without an output file.')
+            self._trial_shard_dir = tempfile.TemporaryDirectory(
+                prefix='.phopro-trial-shards-',
+                dir=Path(trial_output_path).parent,
+            )
+
+    def _validate_result_time(self, trial_data: PhotometryData) -> None:
+        """Validate a job's time axis before accepting its result."""
+        candidate_time = trial_data.ts
+        if self._trial_time is None:
+            return
+
+        if candidate_time.shape != self._trial_time.shape:
+            raise ValueError(
+                f'Time-series shape mismatch ({candidate_time.shape} versus '
+                f'{self._trial_time.shape}).'
+            )
+
+        if not np.allclose(self._trial_time, candidate_time, atol=1e-6, rtol=0):
+            misalignment = np.max(np.abs(self._trial_time - candidate_time))
+            raise ValueError(
+                f'Time-series misalignment ({misalignment}) is greater than '
+                f'time_tol (1e-06)'
+            )
+
     def _accumulate_result(
             self,
             exp: type[PhotometryExperiment],
-            trial_output_path: Path | None = None,
             low_memory_mode: bool = False,
             ) -> None:
-        """Accumulate one experiment's trial data in memory or on disk."""
-        # four cases, low memory mode * first path
-        if low_memory_mode:
-            if os.path.exists(trial_output_path):
-                exp.trial_data.append_on_disk_h5ad(trial_output_path)
-            else:
-                exp.trial_data.write_h5ad(trial_output_path)
+        """Retain one job result for a single final concatenation."""
+        trial_data = exp.trial_data
+        if trial_data is None:
+            raise ValueError('Experiment trial data is missing.')
 
+        self._validate_result_time(trial_data)
+
+        if low_memory_mode:
+            if self._trial_shard_dir is None:  # guarded by initialization
+                raise RuntimeError('Low-memory accumulation is not initialized.')
+            shard_path = (
+                Path(self._trial_shard_dir.name)
+                / f'{len(self._trial_shards):08d}.h5ad'
+            )
+            trial_data.write_h5ad(shard_path)
+            self._trial_shards.append(shard_path)
         else:
-            if self.trial_data is None:
-                self.trial_data = exp.trial_data.copy()
-            else:
-                self.trial_data.combine_obj(exp.trial_data, inplace=True, check_time=True, time_tol=1e-6)
+            self._trial_results.append(trial_data)
+
+        if self._trial_time is None:
+            self._trial_time = trial_data.ts.copy()
 
     def _finalize_result(
             self,
@@ -358,17 +412,53 @@ class PhotometryPipeline:
             ) -> type[PhotometryData]:
         """Finalize accumulated trial data after all jobs finish."""
         if low_memory_mode:
-            trial_data: type[PhotometryData] = self.data_cls.read_h5ad(trial_output_path)
+            try:
+                if not self._trial_shards:
+                    raise ValueError('Trial data is missing. Perhaps all jobs errored.')
+                if trial_output_path is None:  # guarded by validation
+                    raise ValueError('Using low memory mode without an output file.')
+
+                concat_on_disk(
+                    in_files=self._trial_shards,
+                    out_file=trial_output_path,
+                    axis='obs',
+                    join='inner',
+                    merge='same',
+                    uns_merge='first',
+                    index_unique='-',
+                )
+                trial_data: type[PhotometryData] = self.data_cls.read_h5ad(
+                    trial_output_path
+                )
+            finally:
+                if self._trial_shard_dir is not None:
+                    self._trial_shard_dir.cleanup()
+                    self._trial_shard_dir = None
+                self._trial_shards.clear()
 
         else:
-            if self.trial_data is None:
+            if not self._trial_results:
                 raise ValueError('Trial data is missing. Perhaps all jobs errored.')
 
-            trial_data = self.trial_data
+            first, *remaining = self._trial_results
+            if remaining:
+                combined = first.combine_obj(
+                    remaining,
+                    inplace=False,
+                    check_time=False,
+                )
+                if combined is None:  # guarded by inplace=False
+                    raise RuntimeError('Final trial-data concatenation failed.')
+                trial_data = combined
+            else:
+                trial_data = first.copy()
+
             trial_data.obs.reset_index(drop=True, inplace=True)
             trial_data.obs.index = trial_data.obs.index.astype(str)
+            self.trial_data = trial_data
+            self._trial_results.clear()
 
-        if trial_output_path is not None:
+        if trial_output_path is not None and not low_memory_mode:
             trial_data.write_h5ad(trial_output_path)
 
         return trial_data
@@ -469,7 +559,8 @@ class PhotometryPipeline:
             ``output_dir`` when one is provided. If ``None``, parameters are
             not saved.
         low_memory_mode : bool, default=False
-            If ``True``, accumulate trial data directly on disk.
+            If ``True``, write each job's trial data to a temporary on-disk
+            shard, then concatenate all shards once at finalization.
         passdown_metadata : list[str] or None, default=['source']
             Metadata keys from ``exp.metadata`` copied into
             ``exp.trial_data.obs`` for each processed experiment.
@@ -572,7 +663,7 @@ class PhotometryPipeline:
 
         # --- set up job iteration ---
         n_jobs = len(jobs)
-        self.trial_data: type[PhotometryData] = None
+        self._initialize_accumulation(trial_output_path, low_memory_mode)
         n_errors = 0
         n_processed = 0
 
@@ -634,7 +725,7 @@ class PhotometryPipeline:
 
                 # accumulate object
                 logger.info(f'Accumulating result...')
-                self._accumulate_result(exp, trial_output_path, low_memory_mode)
+                self._accumulate_result(exp, low_memory_mode)
 
                 # log expriment info
                 logger.info(

@@ -1,5 +1,7 @@
-from typing import Literal, Callable, TypeAlias
+from collections.abc import Callable, Mapping
+from typing import Literal, TypeAlias, Hashable
 import numpy as np
+from numpy.typing import ArrayLike
 
 from scipy.signal import resample_poly
 
@@ -265,3 +267,38 @@ What direction of peaks should be detected.
 
 #endregion
 
+####################
+#region --- DATA ---
+####################
+
+GroupKey: TypeAlias = (
+    Hashable
+    | tuple[Hashable, ...]
+)
+
+#endregion
+
+######################
+#region --- LOADER ---
+######################
+
+EventDecoderCallable: TypeAlias = Callable[
+    [Mapping[str, ArrayLike], np.ndarray | None],
+    Mapping[str, ArrayLike],
+]
+
+EventEncoding: TypeAlias = Literal['binary', 'timestamp', 'long'] | EventDecoderCallable
+'''
+Encoding of raw event streams.
+
+- ``binary``: true-false like values indicating whether the event
+occured at the timestamp of an aligned columns containing sampling times
+- ``timestamps``: timestamp values of when the event occured relative to
+the experiments time series with columns serving as event names
+- ``long``: like ``timestamps`` but in long format, where the time column serves
+as the timestamps and a single event column contains event labels
+- A custom function that accepts a mapping of event labels to raw arrays and an
+optional shared time array, and returns an event-label to timestamps mapping.
+'''
+
+#endregion

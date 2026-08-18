@@ -1,11 +1,14 @@
 import inspect
+import importlib
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
 from PhoPro.core.PhotometryExperiment import PhotometryExperiment
+from PhoPro.core.PhotometryData import PhotometryData
 from PhoPro.core.PhotometryPipeline import MultiPipeline
 
 # --- component tests ---
@@ -88,6 +91,113 @@ def test_pipeline_parameter_kwargs_include_function_defaults(dummy_pipeline):
     assert effective['order'] == 8
     assert effective['cutoff_frequency'] == signature.parameters['cutoff_frequency'].default
     assert effective['maxiter'] == signature.parameters['maxiter'].default
+
+
+def test_pipeline_concatenates_in_memory_results_once(
+        dummy_pipeline,
+        photometry_data,
+        monkeypatch,
+        ):
+    dummy_pipeline._initialize_accumulation(None, low_memory_mode=False)
+
+    combine_calls = []
+    original_combine = PhotometryData.combine_obj
+
+    def recording_combine(self, to_append, *args, **kwargs):
+        combine_calls.append(to_append)
+        return original_combine(self, to_append, *args, **kwargs)
+
+    monkeypatch.setattr(PhotometryData, 'combine_obj', recording_combine)
+
+    for job_number in range(3):
+        result = photometry_data.copy()
+        result.obs['job_number'] = job_number
+        dummy_pipeline._accumulate_result(
+            SimpleNamespace(trial_data=result),
+            low_memory_mode=False,
+        )
+
+    combined = dummy_pipeline._finalize_result(
+        trial_output_path=None,
+        low_memory_mode=False,
+    )
+
+    assert len(combine_calls) == 1
+    assert len(combine_calls[0]) == 2
+    assert combined.obs['job_number'].tolist() == [
+        0, 0, 0,
+        1, 1, 1,
+        2, 2, 2,
+    ]
+    assert dummy_pipeline.trial_data is combined
+
+
+@pytest.mark.parametrize('n_results', [1, 3])
+def test_pipeline_concatenates_low_memory_shards_once(
+        dummy_pipeline,
+        photometry_data,
+        tmp_path,
+        monkeypatch,
+        n_results,
+        ):
+    output_path = tmp_path / 'trials.h5ad'
+    dummy_pipeline._initialize_accumulation(output_path, low_memory_mode=True)
+
+    concat_calls = []
+    pipeline_module = importlib.import_module('PhoPro.core.PhotometryPipeline')
+    original_concat = pipeline_module.concat_on_disk
+
+    def recording_concat(*args, **kwargs):
+        concat_calls.append(list(kwargs['in_files']))
+        return original_concat(*args, **kwargs)
+
+    monkeypatch.setattr(pipeline_module, 'concat_on_disk', recording_concat)
+
+    for job_number in range(n_results):
+        result = photometry_data.copy()
+        result.obs['job_number'] = job_number
+        dummy_pipeline._accumulate_result(
+            SimpleNamespace(trial_data=result),
+            low_memory_mode=True,
+        )
+
+    shard_dir = Path(dummy_pipeline._trial_shard_dir.name)
+    combined = dummy_pipeline._finalize_result(
+        trial_output_path=output_path,
+        low_memory_mode=True,
+    )
+
+    assert len(concat_calls) == 1
+    assert len(concat_calls[0]) == n_results
+    assert combined.obs['job_number'].tolist() == [
+        job_number
+        for job_number in range(n_results)
+        for _ in range(photometry_data.n_trials)
+    ]
+    assert output_path.exists()
+    assert not shard_dir.exists()
+
+
+def test_pipeline_rejects_misaligned_result_before_accumulation(
+        dummy_pipeline,
+        photometry_data,
+        ):
+    dummy_pipeline._initialize_accumulation(None, low_memory_mode=False)
+    dummy_pipeline._accumulate_result(
+        SimpleNamespace(trial_data=photometry_data.copy()),
+        low_memory_mode=False,
+    )
+
+    misaligned = photometry_data.copy()
+    misaligned.var['t'] = misaligned.ts + 0.1
+
+    with pytest.raises(ValueError, match='Time-series misalignment'):
+        dummy_pipeline._accumulate_result(
+            SimpleNamespace(trial_data=misaligned),
+            low_memory_mode=False,
+        )
+
+    assert len(dummy_pipeline._trial_results) == 1
 
 # --- workflow tests ---
 def test_pipeline_full_run(dummy_pipeline):

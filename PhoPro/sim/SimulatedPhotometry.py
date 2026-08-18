@@ -26,7 +26,7 @@ from .kernels import(
 from .layers import (
     TimeBase, 
     PhotobleachingLayer,
-    EventLayer, EventSpec,
+    EventLayer, EventSpec, ParameterValue,
     NoiseMultiplicativeLayer, NoiseGaussianLayer,
     NeuralDynamicNoiseLayer,
     MovementAttenuationLayer,
@@ -111,7 +111,12 @@ class SimulatedPhotometry:
 
         # other
         self.iso_event_leakage = 0.0 if iso_event_leakage is None else iso_event_leakage
+
+        # randomness
+        child_seeds = np.random.SeedSequence(seed).spawn(2)
         self.seed = seed
+        self.noise_seed = child_seeds[0]
+        self.kernel_seed = child_seeds[1]
 
         # build layers
         self.build_traces()
@@ -126,8 +131,8 @@ class SimulatedPhotometry:
             event_label: str = 'trial_cue',
             n_events: int | None = 10,
             event_kernel: Callable = gamma_kernel,
-            event_amplitude: float = 0.02,
-            event_kernel_params: dict[str, Any] = {'shape_k': 3, 'tau_sec': 1.0},
+            event_amplitude: ParameterValue = 0.02,
+            event_kernel_params: dict[str, ParameterValue] = {'shape_k': 3, 'tau_sec': 1.0},
             event_buffer_sec: float | None = 10.0,
 
             bleaching_params_exp: dict[str, float] = {'alpha1':50, 'alpha2':20, 'tau1':300, 'tau2':10000, 'B_floor':10},
@@ -177,10 +182,10 @@ class SimulatedPhotometry:
             Number of initial events to create.
         event_kernel : Callable, default=gamma_kernel
             Kernel function used for the initial event.
-        event_amplitude : float, default=0.02
-            Amplitude passed to ``event_kernel``.
-        event_kernel_params : dict[str, Any], default={'shape_k': 3, 'tau_sec': 1.0}
-            Additional keyword arguments passed to ``event_kernel``.
+        event_amplitude : float or ParameterSampler, default=0.02
+            Fixed amplitude or per-onset sampler passed to ``event_kernel``.
+        event_kernel_params : dict[str, float or ParameterSampler]
+            Fixed or per-onset keyword arguments passed to ``event_kernel``.
         event_buffer_sec : float or None, default=10.0
             Left and right buffer used when placing evenly spaced events.
         bleaching_params_exp : dict[str, float]
@@ -348,9 +353,15 @@ class SimulatedPhotometry:
             Recalls with the same seed will produce identical RNG-based 
             layers.
         """
-        # make rng locally for repeatability
-        seed = self.seed if seed is None else seed
-        rng = np.random.default_rng(seed=seed)
+        # make independent RNGs locally for repeatability
+        if seed is None:
+            noise_seed = self.noise_seed
+            kernel_seed = self.kernel_seed
+        else:
+            noise_seed, kernel_seed = np.random.SeedSequence(seed).spawn(2)
+
+        rng = np.random.default_rng(seed=noise_seed)
+        kernel_rng = np.random.default_rng(seed=kernel_seed)
 
         # build time
         self.time = self.timebase.render()
@@ -361,7 +372,7 @@ class SimulatedPhotometry:
         self.B_iso = self.bleaching_iso.render(self.time)
 
         # events
-        self.E = self.event_layer.render(self.time, self.freq)
+        self.E = self.event_layer.render(self.time, self.freq, kernel_rng)
         self.E_iso = self.iso_event_leakage * self.E
 
         # random neural dynamics
@@ -452,9 +463,9 @@ class SimulatedPhotometry:
             self,
             label: str,
             onsets: np.ndarray,
-            amplitude: float,
+            amplitude: ParameterValue,
             kernel_func: Callable,
-            kernel_params: dict[str, Any],
+            kernel_params: dict[str, ParameterValue],
             ) -> None:
         """Add an event type to the simulator.
 
@@ -464,12 +475,12 @@ class SimulatedPhotometry:
             Event label.
         onsets : np.ndarray
             Event onset times, in seconds.
-        amplitude : float
-            Amplitude passed to ``kernel_func``.
+        amplitude : float or ParameterSampler
+            Fixed amplitude or per-onset sampler passed to ``kernel_func``.
         kernel_func : Callable
             Kernel function used to render the event.
-        kernel_params : dict[str, Any]
-            Additional keyword arguments passed to ``kernel_func``.
+        kernel_params : dict[str, float or ParameterSampler]
+            Fixed or per-onset keyword arguments passed to ``kernel_func``.
         """
         # add event
         self.event_layer.add_event(

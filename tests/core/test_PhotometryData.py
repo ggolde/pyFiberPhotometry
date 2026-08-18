@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from PhoPro.core.PhotometryData import PhotometryData
+from PhoPro.core.PhotometryData import GroupedPhotometryData, PhotometryData
 from PhoPro.analysis.peaks import PeakResult
 from PhoPro.utils.io import clean_axis_dtype
 
@@ -270,6 +270,120 @@ def test_get_text_value_counts_summarizes_column(photometry_data):
 
 # --- aggregation ---
 
+def test_groupby_exposes_group_properties_and_iterates_over_copies(photometry_data):
+    grouped = photometry_data.groupby("animal")
+
+    assert isinstance(grouped, GroupedPhotometryData)
+    assert grouped.obj is photometry_data
+    assert grouped.by == ("animal",)
+    assert grouped.ngroups == 2
+    assert list(grouped.indices) == ["a", "b"]
+    assert grouped.groups["a"].tolist() == ["0", "1"]
+
+    groups = dict(grouped)
+    assert groups["a"].n_trials == 2
+    assert groups["b"].obs["animal"].tolist() == ["b"]
+
+    groups["a"].X[0, 0] = -1
+    assert photometry_data.X[0, 0] != -1
+
+
+def test_groupby_multiple_columns_uses_tuple_keys(photometry_data):
+    grouped = photometry_data.groupby(["animal", "condition"])
+
+    assert grouped.by == ("animal", "condition")
+    assert list(grouped.indices) == [("a", "x"), ("b", "y")]
+
+
+def test_groupby_map_groups_returns_results_by_group_key(photometry_data):
+    results = photometry_data.groupby("animal").map_groups(
+        lambda group, offset: group.n_trials + offset,
+        10,
+    )
+
+    assert results == {"a": 12, "b": 11}
+
+
+def test_groupby_apply_combines_photometry_results(photometry_data):
+    out = photometry_data.groupby("animal").apply(
+        lambda group: group.mutate_obs(
+            centered=group.obs["score"] - group.obs["score"].mean()
+        )
+    )
+
+    assert isinstance(out, PhotometryData)
+    assert out.n_trials == photometry_data.n_trials
+    assert out.obs["animal"].tolist() == ["a", "a", "b"]
+    assert out.obs["centered"].tolist() == [-1.0, 1.0, 0.0]
+    assert np.allclose(out.X, photometry_data.X)
+    assert np.allclose(out.get_layer("layer"), photometry_data.get_layer("layer"))
+    assert out.obs.index.tolist() == ["0", "1", "2"]
+
+
+def test_groupby_apply_restores_group_columns(photometry_data):
+    def remove_group_column(group):
+        out = group.copy()
+        out.drop_obs_columns(["animal"])
+        return out
+
+    out = photometry_data.groupby("animal").apply(remove_group_column)
+
+    assert out.obs["animal"].tolist() == ["a", "a", "b"]
+
+
+def test_groupby_apply_rejects_non_photometry_results(photometry_data):
+    with pytest.raises(TypeError, match="use map_groups"):
+        photometry_data.groupby("animal").apply(lambda group: group.n_trials)
+
+
+def test_groupby_agg_aggregates_signals_layers_and_obs(photometry_data):
+    out = photometry_data.groupby("animal").agg(
+        "mean",
+        metrics={"std": np.nanstd},
+        data_cols=["score"],
+        collapse_cols=["condition"],
+    )
+
+    assert isinstance(out, PhotometryData)
+    assert out.obs["animal"].tolist() == ["a", "b"]
+    assert out.obs["n"].tolist() == [2, 1]
+    assert np.allclose(out.X[0], np.mean(photometry_data.X[:2], axis=0))
+    assert np.allclose(
+        out.get_layer("layer")[0],
+        np.mean(photometry_data.get_layer("layer")[:2], axis=0),
+    )
+    assert np.allclose(out.get_layer("std")[0], np.std(photometry_data.X[:2], axis=0))
+    assert np.isclose(out.obs.loc["0", "score"], 2.0)
+    assert np.isclose(out.obs.loc["0", "score_std"], 1.0)
+    assert out.obs.loc["0", "condition"] == ["x", "x"]
+    assert out.uns == photometry_data.uns
+    assert out.uns is not photometry_data.uns
+    assert out.var.equals(photometry_data.var)
+
+
+def test_groupby_agg_does_not_truncate_integer_means():
+    data = PhotometryData.from_arrays(
+        obs=pd.DataFrame({"group": ["a", "a"]}),
+        data=np.array([[0, 1], [1, 2]], dtype=int),
+        time_points=np.array([0.0, 1.0]),
+        layers={"integer_layer": np.array([[2, 3], [3, 4]], dtype=int)},
+    )
+
+    out = data.groupby("group").agg("mean")
+
+    assert np.issubdtype(out.X.dtype, np.floating)
+    assert np.allclose(out.X, [[0.5, 1.5]])
+    assert np.allclose(out.get_layer("integer_layer"), [[2.5, 3.5]])
+
+
+def test_groupby_validates_columns_and_aggregation_conflicts(photometry_data):
+    with pytest.raises(KeyError, match="not found"):
+        photometry_data.groupby("missing")
+
+    with pytest.raises(ValueError, match="existing layers"):
+        photometry_data.groupby("animal").agg(metrics={"layer": np.nanstd})
+
+
 def test_collapse_groups_trials_and_adds_metric_layers(photometry_data):
     out = photometry_data.collapse(
         group_on=["animal"],
@@ -297,6 +411,36 @@ def test_collapse_without_groups_collapses_all_trials(photometry_data):
     assert out.n_trials == 1
     assert out.obs.loc["0", "n"] == photometry_data.n_trials
     assert np.isclose(out.obs.loc["0", "score"], np.mean([1.0, 3.0, 5.0]))
+
+
+def test_collapse_matches_direct_groupby_aggregation(photometry_data):
+    collapsed = photometry_data.collapse(
+        group_on="animal",
+        data_cols=["score"],
+        collapse_cols=["condition"],
+    )
+    grouped = photometry_data.groupby("animal").agg(
+        np.nanmean,
+        metrics={"std": np.std},
+        data_cols=["score"],
+        collapse_cols=["condition"],
+    )
+
+    assert np.allclose(collapsed.X, grouped.X)
+    assert set(collapsed.adata.layers) == set(grouped.adata.layers)
+    for layer in collapsed.adata.layers:
+        assert np.allclose(collapsed.get_layer(layer), grouped.get_layer(layer))
+    pd.testing.assert_frame_equal(collapsed.obs, grouped.obs)
+    pd.testing.assert_frame_equal(collapsed.var, grouped.var)
+
+
+def test_collapse_empty_group_list_aggregates_all_trials(photometry_data):
+    out = photometry_data.collapse(group_on=[], metrics={})
+
+    assert out.n_trials == 1
+    assert out.obs.columns.tolist() == ["n"]
+    assert out.obs.loc["0", "n"] == photometry_data.n_trials
+    assert np.allclose(out.X[0], np.nanmean(photometry_data.X, axis=0))
 
 
 # --- windowing ---

@@ -1,9 +1,13 @@
 """Trial-wise photometry data containers and analysis helpers."""
 
 from __future__ import annotations
-from typing import Any, Callable, Literal, Self, cast
+from collections.abc import Iterator, Mapping
+from copy import deepcopy
+from types import MappingProxyType
+from typing import Any, Callable, Generic, Literal, Self, TypeVar, cast
+
 from anndata.experimental import concat_on_disk
-from plotnine import ggplot
+from plotnine.ggplot import ggplot as GGPlot
 
 import matplotlib.pyplot as plt
 import matplotlib.axes
@@ -24,9 +28,13 @@ from ..types import (
     PeakDirection,
     PeakScaleMethod,
     WindowMethod,
+    GroupKey
 )
 
 ad.settings.allow_write_nullable_strings = True
+
+TPhotometryData = TypeVar("TPhotometryData", bound="PhotometryData")
+TResult = TypeVar("TResult")
 
 class PhotometryData:
     """Handle and analyze trial-wise photometry time-series data."""
@@ -504,65 +512,53 @@ class PhotometryData:
             metadata=metadata,
         )
 
-    def _agg(
+    def groupby(
             self,
-            method: Callable[..., np.ndarray],
-            group_on: list[str] | None,
-            data_cols: list[str],
-            collapse_cols: list[str] | None = None,
-            count_col: str | None = None
-            ) -> tuple[pd.DataFrame, np.ndarray]:
-        """Aggregate signals and observation columns over groups."""
-        X = np.asarray(self.adata.X)
-        obs: pd.DataFrame = self.adata.obs
+            by: str | list[str],
+            *,
+            sort: bool = False,
+            observed: bool = True,
+            dropna: bool = True,
+            ) -> GroupedPhotometryData[Self]:
+        """Group trials using one or more columns in ``obs``.
 
-        if isinstance(group_on, str):
-            group_on = [group_on]
+        Parameters
+        ----------
+        by : str or list[str]
+            Observation columns used to define groups.
+        sort : bool, default=False
+            Whether to sort group keys.
+        observed : bool, default=True
+            For categorical groupers, whether to include only observed values.
+        dropna : bool, default=True
+            Whether to exclude rows with missing group keys.
 
-        if group_on is None or len(group_on) == 0:
-            new_cols = data_cols if count_col is None else [count_col] + data_cols
+        Returns
+        -------
+        GroupedPhotometryData
+            A grouped wrapper supporting iteration, application, and
+            aggregation.
+        """
+        return GroupedPhotometryData(
+            self,
+            by=by,
+            sort=sort,
+            observed=observed,
+            dropna=dropna,
+        )
 
-            X_agg = method(X, axis=0)[np.newaxis, :]
-            obs_agg = pd.DataFrame(columns=new_cols, index=[0])
-            obs_agg.loc[0, data_cols] = method(obs.loc[:, data_cols], axis=0)
-            if count_col is not None: obs_agg.loc[0, count_col] = obs.index.size
-            if collapse_cols is not None:
-                for col in collapse_cols:
-                    obs_agg.loc[0, col] = obs[col].to_list()
-
-        else:
-            groups = obs.groupby(group_on, sort=False, observed=True).indices # observed needs to be True
-            n_groups = len(groups)
-            new_cols = group_on + data_cols if count_col is None else group_on + [count_col] + data_cols
-            if collapse_cols is not None:
-                new_cols = new_cols + collapse_cols
-
-            X_agg = np.empty((n_groups, X.shape[1]), dtype=X.dtype)
-            obs_agg = pd.DataFrame(columns=new_cols, index=np.arange(n_groups))
-
-            for i, (gkey, idxs) in enumerate(groups.items()):
-                X_agg[i] = method(X[idxs], axis=0)
-                obs_agg.loc[i, group_on] = gkey
-                obs_agg.loc[i, data_cols] = method(obs.iloc[idxs][data_cols], axis=0)
-                if count_col is not None: obs_agg.loc[i, count_col] = len(idxs)
-                if collapse_cols is not None:
-                    for col in collapse_cols:
-                        obs_agg.loc[i, col] = obs.iloc[idxs][col].to_list()
-
-
-        # clean dtypes
-        obs_agg = obs_agg.infer_objects()
-
-        return obs_agg, X_agg
+    def _group_all(self) -> GroupedPhotometryData[Self]:
+        """Return an internal group containing every trial."""
+        return GroupedPhotometryData._from_all(self)
 
     def collapse(
             self,
             group_on: str | list[str] | None = None,
-            method: Callable = np.nanmean,
-            metrics: dict[str, Callable] = {'std':np.std},
-            data_cols: list[str] = [],
+            method: str | Callable[..., Any] = np.nanmean,
+            metrics: Mapping[str, str | Callable[..., Any]] | None = None,
+            data_cols: list[str] | None = None,
             collapse_cols: list[str] | None = None,
-            count_col: str | None = 'n'
+            count_col: str | None = 'n',
             ) -> Self:
         """Collapse trials by grouping `obs` and aggregating data.
 
@@ -573,10 +569,12 @@ class PhotometryData:
             all trials are collapsed into one row.
         method : Callable, default=np.nanmean
             Aggregation function for the primary ``X`` matrix.
-        metrics : dict[str, Callable], default={'std': np.std}
+        metrics : mapping or None, default=None
             Additional aggregation functions stored as layers. Metric keys are
-            also appended to aggregated ``data_cols`` column names.
-        data_cols : list[str], default=[]
+            also appended to aggregated ``data_cols`` column names. ``None``
+            preserves the historical default of ``{'std': np.std}``; pass an
+            empty mapping to disable additional metrics.
+        data_cols : list[str] or None, default=None
             Observation columns to aggregate with ``method`` and ``metrics``.
         collapse_cols : list[str] or None, default=None
             Observation columns to collapse into lists.
@@ -588,22 +586,19 @@ class PhotometryData:
         PhotometryData
             Collapsed photometry data object.
         """
-        obs_agg, X_agg = self._agg(method=method, group_on=group_on, data_cols=data_cols, count_col=count_col, collapse_cols=collapse_cols)
-
-        layers = {}
-        for key, func in metrics.items():
-            obs_lay, X_lay = self._agg(method=func, group_on=group_on, data_cols=data_cols, count_col=count_col, collapse_cols=None)
-            layers[key] = X_lay
-            obs_agg = obs_agg.join(obs_lay[data_cols], rsuffix='_' + str(key))
-
-        new_obj = type(self).from_arrays(
-            obs=obs_agg,
-            data=X_agg,
-            time_points=self.adata.var['t'],
-            layers=layers,
-            metadata=self.adata.uns
+        grouped = (
+            self._group_all()
+            if group_on is None or group_on == []
+            else self.groupby(group_on)
         )
-        return new_obj
+        resolved_metrics = {'std': np.std} if metrics is None else metrics
+        return grouped.agg(
+            method,
+            metrics=resolved_metrics,
+            data_cols=data_cols,
+            collapse_cols=collapse_cols,
+            count_col=count_col,
+        )
 
     def window(
             self,
@@ -1394,7 +1389,7 @@ class PhotometryData:
             line_kwargs: dict = {},
             ribbon_kwargs: dict = {},
             theme_kwargs: dict = {},
-            ) -> ggplot:
+            ) -> GGPlot:
         """Plot trial traces as a `plotnine` object.
 
         Parameters
@@ -1451,3 +1446,468 @@ class PhotometryData:
         return p
 
     #endregion
+
+########################
+#region --- GROUP BY ---
+########################
+
+class GroupedPhotometryData(Generic[TPhotometryData]):
+    """Group trial-wise photometry data by columns in ``obs``.
+
+    Group membership is captured when the wrapper is constructed. Each group
+    yielded by iteration is an independent ``PhotometryData`` copy.
+    """
+
+    def __init__(
+            self,
+            obj: TPhotometryData,
+            by: str | list[str],
+            *,
+            sort: bool = False,
+            observed: bool = True,
+            dropna: bool = True,
+            ) -> None:
+        """Create a grouped view of a ``PhotometryData`` object."""
+        if not isinstance(obj, PhotometryData):
+            raise TypeError("obj must be a PhotometryData object")
+
+        columns = [by] if isinstance(by, str) else list(by)
+        if not columns:
+            raise ValueError("by must contain at least one observation column")
+        if not all(isinstance(column, str) for column in columns):
+            raise TypeError("all entries in by must be strings")
+        if len(columns) != len(set(columns)):
+            raise ValueError("by cannot contain duplicate columns")
+
+        missing = [column for column in columns if column not in obj.obs.columns]
+        if missing:
+            raise KeyError(f"Columns not found in obs: {missing}")
+
+        self._obj = obj
+        self._by = tuple(columns)
+        self._sort = sort
+        self._observed = observed
+        self._dropna = dropna
+        self._obs_names = obj.obs.index.copy()
+
+        grouper = columns[0] if len(columns) == 1 else columns
+        grouped = obj.obs.groupby(
+            grouper,
+            sort=sort,
+            observed=observed,
+            dropna=dropna,
+        )
+        self._indices = {
+            key: np.asarray(indices, dtype=int).copy()
+            for key, indices in grouped.indices.items()
+        }
+        self._groups = {
+            key: obj.obs.index.take(indices).copy()
+            for key, indices in self._indices.items()
+        }
+
+    @classmethod
+    def _from_all(
+            cls,
+            obj: TPhotometryData,
+            ) -> GroupedPhotometryData[TPhotometryData]:
+        """Construct one internal group containing all trials."""
+        if not isinstance(obj, PhotometryData):
+            raise TypeError("obj must be a PhotometryData object")
+
+        grouped = cls.__new__(cls)
+        grouped._obj = obj
+        grouped._by = ()
+        grouped._sort = False
+        grouped._observed = True
+        grouped._dropna = True
+        grouped._obs_names = obj.obs.index.copy()
+
+        indices = np.arange(obj.n_trials, dtype=int)
+        grouped._indices = {None: indices}
+        grouped._groups = {None: obj.obs.index.copy()}
+        return grouped
+
+    @property
+    def obj(self) -> TPhotometryData:
+        """Source photometry object."""
+        return self._obj
+
+    @property
+    def by(self) -> tuple[str, ...]:
+        """Observation columns defining the groups."""
+        return self._by
+
+    @property
+    def sort(self) -> bool:
+        """Whether group keys are sorted."""
+        return self._sort
+
+    @property
+    def observed(self) -> bool:
+        """Whether categorical grouping includes only observed values."""
+        return self._observed
+
+    @property
+    def dropna(self) -> bool:
+        """Whether missing group keys are excluded."""
+        return self._dropna
+
+    @property
+    def indices(self) -> Mapping[Any, np.ndarray]:
+        """Read-only mapping from group keys to trial positions."""
+        return MappingProxyType({
+            key: indices.copy()
+            for key, indices in self._indices.items()
+        })
+
+    @property
+    def groups(self) -> Mapping[Any, pd.Index]:
+        """Read-only mapping from group keys to observation labels."""
+        return MappingProxyType({
+            key: labels.copy()
+            for key, labels in self._groups.items()
+        })
+
+    @property
+    def ngroups(self) -> int:
+        """Number of groups."""
+        return len(self._indices)
+
+    def _validate_source(self) -> None:
+        """Ensure positional group indices still address the original rows."""
+        if not self._obj.obs.index.equals(self._obs_names):
+            raise RuntimeError(
+                "The source PhotometryData rows changed after groupby(); "
+                "create a new grouped object"
+            )
+
+    def _key_values(self, key: Any) -> tuple[Any, ...]:
+        """Normalize a group key to values aligned with ``by``."""
+        if not self._by:
+            return ()
+        if len(self._by) == 1:
+            return (key,)
+        return tuple(key)
+
+    def __iter__(
+            self,
+            ) -> Iterator[tuple[GroupKey | None, TPhotometryData]]:
+        """Yield ``(group_key, PhotometryData)`` pairs in group order."""
+        self._validate_source()
+        for key, indices in self._indices.items():
+            group = self._obj.filter_rows(indices, inplace=False)
+            if group is None:  # pragma: no cover - guarded by inplace=False
+                raise RuntimeError("Unable to construct grouped data")
+            yield key, group
+
+    def map_groups(
+            self,
+            func: Callable[..., TResult],
+            *args: Any,
+            **kwargs: Any,
+            ) -> dict[GroupKey | None, TResult]:
+        """Map a callable over groups and return arbitrary results by key.
+
+        The callable receives an independent ``PhotometryData`` object as its
+        first argument. The return value is always an insertion-ordered
+        dictionary, so the callable may return values of any type.
+        """
+        if not callable(func):
+            raise TypeError("func must be callable")
+        return {
+            key: func(group, *args, **kwargs)
+            for key, group in self
+        }
+
+    def apply(
+            self,
+            func: Callable[..., TPhotometryData],
+            *args: Any,
+            **kwargs: Any,
+            ) -> TPhotometryData:
+        """Apply a transformation to each group and combine the results.
+
+        The callable must return a ``PhotometryData`` object for every group.
+        Returned objects must have identical variable axes and layer names.
+        Grouping columns are restored from the group keys before results are
+        concatenated in group order. Unstructured metadata is retained only
+        where it is identical across all returned objects.
+        """
+        if not callable(func):
+            raise TypeError("func must be callable")
+
+        mapped = self.map_groups(func, *args, **kwargs)
+        if not mapped:
+            empty = self._obj.filter_rows(np.array([], dtype=int), inplace=False)
+            if empty is None:  # pragma: no cover - guarded by inplace=False
+                raise RuntimeError("Unable to construct empty grouped data")
+            return empty
+
+        outputs: list[TPhotometryData] = []
+        reference: TPhotometryData | None = None
+        reference_layers: set[str] | None = None
+
+        for key, result in mapped.items():
+            if not isinstance(result, PhotometryData):
+                raise TypeError(
+                    f"apply() expected PhotometryData for group {key!r}, "
+                    f"got {type(result).__name__}; use map_groups() for "
+                    "arbitrary return values"
+                )
+
+            result = result.copy()
+            key_values = self._key_values(key)
+            for column, value in zip(self._by, key_values):
+                result.obs[column] = value
+
+            layers = set(result.adata.layers.keys())
+            if reference is None:
+                reference = result
+                reference_layers = layers
+            else:
+                if not result.var.equals(reference.var):
+                    raise ValueError(
+                        f"apply() result for group {key!r} has an incompatible "
+                        "variable axis"
+                    )
+                if layers != reference_layers:
+                    raise ValueError(
+                        f"apply() result for group {key!r} has incompatible "
+                        "layers"
+                    )
+
+            outputs.append(result)
+
+        combined = ad.concat(
+            [output.adata for output in outputs],
+            axis="obs",
+            join="inner",
+            merge="same",
+            uns_merge="same",
+            index_unique=None,
+        )
+        combined.obs_names = pd.Index(
+            np.arange(combined.n_obs, dtype=int).astype(str)
+        )
+        return cast(TPhotometryData, type(self._obj)(combined))
+
+    def split(
+            self,
+            ) -> dict[GroupKey | None, TPhotometryData]:
+        """Get a dictionary mapping group keys to independent PhotometryData objects"""
+        return {key : group for key, group in self}
+
+    @staticmethod
+    def _resolve_aggregation(
+            method: str | Callable[..., Any],
+            ) -> Callable[..., Any]:
+        """Resolve supported aggregation names to NumPy callables."""
+        if callable(method):
+            return method
+
+        aggregations: dict[str, Callable[..., Any]] = {
+            "mean": np.nanmean,
+            "median": np.nanmedian,
+            "sum": np.nansum,
+            "std": np.nanstd,
+            "var": np.nanvar,
+            "min": np.nanmin,
+            "max": np.nanmax,
+        }
+        try:
+            return aggregations[method]
+        except (KeyError, TypeError):
+            supported = ", ".join(aggregations)
+            raise ValueError(
+                f"Unknown aggregation {method!r}; supported names are: {supported}"
+            ) from None
+
+    @staticmethod
+    def _aggregate_signal(
+            values: np.ndarray,
+            indices: np.ndarray,
+            method: Callable[..., Any],
+            *,
+            name: str,
+            ) -> np.ndarray:
+        """Aggregate one trial-by-time array and validate its output shape."""
+        result = np.asarray(method(values[indices], axis=0))
+        expected_shape = (values.shape[1],)
+        if result.shape != expected_shape:
+            raise ValueError(
+                f"Aggregation for {name!r} returned shape {result.shape}; "
+                f"expected {expected_shape}"
+            )
+        return result
+
+    @staticmethod
+    def _aggregate_obs_value(
+            values: np.ndarray,
+            method: Callable[..., Any],
+            *,
+            name: str,
+            ) -> Any:
+        """Aggregate one observation column and require a scalar result."""
+        result = np.asarray(method(values, axis=0))
+        if result.ndim != 0:
+            raise ValueError(
+                f"Aggregation for observation column {name!r} returned shape "
+                f"{result.shape}; expected a scalar"
+            )
+        return result.item()
+
+    def agg(
+            self,
+            method: str | Callable[..., Any] = np.nanmean,
+            *,
+            metrics: Mapping[str, str | Callable[..., Any]] | None = None,
+            data_cols: list[str] | None = None,
+            collapse_cols: list[str] | None = None,
+            count_col: str | None = "n",
+            ) -> TPhotometryData:
+        """Aggregate signals, layers, and selected observation columns.
+
+        ``method`` is applied independently to ``X``, every existing signal
+        layer, and each column in ``data_cols``. Additional ``metrics`` are
+        calculated from ``X`` and stored as new layers; for ``data_cols``, they
+        are stored in columns named ``<column>_<metric>``. Columns listed in
+        ``collapse_cols`` are collected into lists.
+
+        Named methods are ``mean``, ``median``, ``sum``, ``std``, ``var``,
+        ``min``, and ``max``. Custom callables must accept an ``axis`` keyword.
+        """
+        # ensure agg can be performed
+        self._validate_source()
+        if not self._indices:
+            raise ValueError("Cannot aggregate because there are no groups")
+
+        # resolve agg methods
+        primary = self._resolve_aggregation(method)
+        metric_funcs = {
+            name: self._resolve_aggregation(func)
+            for name, func in (metrics or {}).items()
+        }
+
+        # handle requested columns
+        data_cols = list(data_cols or [])
+        collapse_cols = list(collapse_cols or [])
+
+        requested = data_cols + collapse_cols
+        missing = [column for column in requested if column not in self._obj.obs]
+        if missing:
+            raise KeyError(f"Columns not found in obs: {missing}")
+        if len(requested) != len(set(requested)):
+            raise ValueError("data_cols and collapse_cols cannot overlap or repeat")
+
+        # ensure count_col does not conflict with group call
+        reserved = set(self._by)
+        if count_col is not None:
+            if count_col in reserved:
+                raise ValueError(f"count_col {count_col!r} conflicts with a group column")
+            reserved.add(count_col)
+
+        # construct output col names
+        output_data_cols = set(data_cols)
+        output_metric_cols = {
+            f"{column}_{metric_name}"
+            for column in data_cols
+            for metric_name in metric_funcs
+        }
+        output_collapse_cols = set(collapse_cols)
+        output_columns = output_data_cols | output_metric_cols | output_collapse_cols
+
+        # check for conflicts in obs cols
+        conflicts = reserved & output_columns
+        if conflicts:
+            raise ValueError(f"Output column names conflict: {sorted(conflicts)}")
+        if len(output_columns) != (
+                len(output_data_cols)
+                + len(output_metric_cols)
+                + len(output_collapse_cols)
+                ):
+            raise ValueError("Aggregations produce duplicate output column names")
+
+        # check for conflicts in layer names
+        source_layers = {
+            name: np.asarray(values)
+            for name, values in self._obj.adata.layers.items()
+        }
+        layer_conflicts = set(source_layers) & set(metric_funcs)
+        if layer_conflicts:
+            raise ValueError(
+                f"Metric names conflict with existing layers: {sorted(layer_conflicts)}"
+            )
+
+        # set up for iteration
+        obs_rows: list[dict[str, Any]] = []
+        aggregated_x: list[np.ndarray] = []
+        aggregated_layers: dict[str, list[np.ndarray]] = {
+            name: [] for name in source_layers
+        }
+        aggregated_layers.update({name: [] for name in metric_funcs})
+
+        X = np.asarray(self._obj.X)
+
+        # interate over group idxs
+        for key, indices in self._indices.items():
+            # init "row"
+            key_values = self._key_values(key)
+            row = dict(zip(self._by, key_values))
+
+            # handle counts
+            if count_col is not None:
+                row[count_col] = len(indices)
+
+            # handle data cols
+            for column in data_cols:
+                values = self._obj.obs.iloc[indices][column].to_numpy()
+                row[column] = self._aggregate_obs_value(
+                    values, primary, name=column
+                )
+                for metric_name, metric_func in metric_funcs.items():
+                    row[f"{column}_{metric_name}"] = self._aggregate_obs_value(
+                        values, metric_func, name=f"{column}_{metric_name}"
+                    )
+
+            # handle collapse cols
+            for column in collapse_cols:
+                row[column] = self._obj.obs.iloc[indices][column].tolist()
+
+            # accumulate obs row
+            obs_rows.append(row)
+
+            # agg signal
+            aggregated_x.append(self._aggregate_signal(
+                X, indices, primary, name="X"
+            ))
+
+            # agg layers
+            for layer_name, values in source_layers.items():
+                aggregated_layers[layer_name].append(self._aggregate_signal(
+                    values, indices, primary, name=layer_name
+                ))
+            for metric_name, metric_func in metric_funcs.items():
+                aggregated_layers[metric_name].append(self._aggregate_signal(
+                    X, indices, metric_func, name=metric_name
+                ))
+
+        # combine objects
+        obs = pd.DataFrame(obs_rows).infer_objects()
+        obs.index = obs.index.astype(str)
+        layers = {
+            name: np.stack(values, axis=0)
+            for name, values in aggregated_layers.items()
+        }
+
+        # construct agg'd adata
+        adata = ad.AnnData(
+            X=np.stack(aggregated_x, axis=0),
+            obs=obs,
+            var=self._obj.var.copy(),
+            uns=deepcopy(self._obj.uns),
+            layers=layers,
+        )
+        return cast(TPhotometryData, type(self._obj)(adata))
+
+#endregion

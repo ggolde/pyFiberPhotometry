@@ -1,12 +1,77 @@
 """Composable layers used to render simulated photometry traces."""
 
-from typing import Callable, Any
+from typing import Any, Callable, Protocol, TypeAlias, runtime_checkable
 from dataclasses import dataclass, field
 from fractions import Fraction
 
 import numpy as np
 
 from scipy.signal import butter, sosfiltfilt, resample_poly
+
+########################
+#region --- SAMPLERS ---
+########################
+
+@runtime_checkable
+class ParameterSampler(Protocol):
+    """Protocol for values sampled independently for each event onset."""
+
+    def sample(
+            self,
+            rng: np.random.Generator,
+            size: int,
+            ) -> np.ndarray:
+        ...
+
+@dataclass(frozen=True)
+class SamplerUniform:
+    """Sample event parameters from a continuous uniform distribution."""
+
+    low: float
+    high: float
+
+    def __post_init__(self) -> None:
+        if not np.isfinite(self.low) or not np.isfinite(self.high):
+            raise ValueError('Uniform sampler bounds must be finite.')
+        if self.low > self.high:
+            raise ValueError(
+                f'Uniform sampler low ({self.low}) must be <= high ({self.high}).'
+            )
+
+    def sample(
+            self,
+            rng: np.random.Generator,
+            size: int,
+            ) -> np.ndarray:
+        return rng.uniform(self.low, self.high, size=size)
+
+@dataclass(frozen=True)
+class SamplerNormal:
+    """Sample event parameters from a normal distribution."""
+
+    mean: float
+    std: float
+
+    def __post_init__(self) -> None:
+        if not np.isfinite(self.mean) or not np.isfinite(self.std):
+            raise ValueError('Normal sampler parameters must be finite.')
+        if self.std < 0:
+            raise ValueError(
+                f'Normal sampler std must be non-negative, is {self.std}.'
+            )
+
+    def sample(
+            self,
+            rng: np.random.Generator,
+            size: int,
+            ) -> np.ndarray:
+        return rng.normal(self.mean, self.std, size=size)
+
+ParameterValue: TypeAlias = (
+    float | ParameterSampler
+)
+
+#endregion
 
 ########################
 #region --- TIMEBASE ---
@@ -508,9 +573,74 @@ class EventSpec:
     """Specification for one simulated event type."""
 
     onsets: np.ndarray
-    amplitude: float
+    amplitude: ParameterValue
     kernel_func: Callable[..., np.ndarray]
-    kernel_params: dict[str, Any] = field(default_factory=dict)
+    kernel_params: dict[str, ParameterValue] = field(default_factory=dict)
+
+    @property
+    def has_fixed_params(self) -> bool:
+        """Whether all parameters have fixed scalar values."""
+        fixed_amp = not isinstance(self.amplitude, ParameterSampler)
+        fixed_other = not any(
+            isinstance(param, ParameterSampler) for param in self.kernel_params.values()
+        )
+        return fixed_amp and fixed_other
+
+    def get_onset_idxs(
+            self,
+            time: np.ndarray,
+            ) -> np.ndarray:
+        """Convert event onset timestamps to indexes in a rendered timebase."""
+        onsets = np.asarray(self.onsets)
+        if onsets.size == 0:
+            return np.empty(0, dtype=int)
+
+        too_low = onsets < time[0]
+        too_high = onsets > time[-1]
+        if np.any(too_low) or np.any(too_high):
+            raise ValueError(
+                f'Event onset out of bounds at times '
+                f'({onsets[too_low | too_high]}).'
+            )
+
+        return np.searchsorted(time, onsets, side='left')
+
+    def _sample_param(
+            self,
+            value: ParameterValue,
+            size: int,
+            rng: np.random.Generator,
+            ) -> np.ndarray:
+        """Resolve one fixed or sampled parameter to a one-dimensional array."""
+        if isinstance(value, ParameterSampler):
+            sampled = value.sample(rng, size)
+        else:
+            sampled = np.full(size, value, dtype=float)
+
+        sampled = np.asarray(sampled, dtype=float)
+
+        if sampled.shape != (size,):
+            raise ValueError(
+                f'Sampled parameter must have shape ({size},), got '
+                f'{sampled.shape}.'
+            )
+        if not np.isfinite(sampled).all():
+            raise ValueError('Sampled parameter contains non-finite values.')
+
+        return sampled
+
+    def sample_parameters(
+            self,
+            size: int,
+            rng: np.random.Generator,
+            ) -> tuple[np.ndarray, dict[str, np.ndarray]]:
+        """Sample amplitude and kernel parameters for event occurrences."""
+        amp = self._sample_param(self.amplitude, size, rng)
+        params = {
+            label : self._sample_param(value, size, rng)
+            for label, value in self.kernel_params.items()
+        }
+        return amp, params
 
 @dataclass
 class EventLayer:
@@ -531,9 +661,9 @@ class EventLayer:
             self,
             label: str,
             onsets: np.ndarray,
-            amplitude: np.ndarray,
-            kernel_func: np.ndarray,
-            kernel_params: dict[str, Any],
+            amplitude: ParameterValue,
+            kernel_func: Callable[..., np.ndarray],
+            kernel_params: dict[str, ParameterValue],
             ) -> None:
         """Add an event specification from individual fields.
 
@@ -543,12 +673,12 @@ class EventLayer:
             Event label.
         onsets : np.ndarray
             Event onset times, in seconds.
-        amplitude : float
-            Event amplitude passed to ``kernel_func``.
+        amplitude : float or ParameterSampler
+            Fixed amplitude or per-onset sampler passed to ``kernel_func``.
         kernel_func : Callable[..., np.ndarray]
             Kernel function evaluated for this event.
-        kernel_params : dict[str, Any]
-            Additional keyword arguments passed to ``kernel_func``.
+        kernel_params : dict[str, float or ParameterSampler]
+            Fixed or per-onset keyword arguments passed to ``kernel_func``.
         """
         self.specs[label] = EventSpec(
             onsets=onsets,
@@ -646,19 +776,6 @@ class EventLayer:
         finite_kernel[-1] = 0.0
         return finite_kernel
 
-    def _build_finite_kernels(self, frequency: float) -> dict[str, np.ndarray]:
-        """Render finite kernels for every event specification."""
-        kernels = {}
-        for label, spec in self.specs.items():
-            spec: EventSpec
-            kernels[label] = self._get_finite_kernel(
-                amplitude=spec.amplitude,
-                kernel_func=spec.kernel_func,
-                kernel_params=spec.kernel_params,
-                frequency=frequency,
-            )
-        return kernels
-
     def _add_kernel_to_trace(
             self,
             trace: np.ndarray,
@@ -666,7 +783,7 @@ class EventLayer:
             start_idxs: np.ndarray,
             ) -> None:
         """Add a finite kernel at start indexes using overlap-safe accumulation."""
-        start_idxs = np.asarray(start_idxs, dtype=int)
+        start_idxs = np.atleast_1d(np.asarray(start_idxs, dtype=int))
 
         # check for no onsets
         if start_idxs.size == 0:
@@ -678,35 +795,12 @@ class EventLayer:
         valid = (indexes >= 0) & (indexes < trace.size)
         np.add.at(trace, indexes[valid], values[valid])
 
-    def _get_timestamp_idxs(self, time: np.ndarray) -> dict[str, np.ndarray]:
-        """Convert event timestamps to sampled indexes."""
-        event_idxs = {}
-        for label, spec in self.specs.items():
-            spec: EventSpec
-
-            # check for no onsets
-            if spec.onsets.size == 0:
-                event_idxs[label] = np.empty(0)
-
-            else:
-                # check for out of bounds
-                too_low = spec.onsets < time[0]
-                too_high = spec.onsets > time[-1]
-
-                if np.any(too_low) or np.any(too_high):
-                    raise ValueError(
-                        f'Event ({label}) start out of bounds at times ({spec.onsets[too_low | too_high]})'
-                    )
-
-                # sort into timebase
-                event_idxs[label] = np.searchsorted(time, spec.onsets, side='left')
-
-        return event_idxs
 
     def render(
             self, 
             time: np.ndarray, 
             frequency: float,
+            rng: np.random.Generator | None = None,
             ) -> np.ndarray:
         """Render all event specifications into one event trace.
 
@@ -716,6 +810,9 @@ class EventLayer:
             Time points for the output trace.
         frequency : float
             Sampling frequency in Hz.
+        rng : numpy.random.Generator or None, default=None
+            Random generator used for per-onset parameter sampling. A fresh
+            generator is created when omitted.
 
         Returns
         -------
@@ -728,14 +825,49 @@ class EventLayer:
             If an event onset is outside ``time`` or a kernel does not decay
             below ``tail_cutoff`` before ``max_duration_sec``.
         """
-        # init trace, kernels, onset_idxs
+        # init trace
         trace = np.zeros_like(time)
-        kernels = self._build_finite_kernels(frequency)
-        onset_idxs = self._get_timestamp_idxs(time)
+        rng = np.random.default_rng() if rng is None else rng
 
-        # add kernels to trace, return
-        for label, start_idxs in onset_idxs.items():
-            self._add_kernel_to_trace(trace, kernels[label], start_idxs)
+        for spec in self.specs.values():
+            # init onset idxs
+            onset_idxs = spec.get_onset_idxs(time)
+
+            # fixed param case
+            if spec.has_fixed_params:
+                # uses vectorized workflow
+                kernel = self._get_finite_kernel(
+                    amplitude=spec.amplitude,
+                    kernel_func=spec.kernel_func,
+                    kernel_params=spec.kernel_params,
+                    frequency=frequency,
+                )
+                self._add_kernel_to_trace(trace, kernel, onset_idxs)
+
+            # per-onset parameter distributions
+            else:
+                # Different parameter values require one kernel per onset.
+                sampled_amps, sampled_params = spec.sample_parameters(
+                    onset_idxs.size,
+                    rng,
+                )
+
+                for i, onset_idx in enumerate(onset_idxs):
+                    amp_i = sampled_amps[i]
+                    params_i = {
+                        name : values[i]
+                        for name, values in sampled_params.items()
+                    }
+
+                    kernel = self._get_finite_kernel(
+                        amplitude=amp_i,
+                        kernel_func=spec.kernel_func,
+                        kernel_params=params_i,
+                        frequency=frequency
+                    )
+
+                    self._add_kernel_to_trace(trace, kernel, [onset_idx])
+
         return trace
 
 #endregion

@@ -17,6 +17,7 @@ def simulate_data() -> SimulatedPhotometry:
         event_label='event',
         event_amplitude=0.05,
         n_events=12,
+        bleaching_params_iso=None,
         iso_bleach_scale=1.0,
         gaussian_noise_scale_exp=0.1,
         mult_noise_magnitude_exp=0.1,

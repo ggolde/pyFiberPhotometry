@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from plotnine import * #type: ignore
+from plotnine.ggplot import ggplot as GGPlot
 from plotnine.composition import Compose
 from matplotlib import colors as mcolors
 
@@ -84,7 +85,7 @@ def plot_experiment_traces(
         color_values: dict[str, str] | None = None,
         line_kwargs: dict = {},
         theme_kwargs: dict = {},
-        ) -> ggplot:
+        ) -> GGPlot:
     # clean df
     df = df.loc[df[label_col].isin(only_traces), :].copy()
     clean_labels = {label : label.replace('_', ' ').capitalize() for label in only_traces}
@@ -207,7 +208,7 @@ def plot_photometry_data(
         line_kwargs: dict = {},
         ribbon_kwargs: dict = {},
         theme_kwargs: dict = {},
-        ) -> ggplot:
+        ) -> GGPlot:
     # handle None inputs
     if err_layer is not None:
         long_df['ymin'] = long_df['signal'] - long_df[err_layer]
@@ -300,7 +301,7 @@ def plot_simulated_layers(
         condensed: bool = True,
         line_kwargs: dict = {},
         theme_kwargs: dict = {},
-        ) -> ggplot:
+        ) -> GGPlot:
     # clean and order trace and layer columns
     trace_labels = _sim_clean_trace_labels()
     df['trace'] = pd.Categorical(
@@ -343,7 +344,7 @@ def plot_simulated_traces(
         df: pd.DataFrame,
         line_kwargs: dict = {},
         theme_kwargs: dict = {},
-        ) -> ggplot:
+        ) -> GGPlot:
     # clean and order trace and layer columns
     trace_labels = _sim_clean_trace_labels()
     df['trace'] = pd.Categorical(
@@ -394,8 +395,8 @@ def plot_cluster_test(
         point_kwargs: dict = {},
         ribbon_kwargs: dict = {},
         theme_kwargs: dict = {},
-        ) -> ggplot:
-    
+        ) -> GGPlot:
+
     # handle pvalue color
     p_max = 1.0
     p_min = 1e-10
@@ -484,7 +485,7 @@ def plot_FMM_result(
         ribbon_inner_kwargs: dict = {},
         ribbon_outer_kwargs: dict = {},
         theme_kwargs: dict = {},
-        ) -> ggplot:
+        ) -> GGPlot:
     
     # default params
     line_kwargs = dict(

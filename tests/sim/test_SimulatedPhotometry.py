@@ -17,6 +17,7 @@ def make_small_sim(seed=11):
         event_kernel=alpha_kernel,
         event_kernel_params={"tau_sec": 0.25},
         event_amplitude=0.05,
+        bleaching_params_iso=None,
         iso_bleach_scale=1.0,
         gaussian_noise_scale_exp=0.05,
         gaussian_noise_scale_iso=None,

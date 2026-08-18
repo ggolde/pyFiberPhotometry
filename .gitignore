@@ -17,3 +17,4 @@ workshop/
 tutorials/output/*
 dist/
 sync_version.py
+example_data/

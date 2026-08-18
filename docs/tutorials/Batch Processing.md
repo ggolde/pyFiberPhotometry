@@ -1128,7 +1128,7 @@ sorted(Path('output/pipeline_dashboard_demo/dashboards').glob('*.svg'))
 
 # 9. Low-memory Mode
 
-By default, the pipeline accumulates each experiment's ``PhotometryData`` in memory and writes at the end. ``low_memory_mode=True`` appends each experiment's trials directly to an ``.h5ad`` file as jobs finish, then loads the final result at the end.
+By default, the pipeline retains each experiment's ``PhotometryData`` in memory and concatenates all results once at the end. ``low_memory_mode=True`` writes each experiment's trials to a temporary ``.h5ad`` shard, concatenates all shards on disk once after the jobs finish, then loads the final result.
 
 Low-memory mode requires a fresh output file. This is intentional, because appending into a pre-existing file could accidentally mix old and new runs.
 
