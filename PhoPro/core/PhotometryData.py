@@ -1574,6 +1574,11 @@ class GroupedPhotometryData(Generic[TPhotometryData]):
         """Number of groups."""
         return len(self._indices)
 
+    @property
+    def group_keys(self) -> list[GroupKey]:
+        '''List of group keys'''
+        return list(self._indices.keys())
+
     def _validate_source(self) -> None:
         """Ensure positional group indices still address the original rows."""
         if not self._obj.obs.index.equals(self._obs_names):
@@ -1600,6 +1605,17 @@ class GroupedPhotometryData(Generic[TPhotometryData]):
             if group is None:  # pragma: no cover - guarded by inplace=False
                 raise RuntimeError("Unable to construct grouped data")
             yield key, group
+
+    def get_group(
+            self,
+            group_key: GroupKey,
+            ) -> PhotometryData:
+        '''Get group from specific key'''
+        if group_key not in self.group_keys:
+            raise KeyError(f'Group key {group_key} not found in groups.')
+
+        group: PhotometryData = self._obj.filter_rows(self._indices[group_key])
+        return group
 
     def map_groups(
             self,
